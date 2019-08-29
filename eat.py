@@ -5,9 +5,6 @@ from loadmodules import *
 from pylab import *
 
 
-######################################################################################################################################################
-######################################################################################################################################################
-
 def eat_snap_and_fof(level, halo_number, snapnr, snappath, loadonlytype=[0, 4], haloid=0, galradfac=0.1, remove_bulk_vel=True, verbose=True):
     """
     Eat an Auriga snapshot, given a level/halo_number/snapnr. Subfind has been executed 'on-the-fly', during the simulation run.
@@ -40,15 +37,15 @@ def eat_snap_and_fof(level, halo_number, snapnr, snappath, loadonlytype=[0, 4], 
     :return: two-tuple (s, sf) where s is an instance of the gadget_snapshot class, and sf is an instance of the subfind class. See
     Arepo-snap-util,gadget_snap.py respectively gadget_subfind.py
     """
-    
+
     # Eat the subfind friend of friends output
     print("Snapshot:", snapnr, "From:", snappath)
     sf = load_subfind(snapnr, dir=snappath)
-    
+
     # Eat the Gadget snapshot
     s = gadget_readsnap(snapnr, snappath=snappath, lazy_load=True, subfind=sf, loadonlytype=loadonlytype)
     s.subfind = sf
-    
+
     try:
         # Sets s.(sub)halo. This allows selecting the halo, e.g. 0 (main 'Galaxy')
         s.calc_sf_indizes(s.subfind)
@@ -63,9 +60,9 @@ def eat_snap_and_fof(level, halo_number, snapnr, snappath, loadonlytype=[0, 4], 
             has_sf_indizes = False
         else:
             raise
-    
+
     # For example, Au5-24; snapnr 7-14 breaks due to lack of stars
-    
+
     s.galrad = None
     if has_sf_indizes:
         # Note that selecting the halo now rotates the disk using the principal axis. Rotate_disk is a general switch which has to be set to True
@@ -91,10 +88,10 @@ def eat_snap_and_fof(level, halo_number, snapnr, snappath, loadonlytype=[0, 4], 
                 print("WARNING: IndexError arised possibly in get_principal_axis because there are no stars (yet)")
             else:
                 raise
-        
+
         # This means that galrad is 10 % of R200 (200*rho_crit definition)
         s.galrad = galradfac * sf.data['frc2'][haloid]  # frc2 = Group_R_Crit200
-    
+
     # Age has different shape than other properties, so force age to be of same shape by shoving a bunch of zeros in-between.
     if "age" in s.data.keys():
         age = np.zeros(s.npartall)
@@ -103,23 +100,23 @@ def eat_snap_and_fof(level, halo_number, snapnr, snappath, loadonlytype=[0, 4], 
         age[st:en] = s.age
         s.data['age'] = age
         del age
-    
+
     if "gmet" in s.data.keys():
         # Clean negative and zero values of gmet to avoid RuntimeErrors
         s.gmet = np.maximum(s.gmet, 1e-40)
-    
+
     # Sneak some more info into the s instance
     s.halo_number = halo_number
     s.level = level
     s.snapnr = snapnr
     s.haloid = haloid
     s.name = "Au{0}-{1}".format(s.level, s.halo_number)
-    
+
     if verbose:
         print("\n{0}".format(s.name))
         print("galrad  : {0}".format(s.galrad))
         print("redshift: {0}".format(s.redshift))
         print("time    : {0}".format(s.time))
         print("center  : {0}\n".format(s.center))
-    
+
     return s, sf
