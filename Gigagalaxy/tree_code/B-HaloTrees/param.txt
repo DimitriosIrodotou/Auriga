@@ -1,7 +1,0 @@
-RunOutputDir      /hits/universe/GigaGalaxy/level4_MHD_new/halo_L7/output/
-TreeOutputDir    /hits/universe/simpsoce/GigaGalaxy/LowMass_trees_level4/L7/
-NumberOfOutputFiles     8
-SnapshotFileBase        snapshot
-FirstSnapShotNr         0 
-LastSnapShotNr          127
-SnapSkipFac             1
