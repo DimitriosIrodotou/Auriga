@@ -15,7 +15,7 @@ import book.projections
 import book.time_evolution
 
 start_time = time.time()
-date = time.strftime("%d\%m\%y\%H%M")
+date = time.strftime("%d_%m_%y_%H%M")
 
 
 def get_names_sorted(names):
@@ -37,7 +37,7 @@ def get_names_sorted(names):
         return np.array(names)[isort]
 
 
-class auriga_snapshot:
+class AurigaSnapshot:
     def __init__(self, snapid, snappath):
         self.snapid = snapid
         self.snappath = snappath
@@ -55,20 +55,20 @@ class auriga_snapshot:
         return s
 
 
-class auriga_halo():
+class AurigaHalo:
     def __init__(self, directory):
         self.directory = directory
         self.snaps = {}
 
         import glob
         import os
-        snaps = glob.glob("%s/output/snapdir_127" % self.directory)
+        snaps = glob.glob("%s/output/snap*" % self.directory)
         snaps.sort()
         self.nsnaps = len(snaps)
 
         for snap in snaps:
             snapid = np.int32(snap.split("_")[-1])
-            self.snaps[snapid] = auriga_snapshot(snapid, os.path.dirname(snap))
+            self.snaps[snapid] = AurigaSnapshot(snapid, os.path.dirname(snap))
 
         print("Found %d snapshots for halo %s." % (self.nsnaps, self.directory))
 
@@ -85,7 +85,7 @@ class auriga_halo():
         return self.snaps[(np.abs(redshifts - redshift)).argmin()]
 
 
-class auriga_directory():
+class AurigaDirectory:
     def __init__(self, directory, level):
         self.directory = directory
         self.halos = {}
@@ -93,7 +93,7 @@ class auriga_directory():
 
         import glob
         import os
-        halos = glob.glob("%s/halo_6" % self.directory)
+        halos = glob.glob("%s/halo_*" % self.directory)
         self.nhalos = len(halos)
 
         for halo in halos:
@@ -101,7 +101,7 @@ class auriga_directory():
                 self.nhalos
                 continue
             name = halo.split("_")[-1]
-            self.halos[name] = auriga_halo(halo)
+            self.halos[name] = AurigaHalo(halo)
 
 
     def get_snapshots(self, redshift):
@@ -114,14 +114,14 @@ class auriga_directory():
         return snaps
 
 
-class auriga_book():
+class AurigaBook:
     def __init__(self):
         self.directories = []
         return
 
 
     def add_directory(self, path, level):
-        self.directories += [auriga_directory(path, level)]
+        self.directories += [AurigaDirectory(path, level)]
         return
 
 
@@ -163,49 +163,40 @@ class auriga_book():
 
 
     def make_book_overview(self, level):
-        pdf = PdfPages('/u/di43/Auriga/plots/auriga_book_lvl%d' % level + '-' + date + '.pdf')
+        pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
 
-        # overview table??
-        # book.galaxy.table( pdf, self, [level] )
+        z = 0.0
+        book.projections.stellar_light(pdf, self, [level], z)
+        book.projections.dm_mass(pdf, self, [level], z)
+        # book.projections.stellar_mass(pdf, self, [level], z)
+        # book.projections.gas_density(pdf, self, [level], z)
+        # book.projections.gas_temperature(pdf, self, [level], z)
+        # book.projections.gas_metallicity(pdf, self, [level], z)
+        # book.projections.bfld(pdf, self, [level], z)
 
-        for z in [0.]:
-            book.projections.stellar_light(pdf, self, [level], z)
-            book.projections.dm_mass(pdf, self, [level], z)
-            book.projections.stellar_mass(pdf, self, [level], z)
-            book.projections.gas_density(pdf, self, [level], z)
-            book.projections.gas_temperature(pdf, self, [level], z)
-            book.projections.gas_metallicity(pdf, self, [level], z)
-            book.projections.bfld(pdf, self, [level], z)
+        # book.profiles.radial_profiles(pdf, self, [level], z)  # gas density, energies, velocities?, metallicity
+        # book.profiles.vertical_profiles(pdf, self, [level], z)
 
-        book.galaxy.phasediagram(pdf, self, [level])
+        # book.time_evolution.sfr(pdf, self, [level])
+        # book.time_evolution.bfld(pdf, self, [level])  # early time exponential ( < z=2 ), full time linear
+        # book.time_evolution.galaxy_mass(pdf, self, [level])
+        # book.time_evolution.bh_mass(pdf, self, [level])
 
-        book.metallicities.ratios(pdf, self, [level], 0.)
+        # book.galaxy.phasediagram(pdf, self, [level])
+        # book.galaxy.circularity(pdf, self, [level])
+        # book.galaxy.tullyfisher(pdf, self, [level])
+        # book.galaxy.stellarvstotal(pdf, self, [level])
+        # book.galaxy.gasfraction(pdf, self, [level])
+        # book.galaxy.centralbfld(pdf, self, [level])
 
-        for z in [0.]:
-            book.profiles.radial_profiles(pdf, self, [level], z)  # gas density, energies, velocities?, metallicity
-            book.profiles.vertical_profiles(pdf, self, [level], z)
-
-        book.time_evolution.sfr(pdf, self, [level])
-        book.time_evolution.bfld(pdf, self, [level])  # early time exponential ( < z=2 ), full time linear
-        book.time_evolution.galaxy_mass(pdf, self, [level])
-        book.time_evolution.bh_mass(pdf, self, [level])
-
-        # CPU time!
-
-        book.galaxy.circularity(pdf, self, [level])
-        book.galaxy.tullyfisher(pdf, self, [level])
-        book.galaxy.stellarvstotal(pdf, self, [level])
-        book.galaxy.gasfraction(pdf, self, [level])
-        book.galaxy.centralbfld(pdf, self, [level])
+        # book.metallicities.ratios(pdf, self, [level], 0.)
 
         pdf.close()
         return
 
 
-    def make_book_resolution(self, levels):
-        return
-
-
-b = auriga_book()
-b.add_directory("/virgo/simulations/Auriga/level4_MHD/", 4)
+b = AurigaBook()
+b.add_directory("/u/di43/Auriga/output/", 4)
 b.make_book_overview(4)
+
+print("--- Finished book.py in %.5s seconds ---" % (time.time() - start_time))  # Print total time.
