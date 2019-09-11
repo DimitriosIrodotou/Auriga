@@ -132,7 +132,7 @@ def radial_profiles(pdf, data, levels, z):
                 elif ipanel == 3:
                     bsqr, edges = np.histogram(rxy[i], bins=30, range=[0, 30.], weights=s.data['vol'][i] * bfld[i] ** 2.)
                     ax.semilogy(center, np.sqrt(bsqr / vol))
-                    set_axis(isnap, ax, "$r\,\mathrm{[kpc]}$", "$B\,\mathrm{[\mu G]}$", "$\mathrm{Magnetic\ field\ strength}$", [0.1, 30.])
+                    set_axis(isnap, ax, "$r\,\mathrm{[kpc]}$", "$B\,\mathrm{[\mu G]}$", "$\mathrm{Magnetic\ field\ strength}$", [0.1, 100.])
                 elif ipanel == 4:
                     velz, edges = np.histogram(rxy[i], bins=30, range=[0, 30.], weights=s.data['mass'][i] * s.data['vel'][i, 0])
                     velz /= mass
