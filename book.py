@@ -166,30 +166,36 @@ class AurigaBook:
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
 
         z = 0.0
+        # Projections #
         book.projections.stellar_light(pdf, self, [level], z)
+        # book.projections.stellar_density(pdf, self, [level], z)
+        book.projections.stellar_mass(pdf, self, [level], z)
+        book.projections.gas_density(pdf, self, [level], z)
+        book.projections.gas_temperature(pdf, self, [level], z)
+        book.projections.gas_metallicity(pdf, self, [level], z)
+        book.projections.bfld(pdf, self, [level], z)
         book.projections.dm_mass(pdf, self, [level], z)
-        # book.projections.stellar_mass(pdf, self, [level], z)
-        # book.projections.gas_density(pdf, self, [level], z)
-        # book.projections.gas_temperature(pdf, self, [level], z)
-        # book.projections.gas_metallicity(pdf, self, [level], z)
-        # book.projections.bfld(pdf, self, [level], z)
 
-        # book.profiles.radial_profiles(pdf, self, [level], z)  # gas density, energies, velocities?, metallicity
-        # book.profiles.vertical_profiles(pdf, self, [level], z)
+        # Profiles #
+        book.profiles.radial_profiles(pdf, self, [level], z)  # gas density, energies, velocities?, metallicity
+        book.profiles.vertical_profiles(pdf, self, [level], z)
 
-        # book.time_evolution.sfr(pdf, self, [level])
-        # book.time_evolution.bfld(pdf, self, [level])  # early time exponential ( < z=2 ), full time linear
-        # book.time_evolution.galaxy_mass(pdf, self, [level])
+        # Time evolution #
+        book.time_evolution.sfr(pdf, self, [level])
+        book.time_evolution.bfld(pdf, self, [level])  # early time exponential ( < z=2 ), full time linear
+        book.time_evolution.galaxy_mass(pdf, self, [level])
         # book.time_evolution.bh_mass(pdf, self, [level])
 
-        # book.galaxy.phasediagram(pdf, self, [level])
-        # book.galaxy.circularity(pdf, self, [level])
-        # book.galaxy.tullyfisher(pdf, self, [level])
-        # book.galaxy.stellarvstotal(pdf, self, [level])
-        # book.galaxy.gasfraction(pdf, self, [level])
-        # book.galaxy.centralbfld(pdf, self, [level])
+        # Global galactic relations #
+        book.galaxy.phasediagram(pdf, self, [level])
+        book.galaxy.circularity(pdf, self, [level])
+        book.galaxy.tullyfisher(pdf, self, [level])
+        book.galaxy.stellarvstotal(pdf, self, [level])
+        book.galaxy.gasfraction(pdf, self, [level])
+        book.galaxy.centralbfld(pdf, self, [level])
 
-        # book.metallicities.ratios(pdf, self, [level], 0.)
+        # Metallicities #
+        book.metallicities.ratios(pdf, self, [level], 0.)
 
         pdf.close()
         return
