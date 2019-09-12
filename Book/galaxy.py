@@ -1,5 +1,7 @@
 from __future__ import division
 
+import itertools
+
 import matplotlib.pyplot as plt
 import numpy as np
 from const import *
@@ -66,7 +68,7 @@ def phasediagram(pdf, data, levels):
                 mu = 4. / (1. + 3. * s.data['gmet'][:, 0] + 4. * s.data['gmet'][:, 0]) * mass_proton
                 temp = (5. / 3. - 1.) * s.data['u'] / KB * 1e10 * mu
                 rho = (s.data['gmet'][:, 0] / mass_proton + s.data['gmet'][:, 1] / (4. * mass_proton)) * s.data['rho'].astype('f8') * 1e10 * msol / (
-                        1e6 * parsec) ** 3
+                    1e6 * parsec) ** 3
 
                 H, x, y = np.histogram2d(np.log10(rho), np.log10(temp), bins=100, weights=s.rho * s.vol)
 
@@ -205,6 +207,7 @@ def courteau_convert_luminosity_to_mass(loglum):
 
 def tullyfisher(pdf, data, levels):
     nlevels = len(levels)
+    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
@@ -276,9 +279,12 @@ def tullyfisher(pdf, data, levels):
 
             mstar[ihalo] = mstars
             vtot[ihalo] = vel[np.abs(smcum - 0.8 * mstars).argmin()]
-            ihalo += 1
 
-        ax.semilogx(mstar * 1e10, np.log10(vtot), '+', color='k', ms=10.0, label='Level %d' % level)
+            ax.semilogx(mstar[ihalo] * 1e10, np.log10(vtot[ihalo]), color=next(colors), linestyle="None", marker='*', ms=15.0,
+                        label='Au-' + s.haloname)
+            ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
+            ax.add_artist(l1)
+            ihalo += 1
 
     ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     ax.set_ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$")
@@ -302,6 +308,7 @@ def guo_abundance_matching(mass):
 
 def stellarvstotal(pdf, data, levels):
     nlevels = len(levels)
+    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
@@ -319,7 +326,7 @@ def stellarvstotal(pdf, data, levels):
     ax.loglog(1.0e10 * masses, 1.0e10 * guo_abundance_matching(masses), 'k:')
 
     labels = ["$\\rm{M_{200}\\,\\,\\,\\Omega_b / \\Omega_m}$", "Guo+ 10"]
-    l1 = ax.legend(labels, loc='upper right', fontsize=6, frameon=False)
+    l1 = ax.legend(labels, loc='upper right', fontsize=12, frameon=False)
 
     for il in range(nlevels):
         level = levels[il]
@@ -343,9 +350,12 @@ def stellarvstotal(pdf, data, levels):
 
             iall, = np.where(s.r() < s.subfind.data['frc2'][0])
             mhalo[ihalo] = s.mass[iall].sum()
-            ihalo += 1
 
-        ax.loglog(mhalo * 1e10, mstar * 1e10, '+', color='k', ms=10.0, label='Level %d' % level)
+            ax.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0, label='Au-' + s.haloname)
+            ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
+            ax.add_artist(l1)
+
+            ihalo += 1
 
     ax.set_xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
     ax.set_ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
@@ -363,6 +373,7 @@ def convert_rband_to_Rband_mag(r, g):
 
 def gasfraction(pdf, data, levels):
     nlevels = len(levels)
+    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
@@ -390,9 +401,11 @@ def gasfraction(pdf, data, levels):
 
             igas, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 0))
             fgas[ihalo] = s.mass[igas].sum() / (s.mass[igas].sum() + s.mass[istars].sum())
-            ihalo += 1
 
-        ax.plot(MR, fgas, '+', color='k', ms=10.0, label='Level %d' % level)
+            ax.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label='Au-' + s.haloname)
+            ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
+
+            ihalo += 1
 
     ax.set_xlabel("$\\rm{M_{R}\\,[mag]}$")
     ax.set_ylabel("$\\rm{f_{gas}}$")
@@ -404,6 +417,7 @@ def gasfraction(pdf, data, levels):
 
 def centralbfld(pdf, data, levels):
     nlevels = len(levels)
+    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
@@ -430,9 +444,11 @@ def centralbfld(pdf, data, levels):
             age[s.type == 4] = s.data['age']
             istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.))
             mstar[ihalo] = s.mass[istars].sum()
-            ihalo += 1
 
-        ax.loglog(mstar * 1e10, bfld * 1e6, '+', color='k', ms=10.0, label='Level %d' % level)
+            ax.loglog(mstar[ihalo] * 1e10, bfld[ihalo] * 1e6, color=next(colors), linestyle="None", marker='*', ms=15.0, label='Au-' + s.haloname)
+            ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
+
+            ihalo += 1
 
     ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     ax.set_ylabel("$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$")
