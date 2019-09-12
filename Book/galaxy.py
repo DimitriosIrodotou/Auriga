@@ -1,7 +1,6 @@
 from __future__ import division
 
-import itertools
-
+import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
 from const import *
@@ -207,7 +206,6 @@ def courteau_convert_luminosity_to_mass(loglum):
 
 def tullyfisher(pdf, data, levels):
     nlevels = len(levels)
-    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
@@ -254,6 +252,7 @@ def tullyfisher(pdf, data, levels):
 
         data.select_halos(level, 0.)
         nhalos = data.selected_current_nsnaps
+        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
 
         mstar = np.zeros(nhalos)
         vtot = np.zeros(nhalos)
@@ -308,7 +307,6 @@ def guo_abundance_matching(mass):
 
 def stellarvstotal(pdf, data, levels):
     nlevels = len(levels)
-    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
@@ -333,6 +331,7 @@ def stellarvstotal(pdf, data, levels):
 
         data.select_halos(level, 0.)
         nhalos = data.selected_current_nsnaps
+        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
 
         mstar = np.zeros(nhalos)
         mhalo = np.zeros(nhalos)
@@ -373,7 +372,6 @@ def convert_rband_to_Rband_mag(r, g):
 
 def gasfraction(pdf, data, levels):
     nlevels = len(levels)
-    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
@@ -383,6 +381,7 @@ def gasfraction(pdf, data, levels):
 
         data.select_halos(level, 0.)
         nhalos = data.selected_current_nsnaps
+        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
 
         MR = np.zeros(nhalos)
         fgas = np.zeros(nhalos)
@@ -417,7 +416,6 @@ def gasfraction(pdf, data, levels):
 
 def centralbfld(pdf, data, levels):
     nlevels = len(levels)
-    colors = itertools.cycle(["r", "b", "g"])
 
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
@@ -427,6 +425,7 @@ def centralbfld(pdf, data, levels):
 
         data.select_halos(level, 0.)
         nhalos = data.selected_current_nsnaps
+        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
 
         mstar = np.zeros(nhalos)
         bfld = np.zeros(nhalos)
