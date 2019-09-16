@@ -1,9 +1,12 @@
 from __future__ import division
 
+import math
+
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
 from const import *
+from numpy import cos, sin
 from sfigure import *
 
 mass_proton = 1.6726219e-27
@@ -41,10 +44,10 @@ def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5)
     if isnap == 0 and title is not None:
         ax.set_title(title, size=7)
 
-    return
+    return None
 
 
-def phasediagram(pdf, data, levels):
+def phase_diagram(pdf, data, levels):
     nlevels = len(levels)
 
     redshifts = [4., 3., 2., 1., 0.]
@@ -54,6 +57,7 @@ def phasediagram(pdf, data, levels):
         data.select_halos(levels[il], 0)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * nhalos + 0.7))
 
     for il in range(nlevels):
@@ -82,8 +86,7 @@ def phasediagram(pdf, data, levels):
                 isnap += 1
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 def circularity(pdf, data, levels):
@@ -95,6 +98,7 @@ def circularity(pdf, data, levels):
         nhalos += data.selected_current_nsnaps
 
     Gcosmo = 43.0071
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
 
     for il in range(nlevels):
@@ -157,8 +161,7 @@ def circularity(pdf, data, levels):
             isnap += 1
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 # see http://www.astro.umd.edu/~ssm/ASTR620/mags.html
@@ -204,11 +207,14 @@ def courteau_convert_luminosity_to_mass(loglum):
     return 10 ** stellar_mass
 
 
-def tullyfisher(pdf, data, levels):
+def tully_fisher(pdf, data, levels):
     nlevels = len(levels)
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
+    ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
+    ax.set_ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$")
 
     # plot Pizagno et al. (2007) sample
     tablename = "./data/pizagno.txt"
@@ -254,8 +260,8 @@ def tullyfisher(pdf, data, levels):
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
 
-        mstar = np.zeros(nhalos)
         vtot = np.zeros(nhalos)
+        mstar = np.zeros(nhalos)
 
         data.select_halos(level, 0., loadonlyhalo=0)
 
@@ -280,17 +286,14 @@ def tullyfisher(pdf, data, levels):
             vtot[ihalo] = vel[np.abs(smcum - 0.8 * mstars).argmin()]
 
             ax.semilogx(mstar[ihalo] * 1e10, np.log10(vtot[ihalo]), color=next(colors), linestyle="None", marker='*', ms=15.0,
-                        label='Au-' + s.haloname)
+                        label="Au%s-%d" % (s.haloname, levels[0]))
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             ax.add_artist(l1)
             ihalo += 1
 
-    ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
-    ax.set_ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$")
-
     pdf.savefig(f)
-    plt.close()
-    return
+
+    return None
 
 
 def guo_abundance_matching(mass):
@@ -305,11 +308,14 @@ def guo_abundance_matching(mass):
     return val
 
 
-def stellarvstotal(pdf, data, levels):
+def stellar_vs_total(pdf, data, levels):
     nlevels = len(levels)
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
+    ax.set_xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
+    ax.set_ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
 
     masses = np.arange(15., 300.)
     cosmic_baryon_frac = 0.048 / 0.307
@@ -350,18 +356,15 @@ def stellarvstotal(pdf, data, levels):
             iall, = np.where(s.r() < s.subfind.data['frc2'][0])
             mhalo[ihalo] = s.mass[iall].sum()
 
-            ax.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0, label='Au-' + s.haloname)
+            ax.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0,
+                      label="Au%s-%d" % (s.haloname, levels[0]))
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             ax.add_artist(l1)
 
             ihalo += 1
 
-    ax.set_xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
-    ax.set_ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
-
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 # for this formula see Appendix of Windhorst+ 1991
@@ -370,11 +373,14 @@ def convert_rband_to_Rband_mag(r, g):
     return R
 
 
-def gasfraction(pdf, data, levels):
+def gas_fraction(pdf, data, levels):
     nlevels = len(levels)
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    ax.set_xlabel("$\\rm{M_{R}\\,[mag]}$")
+    ax.set_ylabel("$\\rm{f_{gas}}$")
 
     for il in range(nlevels):
         level = levels[il]
@@ -401,24 +407,23 @@ def gasfraction(pdf, data, levels):
             igas, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 0))
             fgas[ihalo] = s.mass[igas].sum() / (s.mass[igas].sum() + s.mass[istars].sum())
 
-            ax.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label='Au-' + s.haloname)
+            ax.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s-%d" % (s.haloname, levels[0]))
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
 
             ihalo += 1
 
-    ax.set_xlabel("$\\rm{M_{R}\\,[mag]}$")
-    ax.set_ylabel("$\\rm{f_{gas}}$")
-
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
-def centralbfld(pdf, data, levels):
+def central_bfld(pdf, data, levels):
     nlevels = len(levels)
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
+    ax.set_ylabel("$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$")
 
     for il in range(nlevels):
         level = levels[il]
@@ -444,17 +449,90 @@ def centralbfld(pdf, data, levels):
             istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.))
             mstar[ihalo] = s.mass[istars].sum()
 
-            ax.loglog(mstar[ihalo] * 1e10, bfld[ihalo] * 1e6, color=next(colors), linestyle="None", marker='*', ms=15.0, label='Au-' + s.haloname)
+            ax.loglog(mstar[ihalo] * 1e10, bfld[ihalo] * 1e6, color=next(colors), linestyle="None", marker='*', ms=15.0,
+                      label="Au%s-%d" % (s.haloname, levels[0]))
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
 
             ihalo += 1
 
-    ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
-    ax.set_ylabel("$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$")
+    pdf.savefig(f)
+    return None
+
+
+def bar_strength(pdf, data, levels):
+    """
+    Calculate bar strength from Fourier modes of surface density (see e.g. sec 2.3.2 from Athanassoula et al. 2013)
+    :param pdf:
+    :param data:
+    :param levels:
+    :return:
+    """
+
+    nlevels = len(levels)
+
+    plt.close()
+    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    ax.set_ylabel("$A_{2}$")
+    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+
+    for il in range(nlevels):
+        level = levels[il]
+
+        data.select_halos(level, 0.)
+        nhalos = data.selected_current_nsnaps
+        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
+
+        data.select_halos(level, 0., loadonlytype=[0, 4], loadonlyhalo=0)
+
+        ihalo = 0
+        for s in data:
+            s.centerat(s.subfind.data['fpos'][0, :])
+
+            galrad = 0.03
+            age = np.zeros(s.npartall)
+            age[s.type == 4] = s.data['age']  # Get ages of stars.
+            istars, = np.where((s.type == 4) & (age > 0.) & (s.r() < galrad) & (abs(s.pos[:, 0] * 1000.) < 5.))  # Select stars.
+            x, y, z = s.pos[istars, 2] * 1000, s.pos[istars, 1] * 1000, s.pos[istars, 0] * 1000  # Load positions and convert from Mpc to Kpc.
+
+            nbins = 50  # Number of radial bins.
+            r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
+
+            # Initialise Fourier components #
+            r_m = np.zeros(nbins)
+            alpha_0 = np.zeros(nbins)
+            alpha_2 = np.zeros(nbins)
+            beta_2 = np.zeros(nbins)
+
+            # Split up galaxy in radius bins and calculate Fourier components #
+            for i in range(0, nbins):
+
+                r_s = float(i) * 0.25
+                r_b = float(i) * 0.25 + 0.25
+                r_m[i] = float(i) * 0.25 + 0.125
+
+                xfit = x[(r < r_b) & (r > r_s) & (abs(z) < 0.8)]
+                yfit = y[(r < r_b) & (r > r_s) & (abs(z) < 0.8)]
+
+                l = len(xfit)
+
+                for k in range(0, l):
+                    th_i = math.atan2(yfit[k], xfit[k])
+                    alpha_0[i] = alpha_0[i] + 1
+                    alpha_2[i] = alpha_2[i] + cos(2 * th_i)
+                    beta_2[i] = beta_2[i] + sin(2 * th_i)
+
+            # Calculate bar strength A_2
+            a2 = np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2) / alpha_0[:]
+
+            # To plot bar strength as a function of radius plot r_m versus a2
+            ax.plot(r_m, a2, color=next(colors), label="Au%s-%d bar strength: %f" % (s.haloname, levels[0], max(a2)))
+            ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
+
+            ihalo += 1
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 def table(pdf, data, levels):
@@ -465,6 +543,7 @@ def table(pdf, data, levels):
         data.select_halos(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
 
@@ -500,5 +579,4 @@ def table(pdf, data, levels):
     ax.axis("off")
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
