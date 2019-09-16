@@ -8,6 +8,7 @@ from gadget_subfind import load_subfind
 from matplotlib.backends.backend_pdf import PdfPages
 
 import book
+import book.evolution
 import book.galaxy
 import book.metallicities
 import book.profiles
@@ -24,6 +25,7 @@ def get_names_sorted(names):
         names_sorted.sort()
 
         return names_sorted
+
     else:
         values = np.zeros(len(names))
         for i in range(len(names)):
@@ -38,6 +40,7 @@ def get_names_sorted(names):
 
 
 class AurigaSnapshot:
+
     def __init__(self, snapid, snappath):
         self.snapid = snapid
         self.snappath = snappath
@@ -163,44 +166,57 @@ class AurigaBook:
 
 
     def make_book_overview(self, level):
+        """
+        Method to create a pdf with the desired plots #
+        :param level: level of the run
+        :return: None
+        """
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
 
-        z = 0.0
-        # # Projections #
-        # book.projections.stellar_light(pdf, self, [level], z)
-        # # book.projections.stellar_density(pdf, self, [level], z)
-        # book.projections.stellar_mass(pdf, self, [level], z)
-        # book.projections.gas_density(pdf, self, [level], z)
+        # Projections #
+        for z in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
+            # book.projections.stellar_light(pdf, self, [level], z)
+            # book.projections.stellar_mass(pdf, self, [level], z)
+            book.projections.gas_density(pdf, self, [level], z)
         # book.projections.gas_temperature(pdf, self, [level], z)
         # book.projections.gas_metallicity(pdf, self, [level], z)
         # book.projections.bfld(pdf, self, [level], z)
         # book.projections.dm_mass(pdf, self, [level], z)
-        #
-        # # Profiles #
-        # book.profiles.radial_profiles(pdf, self, [level], z)
-        # book.profiles.vertical_profiles(pdf, self, [level], z)
-        #
-        # # Time evolution #
+        # book.projections.stellar_density(pdf, self, [level], z)
+
+        # Profiles #
+        # for z in [0.0]:
+        #   book.profiles.radial_profiles(pdf, self, [level], z)
+        #   book.profiles.vertical_profiles(pdf, self, [level], z)
+
+        # Time evolution #
+        # for z in np.linspace(0, 2, 21):
+        #     book.evolution.bar_strength(pdf, self, [level], z)
+        # for z in np.linspace(0, 2, 21):
+        #     book.evolution.circularity(pdf, self, [level], z)
         # book.time_evolution.sfr(pdf, self, [level])
         # book.time_evolution.bfld(pdf, self, [level])
         # book.time_evolution.galaxy_mass(pdf, self, [level])
         # # book.time_evolution.bh_mass(pdf, self, [level])
-        #
-        # # Global galactic relations #
-        # book.galaxy.phasediagram(pdf, self, [level])
+
+        # Global galactic relations #
+        # book.galaxy.phase_diagram(pdf, self, [level])
         # book.galaxy.circularity(pdf, self, [level])
-        book.galaxy.tullyfisher(pdf, self, [level])
-        book.galaxy.stellarvstotal(pdf, self, [level])
-        book.galaxy.gasfraction(pdf, self, [level])
-        book.galaxy.centralbfld(pdf, self, [level])
-        #
-        # # Metallicities #
-        # book.metallicities.ratios(pdf, self, [level], 0.)
+        # book.galaxy.tully_fisher(pdf, self, [level])
+        # book.galaxy.stellar_vs_total(pdf, self, [level])
+        # book.galaxy.gas_fraction(pdf, self, [level])
+        # book.galaxy.central_bfld(pdf, self, [level])
+        # book.galaxy.bar_strength(pdf, self, [level])
+
+        # Metallicities #
+        # for z in [0.0]:
+        #   book.metallicities.ratios(pdf, self, [level], 0.)
 
         pdf.close()
-        return
+        return None
 
 
+# Set the path to the simulation data and the level #
 b = AurigaBook()
 b.add_directory("/u/di43/Auriga/output/", 4)
 b.make_book_overview(4)
