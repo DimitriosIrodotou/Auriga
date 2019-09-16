@@ -39,7 +39,7 @@ def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5)
     if isnap == 0 and title is not None:
         ax.set_title(title, size=7)
 
-    return
+    return None
 
 
 def radial_profiles(pdf, data, levels, z):
@@ -50,6 +50,7 @@ def radial_profiles(pdf, data, levels, z):
         data.select_halos(levels[il], z)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * nhalos + 0.7))
 
     for il in range(nlevels):
@@ -155,13 +156,12 @@ def radial_profiles(pdf, data, levels, z):
                     continue
 
                 if ipanel == 0:
-                    ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, level), color='w', fontsize=6, transform=ax.transAxes)
+                    ax.text(0.0, 1.0, "Au%s-%d" % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
 
             isnap += 1
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 def vertical_profiles(pdf, data, levels, z):
@@ -172,6 +172,7 @@ def vertical_profiles(pdf, data, levels, z):
         data.select_halos(levels[il], z)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * nhalos + 0.7))
 
     for il in range(nlevels):
@@ -273,10 +274,9 @@ def vertical_profiles(pdf, data, levels, z):
                     continue
 
                 if ipanel == 0:
-                    ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, level), color='w', fontsize=6, transform=ax.transAxes)
+                    ax.text(0.0, 1.0, "Au%s-%d" % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
 
             isnap += 1
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
