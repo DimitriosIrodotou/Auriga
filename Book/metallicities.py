@@ -39,7 +39,7 @@ def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5)
     if isnap == 0 and title is not None:
         ax.set_title(title, size=7)
 
-    return
+    return None
 
 
 def ratios(pdf, data, levels, z):
@@ -61,6 +61,7 @@ def ratios(pdf, data, levels, z):
     zsolar = 0.0127
     rows_per_element = (nhalos - 1) // 5 + 1
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * (12 + nelements - 2) * rows_per_element + 0.7))
 
     for il in range(nlevels):
@@ -122,5 +123,4 @@ def ratios(pdf, data, levels, z):
                 ihalo += 1
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
