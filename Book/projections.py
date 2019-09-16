@@ -13,22 +13,41 @@ res = 512
 boxsize = 0.05
 
 
-def create_axis(res=res, boxsize=boxsize, ):
+def create_axes(res=res, boxsize=boxsize, ):
+    """
+    Method to create plot axes.
+    :param res: resolution
+    :param boxsize: boxsize
+    :return: ax, ax2, x, y, y2, area
+    """
+
+    # Set the axis values #
     x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
     y = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
     y2 = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res / 2 + 1)
-    area = (boxsize / res) ** 2
 
+    area = (boxsize / res) ** 2  # Calculate the area.
+
+    # Create the two panels #
     gs = gridspec.GridSpec(2, 2, height_ratios=[2, 1], width_ratios=(20, 1))
     gs.update(hspace=0.1)
-
     ax = plt.subplot(gs[0, 0])
     ax2 = plt.subplot(gs[1, 0])
 
     return ax, ax2, x, y, y2, area
 
 
-def set_axis(ax, ax2, xlabel=None, ylabel=None, y2label=None):
+def set_axes(ax, ax2, xlabel=None, ylabel=None, y2label=None):
+    """
+    Method to set axes' parameters.
+    :param ax: see create_axes
+    :param ax2: see create_axes
+    :param xlabel: x-axis label
+    :param ylabel: y-axis label
+    :param y2label: y2-axis label
+    :return: None
+    """
+    # Set x-axis labels and ticks #
     if xlabel is None:
         ax.set_xticks([])
         ax2.set_xticks([])
@@ -36,16 +55,19 @@ def set_axis(ax, ax2, xlabel=None, ylabel=None, y2label=None):
         ax.set_xticklabels([])
         ax2.set_xlabel(xlabel, size=16)
 
+    # Set y-axis labels and ticks #
     if ylabel is None:
         ax.set_yticks([])
     else:
         ax.set_ylabel(ylabel, size=16)
 
+    # Set y2-axis labels and ticks #
     if y2label is None:
         ax2.set_yticks([])
     else:
         ax2.set_ylabel(y2label, size=16)
 
+    # Set x- and y-axis ticks' size #
     for a in [ax, ax2]:
         a.axis('tight')
         for label in a.xaxis.get_ticklabels():
@@ -57,9 +79,18 @@ def set_axis(ax, ax2, xlabel=None, ylabel=None, y2label=None):
 
 
 def create_colorbar(f, pc, label):
+    """
+    Method to create a colorbar.
+    :param f: figure
+    :param pc: pseudocolor plot
+    :param label: colorbar label
+    :return: None
+    """
+    # Set the colorbar axes #
     cax = f.add_axes([0.8, 0.1, 0.03, 0.8])
     cb = plt.colorbar(pc, cax=cax)
 
+    # Set the colorbar parameters #
     cb.set_label(label, size=16)
     cb.ax.tick_params(labelsize=16)
 
@@ -67,36 +98,49 @@ def create_colorbar(f, pc, label):
 
 
 def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=True):
-    pos = np.zeros((np.size(mass), 3))
+    """
+    Method to calculate particle projections.
+    :param pos_orig: positions of particles
+    :param mass: masses of particles
+    :param data: projection of light or mass data
+    :param idir: direction
+    :param res: resolution
+    :param boxsize: boxsize
+    :param type: light or mass
+    :param maxHsml:
+    :return:
+    """
 
-    if idir == 0:
-        pos[:, 0] = pos_orig[:, 1]
-        pos[:, 1] = pos_orig[:, 2]
+    pos = np.zeros((np.size(mass), 3))  # Define array to hold the new positions of particles.
+
+    # Create projection planes #
+    if idir == 0:  # XY plane
+        pos[:, 0] = pos_orig[:, 2]
+        pos[:, 1] = pos_orig[:, 1]
         pos[:, 2] = pos_orig[:, 0]
 
         xres = res
         yres = res
-
         boxx = boxsize
         boxy = boxsize
-    elif idir == 1:
+
+    elif idir == 1:  # ZY plane
         pos[:, 0] = pos_orig[:, 0]
         pos[:, 1] = pos_orig[:, 2]
         pos[:, 2] = pos_orig[:, 1]
 
         xres = res // 2
         yres = res
-
         boxx = boxsize / 2.
         boxy = boxsize
-    elif idir == 2:
+
+    elif idir == 2:  # YZ plane
         pos[:, 0] = pos_orig[:, 1]
         pos[:, 1] = pos_orig[:, 0]
         pos[:, 2] = pos_orig[:, 2]
 
         xres = res
         yres = res // 2
-
         boxx = boxsize
         boxy = boxsize / 2.
 
@@ -113,6 +157,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=True)
 
     boxz = max(boxx, boxy)
 
+    # Calculate light projection #
     if type == 'light':
         proj = np.zeros((xres, yres, 3))
         for k in range(3):
@@ -127,263 +172,333 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=True)
             logdrange = np.log10(drange)
 
             proj[:, :, k] = (loggrid - logdrange[0]) / (logdrange[1] - logdrange[0])
+
+    # Calculate mass projection #
     elif type == 'mass':
         proj = calcGrid.calcGrid(pos, hsml, data, rho, rho, xres, yres, 256, boxx, boxy, boxz, 0., 0., 0., 1, 1, numthreads=8)
+
     else:
         print("Type %s not found." % type)
+
         return None
 
     return proj
 
 
 def stellar_light(pdf, data, levels, z):
-    data.select_halos(levels[0], z, loadonlytype=[4], loadonlyhalo=0, loadonly=['pos', 'vel', 'mass', 'age', 'gsph'])
+    """
+    Method to plot stellar light.
+    :param pdf: path to save the pdf (see book.make_book_overview)
+    :param data: data (see book.make_book_overview)
+    :param levels: level (see book.make_book_overview)
+    :param z: redshift (see book.make_book_overview)
+    :return: None
+    """
 
-    for s in data:
-        plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=100)
+    # Count the number of haloes #
+    nlevels = len(levels)
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_halos(levels[il], z)
+        nhalos += data.selected_current_nsnaps
 
-        s.calc_sf_indizes(s.subfind)
+    # Loop over all levels #
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_halos(level, z, loadonlytype=[4], loadonlyhalo=0, loadonly=['pos', 'vel', 'mass', 'age', 'gsph'])  # Read galactic properties.
 
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        # Loop over all haloes #
+        for s in data:
+            # Create the figure #
+            plt.close()
+            f = plt.figure(figsize=(8, 8), dpi=100)
+            ax, ax2, x, y, y2, area = create_axes(res=res, boxsize=boxsize)
+            set_axes(ax, ax2, xlabel='$x$', ylabel='$y$', y2label='$z$')
+            ax.text(0.0, 1.0, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=ax.transAxes)
 
-        ax, ax2, x, y, y2, area = create_axis(res=res, boxsize=boxsize)
+            s.calc_sf_indizes(s.subfind)
 
-        istars, = np.where((s.r() < 2. * boxsize) & (s.data['age'] > 0.))
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)  # Read halo properties.
 
-        proj = get_projection(s.pos[istars, :].astype('f8'), s.mass[istars].astype('f8'), s.data['gsph'][istars, :].astype('f8'), 0, res, boxsize,
-                              'light')
-        ax.imshow(proj, interpolation='nearest')
+            # Mask the data and plot the projections #
+            mask, = np.where((s.r() < 2. * boxsize) & (s.data['age'] > 0.))
 
-        proj = get_projection(s.pos[istars, :].astype('f8'), s.mass[istars].astype('f8'), s.data['gsph'][istars, :].astype('f8'), 1, res, boxsize,
-                              'light')
-        ax2.imshow(proj, interpolation='nearest')
+            face_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 0, res, boxsize,
+                                     'light')
 
-        ax.text(0.05, 0.92, 'Au-' + s.haloname, color='w', fontsize=16, transform=ax.transAxes)
+            edge_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 1, res, boxsize,
+                                     'light')
+            ax.imshow(face_on, interpolation='nearest')
+            ax2.imshow(edge_on, interpolation='nearest')
 
-        set_axis(ax, ax2, xlabel='$x$', ylabel='$y$', y2label='$z$')
-
-        pdf.savefig(f)
-
-    return None
-
-
-def dm_mass(pdf, data, levels, z):
-    data.select_halos(levels[0], z, loadonlytype=[1, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
-
-    boxsize = 0.4
-
-    for s in data:
-        plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=100)
-
-        s.calc_sf_indizes(s.subfind)
-
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-
-        ax, ax2, x, y, y2, area = create_axis(res=res, boxsize=boxsize * 1e3)
-
-        idm, = np.where((s.r() < 2. * boxsize) & (s.type == 1))
-
-        proj = get_projection(s.pos[idm, :].astype('f8'), s.mass[idm].astype('f8'), s.data['mass'][idm].astype('f8'), 0, res, boxsize, 'mass',
-                              maxHsml=False) / area * 1e10
-
-        pc = ax.pcolormesh(x, y, proj, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap=matplotlib.cm.Greys, rasterized=True)
-
-        create_colorbar(f, pc, "$\Sigma_\mathrm{DM}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
-
-        proj = get_projection(s.pos[idm, :].astype('f8'), s.mass[idm].astype('f8'), s.data['mass'][idm].astype('f8'), 1, res, boxsize, 'mass',
-                              maxHsml=False) / (0.5 * area) * 1e10
-
-        ax2.pcolormesh(x, y2, proj, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap=matplotlib.cm.Greys, rasterized=True)
-
-        ax.text(0.05, 0.92, 'Au-' + s.haloname, color='k', fontsize=16, transform=ax.transAxes)
-
-        set_axis(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
-
-        pdf.savefig(f)
+            pdf.savefig(f)  # Save figure.
 
     return None
 
 
 def stellar_mass(pdf, data, levels, z):
-    data.select_halos(levels[0], z, loadonlytype=[4])
+    nlevels = len(levels)
 
-    for s in data:
-        plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=100)
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_halos(levels[il], z)
+        nhalos += data.selected_current_nsnaps
 
-        s.calc_sf_indizes(s.subfind)
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_halos(level, z, loadonlytype=[4])
 
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        for s in data:
+            plt.close()
+            f = plt.figure(figsize=(8, 8), dpi=100)
 
-        ax, ax2, x, y, y2, area = create_axis(res=res, boxsize=boxsize * 1e3)
+            s.calc_sf_indizes(s.subfind)
 
-        ism, = np.where((s.r() < 2. * boxsize))
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-        proj = get_projection(s.pos[ism, :].astype('f8'), s.mass[ism].astype('f8'), s.data['mass'][ism].astype('f8'), 0, res, boxsize, 'mass',
-                              maxHsml=False) / area * 1e10
+            ax, ax2, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3)
 
-        pc = ax.pcolormesh(x, y, proj, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.Oranges, rasterized=True)
+            ism, = np.where((s.r() < 2. * boxsize))
 
-        create_colorbar(f, pc, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
+            proj = get_projection(s.pos[ism, :].astype('f8'), s.mass[ism].astype('f8'), s.data['mass'][ism].astype('f8'), 0, res, boxsize, 'mass',
+                                  maxHsml=False) / area * 1e10
 
-        proj = get_projection(s.pos[ism, :].astype('f8'), s.mass[ism].astype('f8'), s.data['mass'][ism].astype('f8'), 1, res, boxsize, 'mass',
-                              maxHsml=False) / (0.5 * area) * 1e10
+            pc = ax.pcolormesh(x, y, proj, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.Oranges, rasterized=True)
 
-        ax2.pcolormesh(x, y2, proj, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.Oranges, rasterized=True)
+            create_colorbar(f, pc, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
 
-        ax.text(0.05, 0.92, 'Au-' + s.haloname, color='k', fontsize=16, transform=ax.transAxes)
+            proj = get_projection(s.pos[ism, :].astype('f8'), s.mass[ism].astype('f8'), s.data['mass'][ism].astype('f8'), 1, res, boxsize, 'mass',
+                                  maxHsml=False) / (0.5 * area) * 1e10
 
-        set_axis(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+            ax2.pcolormesh(x, y2, proj, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.Oranges, rasterized=True)
 
-        pdf.savefig(f)
+            ax.text(0.0, 1.0, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=ax.transAxes)
+
+            set_axes(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+
+            pdf.savefig(f)
 
     return None
 
 
 def gas_density(pdf, data, levels, z):
-    data.select_halos(levels[0], z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
+    nlevels = len(levels)
 
-    res = 256
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_halos(levels[il], z)
+        nhalos += data.selected_current_nsnaps
 
-    for s in data:
-        plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=100)
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_halos(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
 
-        s.calc_sf_indizes(s.subfind)
+        for s in data:
+            plt.close()
+            f = plt.figure(figsize=(8, 8), dpi=100)
 
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            s.calc_sf_indizes(s.subfind)
 
-        ax, ax2, x, y, y2, area = create_axis(res=res, boxsize=boxsize * 1e3)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-        proj = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            ax, ax2, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3)
 
-        pc = ax.pcolormesh(x, y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.magma, rasterized=True)
+            proj = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
 
-        create_colorbar(f, pc, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
+            pc = ax.pcolormesh(x, y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.magma, rasterized=True)
 
-        proj = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            create_colorbar(f, pc, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
 
-        ax2.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.magma, rasterized=True)
+            proj = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] * boxsize * 1e3
 
-        ax.text(0.05, 0.92, 'Au-' + s.haloname, color='k', fontsize=16, transform=ax.transAxes)
+            ax2.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.magma, rasterized=True)
 
-        set_axis(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+            ax.text(0.0, 1.0, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=ax.transAxes)
 
-        pdf.savefig(f)
+            set_axes(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+
+            pdf.savefig(f)
     return None
 
 
 def gas_temperature(pdf, data, levels, z):
-    data.select_halos(levels[0], z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'ne', 'u'])
+    nlevels = len(levels)
 
-    res = 256
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_halos(levels[il], z)
+        nhalos += data.selected_current_nsnaps
 
-    for s in data:
-        plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=100)
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_halos(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'ne', 'u'])
 
-        s.calc_sf_indizes(s.subfind)
+        for s in data:
+            plt.close()
+            f = plt.figure(figsize=(8, 8), dpi=100)
 
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            s.calc_sf_indizes(s.subfind)
 
-        ax, ax2, x, y, y2, area = create_axis(res=res, boxsize=boxsize * 1e3)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-        meanweight = 4.0 / (1. + 3. * 0.76 + 4. * 0.76 * s.data['ne']) * 1.67262178e-24;
+            ax, ax2, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3)
 
-        temp = (5. / 3. - 1.) * s.data['u'] / KB * (1e6 * parsec) ** 2. / (1e6 * parsec / 1e5) ** 2 * meanweight;
+            meanweight = 4.0 / (1. + 3. * 0.76 + 4. * 0.76 * s.data['ne']) * 1.67262178e-24;
 
-        s.data['temprho'] = s.rho * temp
+            temp = (5. / 3. - 1.) * s.data['u'] / KB * (1e6 * parsec) ** 2. / (1e6 * parsec / 1e5) ** 2 * meanweight;
 
-        proj = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+            s.data['temprho'] = s.rho * temp
 
-        rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+            proj = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
 
-        pc = ax.pcolormesh(x, y, (proj / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap=matplotlib.cm.viridis, rasterized=True)
+            rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
 
-        create_colorbar(f, pc, "$T\,\mathrm{[K]}$")
+            pc = ax.pcolormesh(x, y, (proj / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap=matplotlib.cm.viridis, rasterized=True)
 
-        proj = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
+            create_colorbar(f, pc, "$T\,\mathrm{[K]}$")
 
-        rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
+            proj = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
 
-        ax2.pcolormesh(x, 0.5 * y, (proj / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap=matplotlib.cm.viridis, rasterized=True)
+            rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
 
-        ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, levels[0]), color='k', fontsize=16, transform=ax.transAxes)
+            ax2.pcolormesh(x, 0.5 * y, (proj / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap=matplotlib.cm.viridis,
+                           rasterized=True)
 
-        set_axis(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+            ax.text(0.0, 1.0, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=ax.transAxes)
 
-        pdf.savefig(f)
+            set_axes(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+
+            pdf.savefig(f)
 
     return None
 
 
 def gas_metallicity(pdf, data, levels, z):
-    data.select_halos(levels[0], z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'gz'])
+    nlevels = len(levels)
 
-    res = 256
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_halos(levels[il], z)
+        nhalos += data.selected_current_nsnaps
 
-    for s in data:
-        plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=100)
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_halos(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'gz'])
 
-        s.calc_sf_indizes(s.subfind)
+        for s in data:
+            plt.close()
+            f = plt.figure(figsize=(8, 8), dpi=100)
 
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            s.calc_sf_indizes(s.subfind)
 
-        ax, ax2, x, y, y2, area = create_axis(res=res, boxsize=boxsize * 1e3)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-        proj = s.get_Aslice("gz", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res / 0.0134
+            ax, ax2, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3)
 
-        pc = ax.pcolormesh(x, y, proj.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap=matplotlib.cm.viridis, rasterized=True)
+            proj = s.get_Aslice("gz", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res / 0.0134
 
-        create_colorbar(f, pc, "$Z/Z_\odot$")
+            pc = ax.pcolormesh(x, y, proj.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap=matplotlib.cm.viridis, rasterized=True)
 
-        proj = s.get_Aslice("gz", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] / res / 0.0134
+            create_colorbar(f, pc, "$Z/Z_\odot$")
 
-        ax2.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap=matplotlib.cm.viridis, rasterized=True)
+            proj = s.get_Aslice("gz", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] / res / 0.0134
 
-        ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, levels[0]), color='k', fontsize=16, transform=ax.transAxes)
+            ax2.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap=matplotlib.cm.viridis, rasterized=True)
 
-        set_axis(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+            ax.text(0.0, 1.0, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=ax.transAxes)
 
-        pdf.savefig(f)
+            set_axes(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+
+            pdf.savefig(f)
 
     return None
 
 
 def bfld(pdf, data, levels, z):
-    data.select_halos(levels[0], z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'bfld'])
+    nlevels = len(levels)
 
-    res = 256
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_halos(levels[il], z)
+        nhalos += data.selected_current_nsnaps
 
-    for s in data:
-        plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=100)
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_halos(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'bfld'])
 
-        s.calc_sf_indizes(s.subfind)
+        for s in data:
+            plt.close()
+            f = plt.figure(figsize=(8, 8), dpi=100)
 
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            s.calc_sf_indizes(s.subfind)
 
-        ax, ax2, x, y, y2, area = create_axis(res=res, boxsize=boxsize * 1e3)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-        s.data['b2'] = (s.data['bfld'] ** 2.).sum(axis=1)
+            ax, ax2, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3)
 
-        proj = np.sqrt(s.get_Aslice("b2", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
+            s.data['b2'] = (s.data['bfld'] ** 2.).sum(axis=1)
 
-        pc = ax.pcolormesh(x, y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap=matplotlib.cm.CMRmap, rasterized=True)
+            proj = np.sqrt(s.get_Aslice("b2", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
 
-        create_colorbar(f, pc, "$B\,\mathrm{[\mu G]}$")
+            pc = ax.pcolormesh(x, y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap=matplotlib.cm.CMRmap, rasterized=True)
 
-        proj = np.sqrt(s.get_Aslice("b2", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
+            create_colorbar(f, pc, "$B\,\mathrm{[\mu G]}$")
 
-        ax2.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap=matplotlib.cm.CMRmap, rasterized=True)
+            proj = np.sqrt(s.get_Aslice("b2", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
 
-        ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, levels[0]), color='k', fontsize=16, transform=ax.transAxes)
+            ax2.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap=matplotlib.cm.CMRmap, rasterized=True)
 
-        set_axis(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+            ax.text(0.0, 1.0, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=ax.transAxes)
 
-        pdf.savefig(f)
+            set_axes(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+
+            pdf.savefig(f)
+
+    return None
+
+
+def dm_mass(pdf, data, levels, z):
+    nlevels = len(levels)
+
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_halos(levels[il], z)
+        nhalos += data.selected_current_nsnaps
+
+    boxsize = 0.4
+
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_halos(level, z, loadonlytype=[1, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
+
+        for s in data:
+            plt.close()
+            f = plt.figure(figsize=(8, 8), dpi=100)
+
+            s.calc_sf_indizes(s.subfind)
+
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+
+            ax, ax2, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3)
+
+            idm, = np.where((s.r() < 2. * boxsize) & (s.type == 1))
+
+            proj = get_projection(s.pos[idm, :].astype('f8'), s.mass[idm].astype('f8'), s.data['mass'][idm].astype('f8'), 0, res, boxsize, 'mass',
+                                  maxHsml=False) / area * 1e10
+
+            pc = ax.pcolormesh(x, y, proj, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap=matplotlib.cm.Greys, rasterized=True)
+
+            create_colorbar(f, pc, "$\Sigma_\mathrm{DM}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
+
+            proj = get_projection(s.pos[idm, :].astype('f8'), s.mass[idm].astype('f8'), s.data['mass'][idm].astype('f8'), 1, res, boxsize, 'mass',
+                                  maxHsml=False) / (0.5 * area) * 1e10
+
+            ax2.pcolormesh(x, y2, proj, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap=matplotlib.cm.Greys, rasterized=True)
+
+            ax.text(0.0, 1.0, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=ax.transAxes)
+
+            set_axes(ax, ax2, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
+
+            pdf.savefig(f)
 
     return None
