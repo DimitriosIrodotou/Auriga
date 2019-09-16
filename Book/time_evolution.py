@@ -77,7 +77,7 @@ def set_axis(s, ax, ax2, ylabel, ylim=None, ncol=5):
     if ylim is not None:
         ax.set_ylim(ylim)
 
-    return
+    return None
 
 
 def sfr(pdf, data, levels):
@@ -88,6 +88,7 @@ def sfr(pdf, data, levels):
         data.select_halos(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
 
     nbins = 100
@@ -103,20 +104,19 @@ def sfr(pdf, data, levels):
         for s in data:
             s.centerat(s.subfind.data['fpos'][0, :])
 
-            i, = np.where((s.data['age'] > 0.) & (s.r() < 0.05))
-            age = s.cosmology_get_lookback_time_from_a(s.data['age'][i], is_flat=True)
+            mask, = np.where((s.data['age'] > 0.) & (s.r() < 0.005) & (s.pos[:, 2] < 0.003))
+            age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
 
             ax, ax2 = create_axis(f, isnap)
-            ax.hist(age, weights=s.data['gima'][i] * 1e10 / 1e9 / timebin, histtype='step', bins=nbins, range=[tmin, tmax])
+            ax.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, histtype='step', bins=nbins, range=[tmin, tmax])
             set_axis(s, ax, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
 
-            ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, level), color='w', fontsize=6, transform=ax.transAxes)
+            ax.text(0.05, 0.92, "Au%s-%d r < 5kpc" % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
 
             isnap += 1
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 @vectorize_parallel(method='processes', num_procs=8)
@@ -138,12 +138,8 @@ def bfld(pdf, data, levels):
         data.select_halos(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
-
-    nbins = 100
-    tmin = 0
-    tmax = 13.
-    timebin = (tmax - tmin) // nbins
 
     for il in range(nlevels):
         level = levels[il]
@@ -156,7 +152,7 @@ def bfld(pdf, data, levels):
 
         halos = data.get_halos(level)
         for name, halo in halos.items():
-            if not name in res:
+            if name not in res:
                 redshifts = halo.get_redshifts()
 
                 i, = np.where(redshifts < 10.)
@@ -179,14 +175,9 @@ def bfld(pdf, data, levels):
             ax.set_xlim([13., 11.])
 
     pdf.savefig(f)
+
     plt.close()
-
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
-
-    nbins = 100
-    tmin = 0
-    tmax = 13.
-    timebin = (tmax - tmin) // nbins
 
     for il in range(nlevels):
         level = levels[il]
@@ -201,13 +192,11 @@ def bfld(pdf, data, levels):
         for idx, name in enumerate(names):
             ax, ax2 = create_axis(f, idx)
 
-            redshifts = halos[name].get_redshifts()
             ax.plot(res[name]["time"], res[name]["bfld"] * 1e6)
             set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$", [0., 100.])
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 @vectorize_parallel(method='processes', num_procs=8)
@@ -224,12 +213,8 @@ def galaxy_mass(pdf, data, levels):
         data.select_halos(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
-
-    nbins = 100
-    tmin = 0
-    tmax = 13.
-    timebin = (tmax - tmin) // nbins
 
     for il in range(nlevels):
         level = levels[il]
@@ -242,12 +227,11 @@ def galaxy_mass(pdf, data, levels):
 
         halos = data.get_halos(level)
         for name, halo in halos.items():
-            if not name in res:
+            if name not in res:
                 redshifts = halo.get_redshifts()
 
                 i, = np.where(redshifts < 10.)
                 snapids = np.array(list(halo.snaps.keys()))[i]
-                nsnaps = len(snapids)
 
                 dd = np.array(get_halo_mass(snapids, halo))
                 res[name] = {}
@@ -265,14 +249,13 @@ def galaxy_mass(pdf, data, levels):
             set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$M_\mathrm{vir}\,\mathrm{[10^{10}\,M_\odot]}$")
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
 
 
 @vectorize_parallel(method='processes', num_procs=8)
 def get_bh_mass(snapid, halo, bhid):
     s = halo.snaps[snapid].loadsnap(loadonlytype=[5], loadonly=['mass', 'id'])
-    if not 'id' in s.data:
+    if 'id' not in s.data:
         return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), 0.
 
     i, = np.where(s.data['id'] == bhid)
@@ -291,12 +274,8 @@ def bh_mass(pdf, data, levels):
         data.select_halos(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
+    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
-
-    nbins = 100
-    tmin = 0
-    tmax = 13.
-    timebin = (tmax - tmin) // nbins
 
     for il in range(nlevels):
         level = levels[il]
@@ -309,12 +288,11 @@ def bh_mass(pdf, data, levels):
 
         halos = data.get_halos(level)
         for name, halo in halos.items():
-            if not name in res:
+            if name not in res:
                 redshifts = halo.get_redshifts()
 
                 i, = np.where(redshifts < 10.)
                 snapids = np.array(list(halo.snaps.keys()))[i]
-                nsnaps = len(snapids)
 
                 s = halo.snaps[snapids.argmax()].loadsnap(loadonlytype=[5], loadonlyhalo=0)
                 bhid = s.data['id'][s.mass.argmax()]
@@ -335,5 +313,4 @@ def bh_mass(pdf, data, levels):
             set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$M_\mathrm{BH}\,\mathrm{[M_\odot]}$")
 
     pdf.savefig(f)
-    plt.close()
-    return
+    return None
