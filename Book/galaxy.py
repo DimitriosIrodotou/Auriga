@@ -148,6 +148,10 @@ def circularity(pdf, data, levels):
 
             eps = jz / jcmax
 
+            jj, = np.where((eps > 0.7) & (eps < 1.7))
+            ll, = np.where((eps > -1.7) & (eps < 1.7))
+            disc_frac = smass[jj].sum() / smass[ll].sum()
+
             ax = create_axis(f, isnap)
             ydata, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
             ydata /= edges[1:] - edges[:-1]
@@ -155,6 +159,7 @@ def circularity(pdf, data, levels):
 
             set_axis(isnap, ax, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
             ax.text(0.05, 0.90, "Au%s-%d" % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
+            ax.text(0.05, 0.8, "D/T = %.2f" % disc_frac, color='k', fontsize=6, transform=ax.transAxes)
             ax.set_xlim(-2., 2.)
             ax.set_xticks([-1.5, 0., 1.5])
 
@@ -536,6 +541,13 @@ def bar_strength(pdf, data, levels):
 
 
 def table(pdf, data, levels):
+    """
+
+    :param pdf:
+    :param data:
+    :param levels:
+    :return:
+    """
     nlevels = len(levels)
 
     nhalos = 0

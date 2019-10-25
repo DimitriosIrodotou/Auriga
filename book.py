@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+# hewwoc-dItnub-8fejza
 import time
 
 import numpy as np
@@ -174,10 +174,11 @@ class AurigaBook:
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
 
         # Projections #
-        for z in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
-            # book.projections.stellar_light(pdf, self, [level], z)
-            # book.projections.stellar_mass(pdf, self, [level], z)
-            book.projections.gas_density(pdf, self, [level], z)
+        # for z in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
+        # for z in [0.0]:
+        #     book.projections.stellar_light(pdf, self, [level], z)
+        #     book.projections.stellar_mass(pdf, self, [level], z)
+        #     book.projections.gas_density(pdf, self, [level], z)
         # book.projections.gas_temperature(pdf, self, [level], z)
         # book.projections.gas_metallicity(pdf, self, [level], z)
         # book.projections.bfld(pdf, self, [level], z)
@@ -201,12 +202,13 @@ class AurigaBook:
 
         # Global galactic relations #
         # book.galaxy.phase_diagram(pdf, self, [level])
-        # book.galaxy.circularity(pdf, self, [level])
+        book.galaxy.circularity(pdf, self, [level])
         # book.galaxy.tully_fisher(pdf, self, [level])
         # book.galaxy.stellar_vs_total(pdf, self, [level])
         # book.galaxy.gas_fraction(pdf, self, [level])
         # book.galaxy.central_bfld(pdf, self, [level])
         # book.galaxy.bar_strength(pdf, self, [level])
+        # book.galaxy.decomposition(pdf, self, [level])
 
         # Metallicities #
         # for z in [0.0]:
