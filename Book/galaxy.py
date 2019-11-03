@@ -608,11 +608,16 @@ def surface_density(pdf, data, levels):
         data.select_halos(level, 0., loadonlyhalo=0)
         
         ihalo = 0
+        nshells = 60  # 35 up to galrad is OK
+        zcut = 0.001  # vertical cut in Mpc
+        Rcut = 0.040
+
+        hname = np.array(data)
+        roptmin = np.array([30.] * len(data))
+        
         for s in data:
-            nshells = 60  # 35 up to galrad is OK
-            zcut = 0.001  # vertical cut in Mpc
-            Rcut = 0.040
-            
+    
+            galrad = 0.1 * sf.data['frc2'][0]
             rd = np.linspace(0.0, Rcut, nshells)
             mnow = np.zeros(len(rd))
             
@@ -636,6 +641,19 @@ def surface_density(pdf, data, levels):
             r = x * 1e3
             
             print("Surface density at R=8 kpc:", sden[find_nearest(r, [8.])])
+            
+            sdlim = 1.
+            indy = find_nearest(x, [galrad]).astype('int64')
+            
+            
+            indy = find_nearest(sden * 1e4, [sdlim]).astype('int64')
+            
+            rfit = x[indy] * 1e3
+            sdfit = sden[:indy]
+            r = r[:indy][sdfit > 0.]
+            sdfit = sdfit[sdfit > 0.]
+            
+            print("fitting carried out in radial range %f - %f" % (x[0] * 1e3, x[indy] * 1e3))
             
             ###############
             
