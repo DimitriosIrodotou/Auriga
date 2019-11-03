@@ -1,19 +1,20 @@
-# hewwoc-dItnub-8fejza
 from __future__ import print_function
+
 import time
+import book
+import book.galaxy
+import book.profiles
+import book.evolution
+import book.projections
+import book.metallicities
+import book.time_evolution
+# hewwoc-dItnub-8fejza
 
 import numpy as np
+
 from gadget import gadget_readsnap
 from gadget_subfind import load_subfind
 from matplotlib.backends.backend_pdf import PdfPages
-
-import book
-import book.evolution
-import book.galaxy
-import book.metallicities
-import book.profiles
-import book.projections
-import book.time_evolution
 
 start_time = time.time()
 date = time.strftime("%d_%m_%y_%H%M")
@@ -22,9 +23,10 @@ date = time.strftime("%d_%m_%y_%H%M")
 def get_names_sorted(names):
     """
     Sort Auriga haloes based on their names.
-    :param names:
-    :return:
+    :param names: names from get_snapshots
+    :return: names_sorted
     """
+    # Find the number (0-30) in each Auriga halo's name and sort them based on that #
     if list(names)[0].find("_"):
         names_sorted = np.array(list(names))
         names_sorted.sort()
@@ -45,121 +47,186 @@ def get_names_sorted(names):
 
 class AurigaSnapshot:
     """
-    Load snapshot and subfind files for an Auriga halo.
+    Perform third-level (snapshot) analysis of the Auriga output.
     """
     
     
     def __init__(self, snapid, snappath):
         """
         Initialise the attributes of the class.
-        :param snapid:
-        :param snappath:
+        :param snapid: snapshot number from AurigaHalo.
+        :param snappath: output path from AurigaHalo.
         """
         self.snapid = snapid
         self.snappath = snappath
         
+        # Read the redshift and time of a snapshot for an Auriga halo.
         s = gadget_readsnap(self.snapid, snappath=self.snappath, onlyHeader=True)
         self.redshift = s.redshift
         self.time = s.time
+        
         del s
     
     
     def loadsnap(self, **kwargs):
         """
-        Load snapshot and subfind data.
+        Read snapshot and subfind files for an Auriga halo.
         :param kwargs:
         :return: s
         """
         sf = load_subfind(self.snapid, dir=self.snappath + '/')
         s = gadget_readsnap(self.snapid, snappath=self.snappath, lazy_load=True, subfind=sf, **kwargs)
         s.subfind = sf
+        
         return s
 
 
 class AurigaHalo:
+    """
+    Perform second-level (halo) analysis of the Auriga output.
+    """
+    
+    
     def __init__(self, directory):
         """
         Initialise the attributes of the class.
-        :param directory:
+        :param directory: halo path from AurigaOutput.
         """
-        self.directory = directory
-        self.snaps = {}
-        
-        import glob
         import os
+        import glob
+        
+        self.snaps = {}
+        self.directory = directory
+        
+        # Find how many snapshots an Auriga halo has #
         snaps = glob.glob("%s/output/snap*" % self.directory)
         snaps.sort()
         self.nsnaps = len(snaps)
         
+        print("Found %d snapshots for halo %s" % (self.nsnaps, self.directory))
+        
+        # Store the names of the snapshots for each Auriga halo and analyse each one's output individually #
         for snap in snaps:
             snapid = np.int32(snap.split("_")[-1])
             self.snaps[snapid] = AurigaSnapshot(snapid, os.path.dirname(snap))
-        
-        print("Found %d snapshots for halo %s" % (self.nsnaps, self.directory))
     
     
     def get_redshifts(self):
+        """
+        Turn snapshot numbers into redshifts.
+        :return: redshifts
+        """
         redshifts = np.zeros(self.nsnaps)
         for idx, (snapid, snap) in enumerate(self.snaps.items()):
-            redshifts[idx] = snap.redshift
+            redshifts[idx] = -snap.redshift
         return redshifts
     
     
     def get_snap_redshift(self, redshift):
+        """
+        Collect snapshot numbers and redshifts for an Auriga halo.
+        :param redshift: redshift from get_snapshots.
+        :return: self.snaps[(np.abs(redshifts - redshift)).argmin()]
+        """
         redshifts = self.get_redshifts()
         return self.snaps[(np.abs(redshifts - redshift)).argmin()]
 
 
-class AurigaDirectory:
+class AurigaOutput:
+    """
+    Perform first-level (directory) analysis of the Auriga output.
+    """
+    
+    
     def __init__(self, directory, level):
-        self.directory = directory
-        self.halos = {}
-        self.level = level
-        
-        import glob
+        """
+        Initialise the attributes of the class.
+        :param directory: path from AurigaBook.add_directory
+        :param level: level of the run.
+        """
         import os
-        halos = glob.glob("%s/halo_*" % self.directory)
-        self.nhalos = len(halos)
+        import glob
         
-        for halo in halos:
+        self.haloes = {}
+        self.level = level
+        self.directory = directory
+        
+        # Find how many Auriga haloes will be used #
+        haloes = glob.glob("%s/halo_*" % self.directory)
+        self.nhalos = len(haloes)
+        
+        print("Found %d halo(es)" % self.nhalos)
+        
+        # Store the names of the Auriga haloes and analyse each one's output individually #
+        for halo in haloes:
             if not os.path.exists("%s/output" % halo):
-                self.nhalos
                 continue
             name = halo.split("_")[-1]
-            self.halos[name] = AurigaHalo(halo)
+            self.haloes[name] = AurigaHalo(halo)
     
     
     def get_snapshots(self, redshift):
+        """
+        Collect snapshot numbers for an Auriga halo.
+        :param redshift: redshift from select_halos
+        :return: snaps
+        """
         snaps = []
-        names = get_names_sorted(self.halos.keys())
+        names = get_names_sorted(self.haloes.keys())
         for name in names:
-            snap = self.halos[name].get_snap_redshift(redshift)
+            snap = self.haloes[name].get_snap_redshift(redshift)
             snap.haloname = name
             snaps += [snap]
         return snaps
 
 
 class AurigaBook:
+    """
+    Create a pdf file containing various plots for multiple Auriga haloes.
+    """
+    
+    
     def __init__(self):
+        """
+        Initialise the attributes of the class.
+        """
         self.directories = []
         return
     
     
     def add_directory(self, path, level):
-        self.directories += [AurigaDirectory(path, level)]
+        """
+        TODO
+        :param path: path to save the book.
+        :param level: level of the run.
+        :return:
+        """
+        self.directories += [AurigaOutput(path, level)]
         return
     
     
     def get_halos(self, level):
-        halos = {}
+        """
+        TODO
+        :param level:
+        :return:
+        """
+        haloes = {}
         for d in self.directories:
             if d.level == level:
-                for name, halo in d.halos.items():
-                    halos[name] = halo
-        return halos
+                for name, halo in d.haloes.items():
+                    haloes[name] = halo
+        return haloes
     
     
     def select_halos(self, level, redshift, **kwargs):
+        """
+        TODO
+        :param level:
+        :param redshift:
+        :param kwargs:
+        :return:
+        """
         self.selected_arguments = kwargs
         self.selected_index = 0
         self.selected_snaps = []
@@ -171,10 +238,18 @@ class AurigaBook:
     
     
     def __iter__(self):
+        """
+        TODO
+        :return:
+        """
         return self
     
     
     def __next__(self):
+        """
+        TODO
+        :return:
+        """
         if self.selected_current_snapshot is not None:
             del self.selected_current_snapshot
         try:
@@ -187,9 +262,9 @@ class AurigaBook:
         return self.selected_current_snapshot
     
     
-    def make_book_overview(self, level):
+    def make_book(self, level):
         """
-        Method to create a pdf with the desired plots #
+        Create a pdf with the desired plots
         :param level: level of the run
         :return: None
         """
@@ -241,9 +316,10 @@ class AurigaBook:
         return None
 
 
-# Set the path to the simulation data and the level #
+# Set the path to the simulation data and the level of the run #
 b = AurigaBook()
 b.add_directory("/u/di43/Auriga/output/", 4)
-b.make_book_overview(4)
+# Generate the book #
+b.make_book(4)
 
-print("--- Finished book.py in %.5s seconds ---" % (time.time() - start_time))  # Print total time.
+print("Finished book.py in %.4s s" % (time.time() - start_time))  # Print total time.

@@ -100,10 +100,10 @@ def create_colorbar(f, pc, label):
 def stellar_light(pdf, data, levels, z):
     """
     Method to plot stellar light.
-    :param pdf: path to save the pdf (see book.make_book_overview)
-    :param data: data (see book.make_book_overview)
-    :param levels: level (see book.make_book_overview)
-    :param z: redshift (see book.make_book_overview)
+    :param pdf: path to save the pdf (see book.make_book)
+    :param data: data (see book.make_book)
+    :param levels: level (see book.make_book)
+    :param z: redshift (see book.make_book)
     :return: None
     """
     
