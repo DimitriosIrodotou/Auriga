@@ -118,7 +118,7 @@ class AurigaHalo:
         """
         redshifts = np.zeros(self.nsnaps)
         for idx, (snapid, snap) in enumerate(self.snaps.items()):
-            redshifts[idx] = -snap.redshift
+            redshifts[idx] = snap.redshift
         return redshifts
     
     
@@ -272,9 +272,7 @@ class AurigaBook:
         
         # Projections #
         # for z in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
-        # for z in [0.0]:
-        z = 0.0
-        book.projections.stellar_light(pdf, self, [level], z)
+        #     book.projections.stellar_light(pdf, self, [level], z)
         # book.projections.stellar_mass(pdf, self, [level], z)
         # book.projections.gas_density(pdf, self, [level], z)
         # book.projections.gas_temperature(pdf, self, [level], z)
@@ -289,8 +287,8 @@ class AurigaBook:
         #   book.profiles.vertical_profiles(pdf, self, [level], z)
         
         # Time evolution #
-        # for z in np.linspace(0, 2, 2):
-        #     book.evolution.bar_strength(pdf, self, [level], z)
+        z = [0.0]
+        book.evolution.bar_strength(pdf, self, [level], z)
         # for z in np.linspace(0, 2, 21):
         #     book.evolution.circularity(pdf, self, [level], z)
         # book.time_evolution.bfld(pdf, self, [level])
