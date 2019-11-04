@@ -539,7 +539,7 @@ def bar_strength(pdf, data, levels):
             age = np.zeros(s.npartall)
             age[s.type == 4] = s.data['age']  # Get ages of stars.
             istars, = np.where((s.type == 4) & (age > 0.) & (s.r() < galrad))  # Select stars.
-            x, y, z = s.pos[istars, 2] * 1000, s.pos[istars, 1] * 1000, s.pos[istars, 0] * 1000  # Load positions and convert from Mpc to Kpc.
+            x, y = s.pos[istars, 2] * 1000, s.pos[istars, 1] * 1000  # Load positions and convert from Mpc to Kpc.
             
             nbins = 40  # Number of radial bins.
             r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
@@ -553,9 +553,9 @@ def bar_strength(pdf, data, levels):
             # Split up galaxy in radius bins and calculate Fourier components #
             for i in range(0, nbins):
                 
-                r_s = float(i) * 0.25
-                r_b = float(i) * 0.25 + 0.25
-                r_m[i] = float(i) * 0.25 + 0.125
+                r_s = float(i) * 0.5
+                r_b = float(i) * 0.5 + 0.25
+                r_m[i] = float(i) * 0.5 + 0.125
                 
                 xfit = x[(r < r_b) & (r > r_s)]
                 yfit = y[(r < r_b) & (r > r_s)]
@@ -571,7 +571,7 @@ def bar_strength(pdf, data, levels):
             
             # Plot bar strength as a function of radius plot r_m versus a2
             ax.plot(r_m, a2, color=next(colors), label="Au%s-%d bar strength: %.2f" % (s.haloname, levels[0], max(a2)))
-            ax.legend(loc='top left', fontsize=12, frameon=False, numpoints=1)
+            ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
             
             ihalo += 1
     
@@ -611,12 +611,12 @@ def surface_density(pdf, data, levels):
         nshells = 60  # 35 up to galrad is OK
         zcut = 0.001  # vertical cut in Mpc
         Rcut = 0.040
-
+        
         hname = np.array(data)
         roptmin = np.array([30.] * len(data))
         
         for s in data:
-    
+            
             galrad = 0.1 * sf.data['frc2'][0]
             rd = np.linspace(0.0, Rcut, nshells)
             mnow = np.zeros(len(rd))
@@ -644,7 +644,6 @@ def surface_density(pdf, data, levels):
             
             sdlim = 1.
             indy = find_nearest(x, [galrad]).astype('int64')
-            
             
             indy = find_nearest(sden * 1e4, [sdlim]).astype('int64')
             
