@@ -23,8 +23,7 @@ date = time.strftime("%d_%m_%y_%H%M")
 def get_names_sorted(names):
     """
     Sort Auriga haloes based on their names.
-    :param names: names from get_snapshots
-    :return: names_sorted
+cd    :return: names_sorted
     """
     # Find the number (0-30) in each Auriga halo's name and sort them based on that #
     if list(names)[0].find("_"):
