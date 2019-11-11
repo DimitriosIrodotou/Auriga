@@ -23,12 +23,13 @@ date = time.strftime("%d_%m_%y_%H%M")
 def get_names_sorted(names):
     """
     Sort Auriga haloes based on their names.
-cd    :return: names_sorted
+    :return: names_sorted
     """
     # Find the number (0-30) in each Auriga halo's name and sort them based on that #
     if list(names)[0].find("_"):
         names_sorted = np.array(list(names))
         names_sorted.sort()
+        
         return names_sorted
     
     else:
@@ -41,6 +42,7 @@ cd    :return: names_sorted
                 name = name[1:]
             values[i] = value * 256 + np.int32(name)
         isort = values.argsort()
+        
         return np.array(names)[isort]
 
 
@@ -70,7 +72,7 @@ class AurigaSnapshot:
     def loadsnap(self, **kwargs):
         """
         Read snapshot and subfind files for an Auriga halo.
-        :param kwargs:
+        :param kwargs: load desired properties.
         :return: s
         """
         sf = load_subfind(self.snapid, dir=self.snappath + '/')
@@ -118,6 +120,7 @@ class AurigaHalo:
         redshifts = np.zeros(self.nsnaps)
         for idx, (snapid, snap) in enumerate(self.snaps.items()):
             redshifts[idx] = snap.redshift
+        
         return redshifts
     
     
@@ -128,6 +131,7 @@ class AurigaHalo:
         :return: self.snaps[(np.abs(redshifts - redshift)).argmin()]
         """
         redshifts = self.get_redshifts()
+        
         return self.snaps[(np.abs(redshifts - redshift)).argmin()]
 
 
@@ -167,15 +171,17 @@ class AurigaOutput:
     def get_snapshots(self, redshift):
         """
         Collect snapshot numbers for an Auriga halo.
-        :param redshift: redshift from select_halos
+        :param redshift: redshift from select_haloes
         :return: snaps
         """
         snaps = []
         names = get_names_sorted(self.haloes.keys())
+        
         for name in names:
             snap = self.haloes[name].get_snap_redshift(redshift)
             snap.haloname = name
             snaps += [snap]
+        
         return snaps
 
 
@@ -190,64 +196,71 @@ class AurigaBook:
         Initialise the attributes of the class.
         """
         self.directories = []
+        
         return
     
     
     def add_directory(self, path, level):
         """
-        TODO
+        Add a directory to the book.
         :param path: path to save the book.
         :param level: level of the run.
-        :return:
+        :return: None
         """
         self.directories += [AurigaOutput(path, level)]
-        return
+        
+        return None
     
     
-    def get_halos(self, level):
+    def get_haloes(self, level):
         """
-        TODO
-        :param level:
-        :return:
+        Create a dictionary with the haloes.
+        :param level: level of the run.
+        :return: haloes
         """
         haloes = {}
         for d in self.directories:
             if d.level == level:
                 for name, halo in d.haloes.items():
                     haloes[name] = halo
+        
         return haloes
     
     
-    def select_halos(self, level, redshift, **kwargs):
+    def select_haloes(self, level, redshift, **kwargs):
         """
-        TODO
-        :param level:
-        :param redshift:
-        :param kwargs:
-        :return:
+        Mask haloes and read desired properties.
+        :param level: level of the run.
+        :param redshift: redshift of each snapshot.
+        :param kwargs: select desired properties.
+        :return: None
         """
-        self.selected_arguments = kwargs
         self.selected_index = 0
         self.selected_snaps = []
+        self.selected_arguments = kwargs
+        
         for d in self.directories:
             if d.level == level:
                 self.selected_snaps += d.get_snapshots(redshift)
+        
         self.selected_current_snapshot = None
         self.selected_current_nsnaps = len(self.selected_snaps)
-    
-    
+        
+        return None
+
+
     def __iter__(self):
         """
-        TODO
-        :return:
+        Return a new iterator object that can iterate over all the objects in the container.
+        :return: self
         """
         return self
-    
-    
+
+
     def __next__(self):
         """
-        TODO
-        :return:
+        Return the next item from the container.
+        :return: self.selected_current_snapshot
         """
         if self.selected_current_snapshot is not None:
             del self.selected_current_snapshot
@@ -260,25 +273,32 @@ class AurigaBook:
         self.selected_index += 1
         return self.selected_current_snapshot
     
-    
     def make_book(self, level):
         """
-        Create a pdf with the desired plots
+        Create a pdf with the desired plots.
         :param level: level of the run
         :return: None
         """
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
         # Projections #
+        # Stars #
         # for z in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
-        #     book.projections.stellar_light(pdf, self, [level], z)
+        z = [0.0]
+        book.projections.stellar_light(pdf, self, [level], z)
         # book.projections.stellar_mass(pdf, self, [level], z)
+        # # book.projections.stellar_density(pdf, self, [level], z)
+
+        # Gas #
         # book.projections.gas_density(pdf, self, [level], z)
         # book.projections.gas_temperature(pdf, self, [level], z)
         # book.projections.gas_metallicity(pdf, self, [level], z)
+
+        # Magnetic fields #
         # book.projections.bfld(pdf, self, [level], z)
+
+        # Dark matter #
         # book.projections.dm_mass(pdf, self, [level], z)
-        # book.projections.stellar_density(pdf, self, [level], z)
         
         # Profiles #
         # for z in [0.0]:
@@ -286,8 +306,8 @@ class AurigaBook:
         #   book.profiles.vertical_profiles(pdf, self, [level], z)
         
         # Time evolution #
-        z = [0.0]
-        book.evolution.bar_strength(pdf, self, [level], z)
+        # z = [0.0]
+        # book.evolution.bar_strength(pdf, self, [level], z)
         # for z in np.linspace(0, 2, 21):
         #     book.evolution.circularity(pdf, self, [level], z)
         # book.time_evolution.bfld(pdf, self, [level])

@@ -95,7 +95,7 @@ def phase_diagram(pdf, data, levels):
     
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0)
+        data.select_haloes(levels[il], 0)
         nhalos += data.selected_current_nsnaps
     
     plt.close()
@@ -105,7 +105,7 @@ def phase_diagram(pdf, data, levels):
         level = levels[il]
         
         for iz in range(5):
-            data.select_halos(level, redshifts[iz], loadonlytype=[0])
+            data.select_haloes(level, redshifts[iz], loadonlytype=[0])
             
             isnap = 0
             for s in data:
@@ -135,7 +135,7 @@ def circularity(pdf, data, levels):
     
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0.)
+        data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
     Gcosmo = 43.0071
@@ -144,7 +144,7 @@ def circularity(pdf, data, levels):
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_halos(level, 0., loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlyhalo=0)
         
         isnap = 0
         for s in data:
@@ -302,14 +302,14 @@ def tully_fisher(pdf, data, levels):
     for il in range(nlevels):
         level = levels[il]
         
-        data.select_halos(level, 0.)
+        data.select_haloes(level, 0.)
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         
         vtot = np.zeros(nhalos)
         mstar = np.zeros(nhalos)
         
-        data.select_halos(level, 0., loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlyhalo=0)
         
         ihalo = 0
         for s in data:
@@ -381,14 +381,14 @@ def stellar_vs_total(pdf, data, levels):
     for il in range(nlevels):
         level = levels[il]
         
-        data.select_halos(level, 0.)
+        data.select_haloes(level, 0.)
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         
         mstar = np.zeros(nhalos)
         mhalo = np.zeros(nhalos)
         
-        data.select_halos(level, 0., loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlyhalo=0)
         
         ihalo = 0
         for s in data:
@@ -431,14 +431,14 @@ def gas_fraction(pdf, data, levels):
     for il in range(nlevels):
         level = levels[il]
         
-        data.select_halos(level, 0.)
+        data.select_haloes(level, 0.)
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         
         MR = np.zeros(nhalos)
         fgas = np.zeros(nhalos)
         
-        data.select_halos(level, 0., loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlyhalo=0)
         
         ihalo = 0
         for s in data:
@@ -474,14 +474,14 @@ def central_bfld(pdf, data, levels):
     for il in range(nlevels):
         level = levels[il]
         
-        data.select_halos(level, 0.)
+        data.select_haloes(level, 0.)
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         
         mstar = np.zeros(nhalos)
         bfld = np.zeros(nhalos)
         
-        data.select_halos(level, 0., loadonlytype=[0, 4], loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0)
         
         ihalo = 0
         for s in data:
@@ -525,11 +525,11 @@ def bar_strength(pdf, data, levels):
     for il in range(nlevels):
         level = levels[il]
         
-        data.select_halos(level, 0.)
+        data.select_haloes(level, 0.)
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         
-        data.select_halos(level, 0., loadonlytype=[0, 4], loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0)
         
         ihalo = 0
         for s in data:
@@ -598,14 +598,14 @@ def surface_density(pdf, data, levels):
     for il in range(nlevels):
         level = levels[il]
         
-        data.select_halos(level, 0.)
+        data.select_haloes(level, 0.)
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         
         MR = np.zeros(nhalos)
         fgas = np.zeros(nhalos)
         
-        data.select_halos(level, 0., loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlyhalo=0)
         
         ihalo = 0
         nshells = 60  # 35 up to galrad is OK
@@ -681,7 +681,7 @@ def sfr(pdf, data, levels):
     
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0.)
+        data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
     plt.close()
@@ -697,7 +697,7 @@ def sfr(pdf, data, levels):
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_halos(level, 0., loadonlytype=[4], loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         
         for s in data:
@@ -741,7 +741,7 @@ def table(pdf, data, levels):
     
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0.)
+        data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
     plt.close()
@@ -755,7 +755,7 @@ def table(pdf, data, levels):
     for il in range(nlevels):
         level = levels[il]
         
-        data.select_halos(level, 0., loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlyhalo=0)
         
         ihalo = 0
         for s in data:

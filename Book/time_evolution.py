@@ -85,7 +85,7 @@ def sfr(pdf, data, levels):
 
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0.)
+        data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
     plt.close()
@@ -98,7 +98,7 @@ def sfr(pdf, data, levels):
 
     for il in range(nlevels):
         level = levels[il]
-        data.select_halos(level, 0., loadonlytype=[4], loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
 
         isnap = 0
         for s in data:
@@ -135,7 +135,7 @@ def bfld(pdf, data, levels):
 
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0.)
+        data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
     plt.close()
@@ -150,7 +150,7 @@ def bfld(pdf, data, levels):
             with open(rpath, 'rb') as ff:
                 res = pickle.load(ff)
 
-        halos = data.get_halos(level)
+        halos = data.get_haloes(level)
         for name, halo in halos.items():
             if name not in res:
                 redshifts = halo.get_redshifts()
@@ -210,7 +210,7 @@ def galaxy_mass(pdf, data, levels):
 
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0.)
+        data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
     plt.close()
@@ -225,7 +225,7 @@ def galaxy_mass(pdf, data, levels):
             with open(rpath, 'rb') as ff:
                 res = pickle.load(ff)
 
-        halos = data.get_halos(level)
+        halos = data.get_haloes(level)
         for name, halo in halos.items():
             if name not in res:
                 redshifts = halo.get_redshifts()
@@ -271,7 +271,7 @@ def bh_mass(pdf, data, levels):
 
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], 0.)
+        data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
 
     plt.close()
@@ -286,7 +286,7 @@ def bh_mass(pdf, data, levels):
             with open(rpath, 'rb') as ff:
                 res = pickle.load(ff)
 
-        halos = data.get_halos(level)
+        halos = data.get_haloes(level)
         for name, halo in halos.items():
             if name not in res:
                 redshifts = halo.get_redshifts()

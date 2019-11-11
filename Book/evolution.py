@@ -72,11 +72,11 @@ def bar_strength(pdf, data, levels, z):
     for il in range(nlevels):
         for z in np.linspace(0, 2, 5):
             level = levels[il]
-            data.select_halos(level, z)
+            data.select_haloes(level, z)
             nhalos = data.selected_current_nsnaps
             colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
             
-            data.select_halos(level, z, loadonlytype=[0, 4], loadonlyhalo=0)
+            data.select_haloes(level, z, loadonlytype=[0, 4], loadonlyhalo=0)
             print(z)
             ihalo = 0
             for s in data:
@@ -139,7 +139,7 @@ def circularity(pdf, data, levels, z):
     
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], z)
+        data.select_haloes(levels[il], z)
         nhalos += data.selected_current_nsnaps
     
     Gcosmo = 43.0071
@@ -148,7 +148,7 @@ def circularity(pdf, data, levels, z):
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_halos(level, z, loadonlyhalo=0)
+        data.select_haloes(level, z, loadonlyhalo=0)
         
         isnap = 0
         for s in data:

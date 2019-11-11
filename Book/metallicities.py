@@ -47,7 +47,7 @@ def ratios(pdf, data, levels, z):
 
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], z)
+        data.select_haloes(levels[il], z)
         nhalos += data.selected_current_nsnaps
 
     elements = ['H', 'He', 'C', 'N', 'O', 'Ne', 'Mg', 'Si', 'Fe', 'Y', 'Sr', 'Zr', 'Ba']
@@ -68,7 +68,7 @@ def ratios(pdf, data, levels, z):
         level = levels[il]
 
         for ele in range(2, nelements):
-            data.select_halos(level, z, loadonlytype=[4], loadonlyhalo=0)
+            data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0)
             ihalo = 0
             for s in data:
                 if np.shape(s.data['gmet'])[1] > ele:
@@ -93,7 +93,7 @@ def ratios(pdf, data, levels, z):
                 ihalo += 1
 
         for ele in range(3):
-            data.select_halos(level, z, loadonlytype=[4], loadonlyhalo=0)
+            data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0)
             ihalo = 0
             for s in data:
                 if 'gmrp' in s.data and np.shape(s.data['gmrp'])[1] >= ele:

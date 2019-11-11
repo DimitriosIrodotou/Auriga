@@ -47,7 +47,7 @@ def radial_profiles(pdf, data, levels, z):
 
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], z)
+        data.select_haloes(levels[il], z)
         nhalos += data.selected_current_nsnaps
 
     plt.close()
@@ -55,7 +55,7 @@ def radial_profiles(pdf, data, levels, z):
 
     for il in range(nlevels):
         level = levels[il]
-        data.select_halos(level, z, loadonlytype=[0, 4], loadonlyhalo=0)
+        data.select_haloes(level, z, loadonlytype=[0, 4], loadonlyhalo=0)
 
         isnap = 0
         for s in data:
@@ -169,7 +169,7 @@ def vertical_profiles(pdf, data, levels, z):
 
     nhalos = 0
     for il in range(nlevels):
-        data.select_halos(levels[il], z)
+        data.select_haloes(levels[il], z)
         nhalos += data.selected_current_nsnaps
 
     plt.close()
@@ -177,7 +177,7 @@ def vertical_profiles(pdf, data, levels, z):
 
     for il in range(nlevels):
         level = levels[il]
-        data.select_halos(level, z, loadonlytype=[0, 4], loadonlyhalo=0)
+        data.select_haloes(level, z, loadonlytype=[0, 4], loadonlyhalo=0)
 
         isnap = 0
         for s in data:
