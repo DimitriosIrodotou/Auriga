@@ -8,6 +8,7 @@ import book.evolution
 import book.projections
 import book.metallicities
 import book.time_evolution
+import book.stellar_surface_density
 # hewwoc-dItnub-8fejza
 
 import numpy as np
@@ -247,16 +248,16 @@ class AurigaBook:
         self.selected_current_nsnaps = len(self.selected_snaps)
         
         return None
-
-
+    
+    
     def __iter__(self):
         """
         Return a new iterator object that can iterate over all the objects in the container.
         :return: self
         """
         return self
-
-
+    
+    
     def __next__(self):
         """
         Return the next item from the container.
@@ -273,6 +274,7 @@ class AurigaBook:
         self.selected_index += 1
         return self.selected_current_snapshot
     
+    
     def make_book(self, level):
         """
         Create a pdf with the desired plots.
@@ -284,19 +286,19 @@ class AurigaBook:
         # Projections #
         # Stars #
         # for z in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
-        z = [0.0]
-        book.projections.stellar_light(pdf, self, [level], z)
+        # z = [0.0]
+        # book.projections.stellar_light(pdf, self, [level], z)
         # book.projections.stellar_mass(pdf, self, [level], z)
         # # book.projections.stellar_density(pdf, self, [level], z)
-
+        
         # Gas #
         # book.projections.gas_density(pdf, self, [level], z)
         # book.projections.gas_temperature(pdf, self, [level], z)
         # book.projections.gas_metallicity(pdf, self, [level], z)
-
+        
         # Magnetic fields #
         # book.projections.bfld(pdf, self, [level], z)
-
+        
         # Dark matter #
         # book.projections.dm_mass(pdf, self, [level], z)
         
@@ -325,6 +327,15 @@ class AurigaBook:
         # book.galaxy.central_bfld(pdf, self, [level])
         # book.galaxy.bar_strength(pdf, self, [level])
         # book.galaxy.decomposition(pdf, self, [level])
+        
+        runs = ['halo22']
+        nruns = len(runs)
+        dir5 = '/u/di43/Auriga/output/'
+        dirs = [dir5] * nruns
+        zlist = [0.0]
+        nrows, ncols = 1, nruns
+        
+        book.stellar_surface_density.plot_stellar_surfden(runs, dirs, zlist, nrows, ncols)
         
         # Metallicities #
         # for z in [0.0]:
