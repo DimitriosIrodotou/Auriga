@@ -145,7 +145,7 @@ class AurigaOutput:
     def __init__(self, directory, level):
         """
         Initialise the attributes of the class.
-        :param directory: path from AurigaBook.add_directory
+        :param directory: path from AurigaPdf.add_directory
         :param level: level of the run.
         """
         import os
@@ -186,7 +186,7 @@ class AurigaOutput:
         return snaps
 
 
-class AurigaBook:
+class AurigaPdf:
     """
     Create a pdf file containing various plots for multiple Auriga haloes.
     """
@@ -275,7 +275,7 @@ class AurigaBook:
         return self.selected_current_snapshot
     
     
-    def make_book(self, level):
+    def make_pdf(self, level):
         """
         Create a pdf with the desired plots.
         :param level: level of the run
@@ -317,7 +317,8 @@ class AurigaBook:
         # # book.time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
-        # book.galaxy.sfr(pdf, self, [level])
+        book.galaxy.sfr(pdf, self, [level])
+        book.galaxy.delta_sfr(pdf, self, [level])
         # book.galaxy.phase_diagram(pdf, self, [level])
         # book.galaxy.surface_densities(pdf, self, [level])
         # book.galaxy.circularity(pdf, self, [level])
@@ -328,14 +329,12 @@ class AurigaBook:
         # book.galaxy.bar_strength(pdf, self, [level])
         # book.galaxy.decomposition(pdf, self, [level])
         
-        runs = ['halo22']
-        nruns = len(runs)
-        dir5 = '/u/di43/Auriga/output/'
-        dirs = [dir5] * nruns
-        zlist = [0.0]
-        nrows, ncols = 1, nruns
-        
-        book.stellar_surface_density.plot_stellar_surfden(runs, dirs, zlist, nrows, ncols)
+        # runs = ['halo_6NOAGN']  # ['halo_22', 'halo_22NOAGN', 'halo_6']
+        # nruns = len(runs)
+        # dir5 = '/u/di43/Auriga/output/'
+        # dirs = [dir5] * nruns
+        #
+        # book.stellar_surface_density.plot_stellar_surfden(pdf, runs, dirs)
         
         # Metallicities #
         # for z in [0.0]:
@@ -346,9 +345,9 @@ class AurigaBook:
 
 
 # Set the path to the simulation data and the level of the run #
-b = AurigaBook()
+b = AurigaPdf()
 b.add_directory("/u/di43/Auriga/output/", 4)
 # Generate the book #
-b.make_book(4)
+b.make_pdf(4)
 
 print("Finished book.py in %.4s s" % (time.time() - start_time))  # Print total time.

@@ -718,6 +718,61 @@ def sfr(pdf, data, levels):
     return None
 
 
+def delta_sfr(pdf, data, levels):
+    nlevels = len(levels)
+    
+    nhalos = 0
+    for il in range(nlevels):
+        data.select_haloes(levels[il], 0.)
+        nhalos += data.selected_current_nsnaps
+    
+    plt.close()
+    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+    
+    nbins = 100
+    tmin = 0
+    tmax = 13.
+    timebin = (tmax - tmin) / nbins
+    
+    for il in range(nlevels):
+        level = levels[il]
+        data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
+        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
+        i = 0
+        for s in data:
+            s.centerat(s.subfind.data['fpos'][0, :])
+            
+            mask, = np.where((s.data['age'] > 0.) & (s.r() > 0.005) & (s.r() < 0.015) & (s.pos[:, 2] < 0.003))
+            age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
+            
+            counts, bins, bars = ax.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, color=next(colors), histtype='step', bins=nbins,
+                                         range=[tmin, tmax], label="Au%s-%d" % (s.haloname, levels[0]))
+            if i == 0:
+                tmp_counts = counts
+                tmp_bins = bins
+                tmp_bars = bars
+            i += 1
+        plt.close()
+        f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+        ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+        ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+        ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+        
+        bins = bins[np.where(bins < 13.0)]
+        
+        ax.plot(bins, (counts-tmp_counts))
+        ax2 = ax.twiny()
+        set_axis_evo(s, ax, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+        ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+        ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
+    
+    pdf.savefig(f)
+    return None
+
+
 def find_nearest(array, value):
     if len(value) == 1:
         idx = (np.abs(array - value)).argmin()
