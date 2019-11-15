@@ -17,7 +17,7 @@ boxsize = 0.05
 
 def create_axes(res=res, boxsize=boxsize, colorbar=True):
     """
-    Method to create plot axes.
+    Generate plot axes.
     :param res: resolution
     :param boxsize: boxsize
     :param colorbar: colorbar
@@ -51,7 +51,7 @@ def create_axes(res=res, boxsize=boxsize, colorbar=True):
 
 def set_axes(axtop, axbot, xlabel=None, ylabel=None, y2label=None):
     """
-    Method to set axes' parameters.
+    Set axes' parameters.
     :param axtop: top plot axes from create_axes
     :param axbot: bottom plot axes from create_axes
     :param xlabel: x-axis label
@@ -94,7 +94,7 @@ def set_axes(axtop, axbot, xlabel=None, ylabel=None, y2label=None):
 
 def create_colorbar(axcbar, pc, label):
     """
-    Method to create a colorbar.
+    Generate a colorbar.
     :param axcbar: colorbar axis from create_axes
     :param pc: pseudocolor plot
     :param label: colorbar label
@@ -110,20 +110,19 @@ def create_colorbar(axcbar, pc, label):
     return None
 
 
-def stellar_light(pdf, data, levels, z):
+def stellar_light(pdf, data, level, redshift):
     """
-    Method to plot stellar light.
-    :param pdf: path to save the pdf from book.make_pdf
-    :param data: data from book.make_pdf
-    :param levels: level from book.make_pdf
-    :param z: redshift from book.make_pdf
+    Plot stellar light of an Auriga halo.
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param level: level from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
-    
-    level = levels[0]  # Only run for one level.
-    
-    # Loop over all levels #
-    data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0, loadonly=['pos', 'vel', 'mass', 'age', 'gsph'])  # Read galactic properties.
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    attributes = ['pos', 'vel', 'mass', 'age', 'gsph']
+    particle_type = [4]
+    data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -131,14 +130,19 @@ def stellar_light(pdf, data, levels, z):
         plt.close()
         f = plt.figure(figsize=(8, 8), dpi=100)
         axtop, axbot, x, y, y2, area = create_axes(res=res, boxsize=boxsize, colorbar=False)
-        axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=axtop.transAxes)
+        axtop.text(0.0, 1.01, 'Au' + str(s.haloname) + ' level' + str(level) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+                   transform=axtop.transAxes)
         
-        # Read halo properties #
+        # Rotate halo based on principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         # Mask the data and plot the projections #
-        mask, = np.where((s.r() < 2. * boxsize) & (s.data['age'] > 0.))
+        mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30) & (abs(s.pos[:, 0] * 1e3) < 5.0))  # Distances are in Mpc.
+        
+        ######### kati edo #########
+        s.pos[mask, 2], s.pos[mask, 1], s.pos[mask, 0] = rotate_bar(s.pos[mask, 2], s.pos[mask, 1], s.pos[mask, 0])  # Distances are in Mpc.
+        
         face_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 0, res, boxsize,
                                  'light')
         edge_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 1, res, boxsize,
@@ -155,7 +159,7 @@ def stellar_light(pdf, data, levels, z):
 
 def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=True):
     """
-    Method to calculate particle projections.
+    Calculate particle projections.
     :param pos_orig: positions of particles
     :param mass: masses of particles
     :param data: projection of light or mass data
@@ -169,7 +173,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=True)
     
     pos = np.zeros((np.size(mass), 3))  # Define array to hold the new positions of particles.
     
-    # Create projection planes #
+    # Generate projection planes #
     if idir == 0:  # XY plane
         pos[:, 0] = pos_orig[:, 2]
         pos[:, 1] = pos_orig[:, 1]
@@ -241,15 +245,15 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=True)
     return proj
 
 
-def stellar_mass(pdf, data, levels, z):
+def stellar_mass(pdf, data, levels, redshift):
     nlevels = len(levels)
     
     for il in range(nlevels):
-        data.select_haloes(levels[il], z)
+        data.select_haloes(levels[il], redshift)
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_haloes(level, z, loadonlytype=[4])
+        data.select_haloes(level, redshift, loadonlytype=[4])
         
         for s in data:
             plt.close()
@@ -274,7 +278,8 @@ def stellar_mass(pdf, data, levels, z):
             
             axbot.pcolormesh(x, y2, proj, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.Oranges, rasterized=True)
             
-            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=axtop.transAxes)
+            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+                       transform=axtop.transAxes)
             
             set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
             
@@ -283,15 +288,15 @@ def stellar_mass(pdf, data, levels, z):
     return None
 
 
-def gas_density(pdf, data, levels, z):
+def gas_density(pdf, data, levels, redshift):
     nlevels = len(levels)
     
     for il in range(nlevels):
-        data.select_haloes(levels[il], z)
+        data.select_haloes(levels[il], redshift)
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_haloes(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
+        data.select_haloes(level, redshift, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
         
         for s in data:
             plt.close()
@@ -313,7 +318,8 @@ def gas_density(pdf, data, levels, z):
             
             axbot.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.magma, rasterized=True)
             
-            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=axtop.transAxes)
+            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+                       transform=axtop.transAxes)
             
             set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
             
@@ -321,15 +327,15 @@ def gas_density(pdf, data, levels, z):
     return None
 
 
-def gas_temperature(pdf, data, levels, z):
+def gas_temperature(pdf, data, levels, redshift):
     nlevels = len(levels)
     
     for il in range(nlevels):
-        data.select_haloes(levels[il], z)
+        data.select_haloes(levels[il], redshift)
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_haloes(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'ne', 'u'])
+        data.select_haloes(level, redshift, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'ne', 'u'])
         
         for s in data:
             plt.close()
@@ -363,7 +369,8 @@ def gas_temperature(pdf, data, levels, z):
             axbot.pcolormesh(x, 0.5 * y, (proj / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap=matplotlib.cm.viridis,
                              rasterized=True)
             
-            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=axtop.transAxes)
+            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+                       transform=axtop.transAxes)
             
             set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
             
@@ -372,15 +379,15 @@ def gas_temperature(pdf, data, levels, z):
     return None
 
 
-def gas_metallicity(pdf, data, levels, z):
+def gas_metallicity(pdf, data, levels, redshift):
     nlevels = len(levels)
     
     for il in range(nlevels):
-        data.select_haloes(levels[il], z)
+        data.select_haloes(levels[il], redshift)
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_haloes(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'gz'])
+        data.select_haloes(level, redshift, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'gz'])
         
         for s in data:
             plt.close()
@@ -402,7 +409,8 @@ def gas_metallicity(pdf, data, levels, z):
             
             axbot.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap=matplotlib.cm.viridis, rasterized=True)
             
-            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=axtop.transAxes)
+            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+                       transform=axtop.transAxes)
             
             set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
             
@@ -411,15 +419,15 @@ def gas_metallicity(pdf, data, levels, z):
     return None
 
 
-def bfld(pdf, data, levels, z):
+def bfld(pdf, data, levels, redshift):
     nlevels = len(levels)
     
     for il in range(nlevels):
-        data.select_haloes(levels[il], z)
+        data.select_haloes(levels[il], redshift)
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_haloes(level, z, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'bfld'])
+        data.select_haloes(level, redshift, loadonlytype=[0, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel', 'bfld'])
         
         for s in data:
             plt.close()
@@ -443,7 +451,8 @@ def bfld(pdf, data, levels, z):
             
             axbot.pcolormesh(x, 0.5 * y, proj.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap=matplotlib.cm.CMRmap, rasterized=True)
             
-            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=axtop.transAxes)
+            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+                       transform=axtop.transAxes)
             
             set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
             
@@ -452,17 +461,17 @@ def bfld(pdf, data, levels, z):
     return None
 
 
-def dm_mass(pdf, data, levels, z):
+def dm_mass(pdf, data, levels, redshift):
     nlevels = len(levels)
     
     for il in range(nlevels):
-        data.select_haloes(levels[il], z)
+        data.select_haloes(levels[il], redshift)
     
     boxsize = 0.4
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_haloes(level, z, loadonlytype=[1, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
+        data.select_haloes(level, redshift, loadonlytype=[1, 4], loadonly=['pos', 'vol', 'rho', 'mass', 'vel'])
         
         for s in data:
             plt.close()
@@ -488,10 +497,63 @@ def dm_mass(pdf, data, levels, z):
             
             axbot.pcolormesh(x, y2, proj, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap=matplotlib.cm.Greys, rasterized=True)
             
-            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' z = ' + str(z), color='k', fontsize=16, transform=axtop.transAxes)
+            axtop.text(0.0, 1.1, 'Au' + str(s.haloname) + ' level' + str(level) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+                       transform=axtop.transAxes)
             
             set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$')
             
             pdf.savefig(f)
     
     return None
+
+
+def rotate_bar(x, y, z):
+    """
+    Calculate bar strength and rotate bar to horizontal position
+    :param x: the x-position of the particles.
+    :param y: the y-position of the particles.
+    :param z: the z-position of the particles.
+    :return:
+    """
+    nbins = 40  # Number of radial bins.
+    r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
+    
+    # Initialise fourier components
+    r_m = np.zeros(nbins)
+    beta_2 = np.zeros(nbins)
+    alpha_0 = np.zeros(nbins)
+    alpha_2 = np.zeros(nbins)
+    
+    # Split disc in radial bins #
+    for i in range(0, nbins):
+        r_s = float(i) * 0.25
+        r_b = float(i) * 0.25 + 0.25
+        r_m[i] = float(i) * 0.25 + 0.125
+        xfit = x[(r < r_b) & (r > r_s)]
+        yfit = y[(r < r_b) & (r > r_s)]
+        l = len(xfit)
+        for k in range(0, l):
+            th_i = np.arctan2(yfit[k], xfit[k])
+            alpha_0[i] = alpha_0[i] + 1
+            alpha_2[i] = alpha_2[i] + np.cos(2 * th_i)
+            beta_2[i] = beta_2[i] + np.sin(2 * th_i)
+    
+    # Calculate bar rotation angle for each time by averaging over radii between 1 and 3 kpc #
+    r_b = 5  # In kpc.
+    r_s = 1  # In kpc.
+    k = 0.0
+    phase_in = 0.0
+    for i in range(0, nbins):
+        if (r_m[i] < r_b) & (r_m[i] > r_s):
+            k = k + 1.
+            phase_in = phase_in + 0.5 * np.arctan2(beta_2[i], alpha_2[i])
+    phase_in = phase_in / k
+    print("\nFirst snapshot phase ", phase_in)
+    # Calculate bar strength A_2 for each radius
+    a2 = np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2) / alpha_0[:]
+    # transform back -tangle to horizontal position
+    tangle = phase_in
+    x_pos = np.cos(-tangle) * (x[:]) - np.sin(-tangle) * (y[:])
+    y_pos = np.cos(-tangle) * (y[:]) + np.sin(-tangle) * (x[:])
+    z_pos = z[:]
+    return x_pos, y_pos, z_pos

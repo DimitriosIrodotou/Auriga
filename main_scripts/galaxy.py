@@ -752,8 +752,6 @@ def delta_sfr(pdf, data, levels):
                                          range=[tmin, tmax], label="Au%s-%d" % (s.haloname, levels[0]))
             if i == 0:
                 tmp_counts = counts
-                tmp_bins = bins
-                tmp_bars = bars
             i += 1
         plt.close()
         f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
@@ -765,7 +763,7 @@ def delta_sfr(pdf, data, levels):
         
         ax.plot(bins, (counts-tmp_counts))
         ax2 = ax.twiny()
-        set_axis_evo(s, ax, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+        set_axis_evo(s, ax, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
         ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
         ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
     
