@@ -1,14 +1,13 @@
 from __future__ import print_function
 
 import time
-import book
-import book.galaxy
-import book.profiles
-import book.evolution
-import book.projections
-import book.metallicities
-import book.time_evolution
-import book.stellar_surface_density
+import main_scripts.galaxy
+import main_scripts.profiles
+import main_scripts.evolution
+import main_scripts.projections
+import main_scripts.metallicities
+import main_scripts.time_evolution
+import main_scripts.stellar_surface_density
 # hewwoc-dItnub-8fejza
 
 import numpy as np
@@ -203,8 +202,8 @@ class AurigaPdf:
     
     def add_directory(self, path, level):
         """
-        Add a directory to the book.
-        :param path: path to save the book.
+        Add a directory to the pdf.
+        :param path: path to save the pdf.
         :param level: level of the run.
         :return: None
         """
@@ -277,7 +276,7 @@ class AurigaPdf:
     
     def make_pdf(self, level):
         """
-        Create a pdf with the desired plots.
+        Create a pdf with the desired plots from main_scripts.
         :param level: level of the run
         :return: None
         """
@@ -285,60 +284,60 @@ class AurigaPdf:
         
         # Projections #
         # Stars #
-        # for z in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
-        # z = [0.0]
-        # book.projections.stellar_light(pdf, self, [level], z)
-        # book.projections.stellar_mass(pdf, self, [level], z)
-        # # book.projections.stellar_density(pdf, self, [level], z)
+        # for redshift in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
+        redshift = [0.0]
+        main_scripts.projections.stellar_light(pdf, self, level, redshift)
+        # main.projections.stellar_mass(pdf, self, [level], redshift)
+        # # main.projections.stellar_density(pdf, self, [level], redshift)
         
         # Gas #
-        # book.projections.gas_density(pdf, self, [level], z)
-        # book.projections.gas_temperature(pdf, self, [level], z)
-        # book.projections.gas_metallicity(pdf, self, [level], z)
+        # main.projections.gas_density(pdf, self, [level], redshift)
+        # main.projections.gas_temperature(pdf, self, [level], redshift)
+        # main.projections.gas_metallicity(pdf, self, [level], redshift)
         
         # Magnetic fields #
-        # book.projections.bfld(pdf, self, [level], z)
+        # main.projections.bfld(pdf, self, [level], redshift)
         
         # Dark matter #
-        # book.projections.dm_mass(pdf, self, [level], z)
+        # main.projections.dm_mass(pdf, self, [level], redshift)
         
         # Profiles #
-        # for z in [0.0]:
-        #   book.profiles.radial_profiles(pdf, self, [level], z)
-        #   book.profiles.vertical_profiles(pdf, self, [level], z)
+        # for redshift in [0.0]:
+        #   main.profiles.radial_profiles(pdf, self, [level], redshift)
+        #   main.profiles.vertical_profiles(pdf, self, [level], redshift)
         
         # Time evolution #
-        # z = [0.0]
-        # book.evolution.bar_strength(pdf, self, [level], z)
-        # for z in np.linspace(0, 2, 21):
-        #     book.evolution.circularity(pdf, self, [level], z)
-        # book.time_evolution.bfld(pdf, self, [level])
-        # book.time_evolution.galaxy_mass(pdf, self, [level])
-        # # book.time_evolution.bh_mass(pdf, self, [level])
+        # redshift = [0.0]
+        # main.evolution.bar_strength(pdf, self, [level], redshift)
+        # for redshift in np.linspace(0, 2, 21):
+        #     main.evolution.circularity(pdf, self, [level], redshift)
+        # main.time_evolution.bfld(pdf, self, [level])
+        # main.time_evolution.galaxy_mass(pdf, self, [level])
+        # # main.time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
-        book.galaxy.sfr(pdf, self, [level])
-        book.galaxy.delta_sfr(pdf, self, [level])
-        # book.galaxy.phase_diagram(pdf, self, [level])
-        # book.galaxy.surface_densities(pdf, self, [level])
-        # book.galaxy.circularity(pdf, self, [level])
-        # book.galaxy.tully_fisher(pdf, self, [level])
-        # book.galaxy.stellar_vs_total(pdf, self, [level])
-        # book.galaxy.gas_fraction(pdf, self, [level])
-        # book.galaxy.central_bfld(pdf, self, [level])
-        # book.galaxy.bar_strength(pdf, self, [level])
-        # book.galaxy.decomposition(pdf, self, [level])
+        # main.galaxy.sfr(pdf, self, [level])
+        # main.galaxy.delta_sfr(pdf, self, [level])
+        # main.galaxy.phase_diagram(pdf, self, [level])
+        # main.galaxy.surface_densities(pdf, self, [level])
+        # main.galaxy.circularity(pdf, self, [level])
+        # main.galaxy.tully_fisher(pdf, self, [level])
+        # main.galaxy.stellar_vs_total(pdf, self, [level])
+        # main.galaxy.gas_fraction(pdf, self, [level])
+        # main.galaxy.central_bfld(pdf, self, [level])
+        # main.galaxy.bar_strength(pdf, self, [level])
+        # main.galaxy.decomposition(pdf, self, [level])
         
         # runs = ['halo_6NOAGN']  # ['halo_22', 'halo_22NOAGN', 'halo_6']
         # nruns = len(runs)
         # dir5 = '/u/di43/Auriga/output/'
         # dirs = [dir5] * nruns
         #
-        # book.stellar_surface_density.plot_stellar_surfden(pdf, runs, dirs)
+        # main.stellar_surface_density.plot_stellar_surfden(pdf, runs, dirs)
         
         # Metallicities #
-        # for z in [0.0]:
-        #   book.metallicities.ratios(pdf, self, [level], 0.)
+        # for redshift in [0.0]:
+        #   main.metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
         return None
@@ -347,7 +346,9 @@ class AurigaPdf:
 # Set the path to the simulation data and the level of the run #
 b = AurigaPdf()
 b.add_directory("/u/di43/Auriga/output/", 4)
-# Generate the book #
+# Generate the pdf #
 b.make_pdf(4)
 
-print("Finished book.py in %.4s s" % (time.time() - start_time))  # Print total time.
+# Print total time #
+print('–––––––––––––––––––––––––––––––––––––––––––––')
+print("Finished main.py in %.4s s" % (time.time() - start_time))
