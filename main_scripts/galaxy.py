@@ -761,7 +761,7 @@ def delta_sfr(pdf, data, levels):
         
         bins = bins[np.where(bins < 13.0)]
         
-        ax.plot(bins, (counts-tmp_counts))
+        ax.plot(bins, (counts - tmp_counts))
         ax2 = ax.twiny()
         set_axis_evo(s, ax, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
         ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
@@ -804,13 +804,11 @@ def table(pdf, data, levels):
     text = []
     names = []
     
-    ihalo = 0
     for il in range(nlevels):
         level = levels[il]
         
         data.select_haloes(level, 0., loadonlyhalo=0)
         
-        ihalo = 0
         for s in data:
             s.centerat(s.subfind.data['fpos'][0, :])
             
@@ -826,8 +824,6 @@ def table(pdf, data, levels):
             
             text.append(["%d" % level, "%g" % mass, "%g" % mstar, "%g" % mgas])
             names += [s.haloname]
-            
-            ihalo += 1
     
     ax.table(cellText=text, rowLabels=names, colLabels=["level", "Mhalo", "Mstar", "Mgas"], loc='center')
     ax.axis("off")

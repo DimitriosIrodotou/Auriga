@@ -140,13 +140,12 @@ def stellar_light(pdf, data, level, redshift):
         # Mask the data and plot the projections #
         mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30) & (abs(s.pos[:, 0] * 1e3) < 5.0))  # Distances are in Mpc.
         
-        ######### kati edo #########
-        s.pos[mask, 2], s.pos[mask, 1], s.pos[mask, 0] = rotate_bar(s.pos[mask, 2], s.pos[mask, 1], s.pos[mask, 0])  # Distances are in Mpc.
+        z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+        s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute.
+        s.pos /= 1e3  # Distances are in kpc.
         
-        face_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 0, res, boxsize,
-                                 'light')
-        edge_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 1, res, boxsize,
-                                 'light')
+        face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 0, res, boxsize, 'light')
+        edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 1, res, boxsize, 'light')
         axtop.imshow(face_on, interpolation='nearest')
         axbot.imshow(edge_on, interpolation='nearest')
         
@@ -507,7 +506,7 @@ def dm_mass(pdf, data, levels, redshift):
     return None
 
 
-def rotate_bar(x, y, z):
+def rotate_bar(z, y, x):
     """
     Calculate bar strength and rotate bar to horizontal position
     :param x: the x-position of the particles.
@@ -538,7 +537,7 @@ def rotate_bar(x, y, z):
             alpha_2[i] = alpha_2[i] + np.cos(2 * th_i)
             beta_2[i] = beta_2[i] + np.sin(2 * th_i)
     
-    # Calculate bar rotation angle for each time by averaging over radii between 1 and 3 kpc #
+    # Calculate bar rotation angle for each time by averaging over radii between 1 and 5 kpc #
     r_b = 5  # In kpc.
     r_s = 1  # In kpc.
     k = 0.0
@@ -549,11 +548,10 @@ def rotate_bar(x, y, z):
             phase_in = phase_in + 0.5 * np.arctan2(beta_2[i], alpha_2[i])
     phase_in = phase_in / k
     print("\nFirst snapshot phase ", phase_in)
-    # Calculate bar strength A_2 for each radius
-    a2 = np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2) / alpha_0[:]
-    # transform back -tangle to horizontal position
+    
+    # Transform back -tangle to horizontal position #
     tangle = phase_in
-    x_pos = np.cos(-tangle) * (x[:]) - np.sin(-tangle) * (y[:])
-    y_pos = np.cos(-tangle) * (y[:]) + np.sin(-tangle) * (x[:])
     z_pos = z[:]
-    return x_pos, y_pos, z_pos
+    y_pos = np.cos(-tangle) * (y[:]) + np.sin(-tangle) * (x[:])
+    x_pos = np.cos(-tangle) * (x[:]) - np.sin(-tangle) * (y[:])
+    return z_pos, y_pos, x_pos

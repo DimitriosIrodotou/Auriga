@@ -285,7 +285,7 @@ class AurigaPdf:
         # Projections #
         # Stars #
         # for redshift in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
-        redshift = [0.0]
+        redshift = 0.0
         main_scripts.projections.stellar_light(pdf, self, level, redshift)
         # main.projections.stellar_mass(pdf, self, [level], redshift)
         # # main.projections.stellar_density(pdf, self, [level], redshift)
