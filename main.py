@@ -280,34 +280,29 @@ class AurigaPdf:
         :param level: level of the run
         :return: None
         """
+        redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
         # Projections #
         # Stars #
-        # for redshift in [0.94, 0.97, 1.02, 1.05, 1.07, 1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.5]:
-        redshift = 0.0
-        main_scripts.projections.stellar_light(pdf, self, level, redshift)
-        # main.projections.stellar_mass(pdf, self, [level], redshift)
-        # # main.projections.stellar_density(pdf, self, [level], redshift)
-        
+        # main_scripts.projections.stellar_light(pdf, self, level, redshift)
+        # main_scripts.projections.stellar_density(pdf, self, level, redshift)
         # Gas #
-        # main.projections.gas_density(pdf, self, [level], redshift)
-        # main.projections.gas_temperature(pdf, self, [level], redshift)
-        # main.projections.gas_metallicity(pdf, self, [level], redshift)
-        
+        # main_scripts.projections.gas_density(pdf, self, level, redshift)
+        # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
+        # main_scripts.projections.gas_metallicity(pdf, self, level, redshift)
         # Magnetic fields #
-        # main.projections.bfld(pdf, self, [level], redshift)
-        
+        # main_scripts.projections.bfld(pdf, self, level, redshift)
         # Dark matter #
-        # main.projections.dm_mass(pdf, self, [level], redshift)
+        # main_scripts.projections.dm_mass(pdf, self, level, redshift)
+        
+        # TODO fix the rest scripts
         
         # Profiles #
-        # for redshift in [0.0]:
-        #   main.profiles.radial_profiles(pdf, self, [level], redshift)
-        #   main.profiles.vertical_profiles(pdf, self, [level], redshift)
+        # main_scripts.profiles.radial_profiles(pdf, self, [level], redshift)
+        # main_scripts.profiles.vertical_profiles(pdf, self, [level], redshift)
         
         # Time evolution #
-        # redshift = [0.0]
         # main.evolution.bar_strength(pdf, self, [level], redshift)
         # for redshift in np.linspace(0, 2, 21):
         #     main.evolution.circularity(pdf, self, [level], redshift)
@@ -318,14 +313,13 @@ class AurigaPdf:
         # Global galactic relations #
         # main.galaxy.sfr(pdf, self, [level])
         # main.galaxy.delta_sfr(pdf, self, [level])
-        # main.galaxy.phase_diagram(pdf, self, [level])
         # main.galaxy.surface_densities(pdf, self, [level])
         # main.galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])
         # main.galaxy.stellar_vs_total(pdf, self, [level])
         # main.galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
-        # main.galaxy.bar_strength(pdf, self, [level])
+        main_scripts.galaxy.bar_strength(pdf, self, level)
         # main.galaxy.decomposition(pdf, self, [level])
         
         # runs = ['halo_6NOAGN']  # ['halo_22', 'halo_22NOAGN', 'halo_6']
@@ -336,7 +330,6 @@ class AurigaPdf:
         # main.stellar_surface_density.plot_stellar_surfden(pdf, runs, dirs)
         
         # Metallicities #
-        # for redshift in [0.0]:
         #   main.metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
