@@ -285,8 +285,8 @@ class AurigaPdf:
         
         # Projections #
         # Stars #
-        # main_scripts.projections.stellar_light(pdf, self, level, redshift)
-        # main_scripts.projections.stellar_density(pdf, self, level, redshift)
+        main_scripts.projections.stellar_light(pdf, self, level, redshift)
+        main_scripts.projections.stellar_density(pdf, self, level, redshift)
         # Gas #
         # main_scripts.projections.gas_density(pdf, self, level, redshift)
         # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
@@ -319,7 +319,7 @@ class AurigaPdf:
         # main.galaxy.stellar_vs_total(pdf, self, [level])
         # main.galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
-        main_scripts.galaxy.bar_strength(pdf, self, level)
+        # main_scripts.galaxy.bar_strength(pdf, self, level)
         # main.galaxy.decomposition(pdf, self, [level])
         
         # runs = ['halo_6NOAGN']  # ['halo_22', 'halo_22NOAGN', 'halo_6']

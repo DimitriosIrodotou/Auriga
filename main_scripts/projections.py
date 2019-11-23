@@ -236,9 +236,9 @@ def stellar_light(pdf, data, level, redshift):
         z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
         s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
         
-        face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 0, res, boxsize, 'light',
+        face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
                                  maxHsml=True)
-        edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask, :].astype('f8'), 1, res, boxsize, 'light',
+        edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
                                  maxHsml=True)
         axtop.imshow(face_on, interpolation='nearest')
         axbot.imshow(edge_on, interpolation='nearest')
@@ -277,14 +277,20 @@ def stellar_density(pdf, data, level, redshift):
         
         # Mask the data and plot the projections #
         mask, = np.where((s.r() < 2. * boxsize))
+        z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+        s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
         
-        face_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
+        face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
                                  'mass') / area * 1e10
-        edge_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize,
-                                 'mass') / (0.5 * area) * 1e10
-        pcm = axtop.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.Oranges, rasterized=True)
-        axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap=matplotlib.cm.Oranges, rasterized=True)
+        edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
+            0.5 * area) * 1e10
+        pcm = axtop.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='Oranges', rasterized=True)
+        axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='Oranges', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
+        
+        # count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70, range=[[-25, 25], [-25, 25]])
+        # countlog = np.log10(count)
+        # axtop.contour(countlog.T, colors="k", linewidth=2, linestyle="-", extent=[-25, 25, -25, 25], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
         
         set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
@@ -449,8 +455,8 @@ def bfld(pdf, data, level, redshift):
         s.data['b2'] = (s.data['bfld'] ** 2.).sum(axis=1)
         face_on = np.sqrt(s.get_Aslice("b2", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
         edge_on = np.sqrt(s.get_Aslice("b2", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
-        pcm = axtop.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap=matplotlib.cm.CMRmap, rasterized=True)
-        axbot.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap=matplotlib.cm.CMRmap, rasterized=True)
+        pcm = axtop.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap='CMRmap', rasterized=True)
+        axbot.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap='CMRmap', rasterized=True)
         create_colorbar(axcbar, pcm, "$B\,\mathrm{[\mu G]}$")
         
         set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
@@ -490,12 +496,12 @@ def dm_mass(pdf, data, level, redshift):
         
         # Mask the data and plot the projections #
         mask, = np.where((s.r() < 2. * boxsize) & (s.type == 1))
-        face_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
+        face_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
                                  'mass') / area * 1e10
-        edge_on = get_projection(s.pos[mask, :].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize,
-                                 'mass') / (0.5 * area) * 1e10
-        pcm = axtop.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap=matplotlib.cm.Greys, rasterized=True)
-        axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap=matplotlib.cm.Greys, rasterized=True)
+        edge_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
+                0.5 * area) * 1e10
+        pcm = axtop.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
+        axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{DM}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         
         set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
@@ -548,8 +554,7 @@ def rotate_bar(z, y, x):
     phase_in = phase_in / k
     
     # Transform back -tangle to horizontal position #
-    tangle = -phase_in
     z_pos = z[:]
-    y_pos = np.cos(-tangle) * (y[:]) + np.sin(-tangle) * (x[:])
-    x_pos = np.cos(-tangle) * (x[:]) - np.sin(-tangle) * (y[:])
+    y_pos = np.cos(-phase_in) * (y[:]) + np.sin(-phase_in) * (x[:])
+    x_pos = np.cos(-phase_in) * (x[:]) - np.sin(-phase_in) * (y[:])
     return z_pos / 1e3, y_pos / 1e3, x_pos / 1e3  # Distances are in kpc.
