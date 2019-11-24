@@ -285,7 +285,7 @@ class AurigaPdf:
         
         # Projections #
         # Stars #
-        main_scripts.projections.stellar_light(pdf, self, level, redshift)
+        # main_scripts.projections.stellar_light(pdf, self, level, redshift)
         main_scripts.projections.stellar_density(pdf, self, level, redshift)
         # Gas #
         # main_scripts.projections.gas_density(pdf, self, level, redshift)

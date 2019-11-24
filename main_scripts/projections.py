@@ -134,8 +134,8 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     
     # Generate projection planes #
     if idir == 0:  # XY plane
-        pos[:, 0] = pos_orig[:, 2]
-        pos[:, 1] = pos_orig[:, 1]
+        pos[:, 0] = pos_orig[:, 1]
+        pos[:, 1] = pos_orig[:, 2]
         pos[:, 2] = pos_orig[:, 0]
         
         xres = res
@@ -150,7 +150,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
         
         xres = res // 2
         yres = res
-        boxx = boxsize / 2.
+        boxx = boxsize / 2.0
         boxy = boxsize
     
     elif idir == 2:  # YZ plane
@@ -161,7 +161,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
         xres = res
         yres = res // 2
         boxx = boxsize
-        boxy = boxsize / 2.
+        boxy = boxsize / 2.0
     
     tree = pysph.makeTree(pos)
     hsml = tree.calcHsmlMulti(pos, pos, mass, 48, numthreads=8)
@@ -230,8 +230,8 @@ def stellar_light(pdf, data, level, redshift):
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        # Mask the data and plot the projections #
-        mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30) & (abs(s.pos[:, 0] * 1e3) < 5.0))  # Distances are in Mpc.
+        # Mask and rotate the data and plot the projections #
+        mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in Mpc.
         
         z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
         s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
@@ -275,8 +275,8 @@ def stellar_density(pdf, data, level, redshift):
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        # Mask the data and plot the projections #
-        mask, = np.where((s.r() < 2. * boxsize))
+        # Mask and rotate the data and plot the projections #
+        mask, = np.where((s.data['age'] > 0.0) & (s.r() < 2. * boxsize))
         z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
         s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
         
@@ -288,9 +288,11 @@ def stellar_density(pdf, data, level, redshift):
         axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='Oranges', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         
-        # count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70, range=[[-25, 25], [-25, 25]])
-        # countlog = np.log10(count)
-        # axtop.contour(countlog.T, colors="k", linewidth=2, linestyle="-", extent=[-25, 25, -25, 25], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+        # Plot the contour lines #
+        count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70, range=[[-25, 25], [-25, 25]])
+        axtop.contour(np.log10(count).T, colors="k", extent=[-25, 25, -25, 25], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+        count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 0] * 1e3, bins=70, range=[[-25, 25], [-25, 25]])
+        axbot.contour(np.log10(count).T, colors="k", extent=[-25, 25, -25, 25], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
         
         set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
@@ -499,7 +501,7 @@ def dm_mass(pdf, data, level, redshift):
         face_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
                                  'mass') / area * 1e10
         edge_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
-                0.5 * area) * 1e10
+            0.5 * area) * 1e10
         pcm = axtop.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{DM}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
