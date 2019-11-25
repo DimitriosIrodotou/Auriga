@@ -1,12 +1,12 @@
 from __future__ import division
 
-import math
+import main_scripts.projections
 
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
+
 from const import *
-from numpy import cos, sin
 from sfigure import *
 
 mass_proton = 1.6726219e-27
@@ -47,89 +47,69 @@ def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5)
     return None
 
 
-def bar_strength(pdf, data, levels, z):
+def bar_strength(pdf, data, level):
     """
-        Calculate bar strength from Fourier modes of surface density (see e.g. sec 2.3.2 from Athanassoula et al. 2013)
+        Calculate bar strength from Fourier modes of surface density.
         :param pdf:
         :param data:
-        :param levels:
+        :param level:
         :return:
         """
-    nlevels = len(levels)
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_ylabel("$A_{2}$")
     ax.set_xlabel("$r\,\mathrm{[kpc]}$")
-    
-    # plt.close()
-    # f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    # ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    a2s = []
+    zs=[]
     # ax.set_ylabel("$\sqrt{a_{2}^{2} + b_{2}^{2}}$")
     # ax.set_xlabel("$r\,\mathrm{[kpc]}$")
     
-    for il in range(nlevels):
-        for z in np.linspace(0, 2, 5):
-            level = levels[il]
-            data.select_haloes(level, z)
-            nhalos = data.selected_current_nsnaps
-            colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
+    for z in np.linspace(0, 2, 3):
+        data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0)
+        print(z)
+        for s in data:
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
-            data.select_haloes(level, z, loadonlytype=[0, 4], loadonlyhalo=0)
-            print(z)
-            ihalo = 0
-            for s in data:
-                s.centerat(s.subfind.data['fpos'][0, :])
-                
-                galrad = 0.03
-                age = np.zeros(s.npartall)
-                age[s.type == 4] = s.data['age']  # Get ages of stars.
-                istars, = np.where((s.type == 4) & (age > 0.) & (s.r() < galrad))  # Select stars.
-                x, y = s.pos[istars, 2] * 1000, s.pos[istars, 1] * 1000  # Load positions and convert from Mpc to Kpc.
-                
-                nbins = 40  # Number of radial bins.
-                r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
-                
-                # Initialise Fourier components #
-                r_m = np.zeros(nbins)
-                beta_2 = np.zeros(nbins)
-                alpha_0 = np.zeros(nbins)
-                alpha_2 = np.zeros(nbins)
-                
-                # Split up galaxy in radius bins and calculate Fourier components #
-                for i in range(0, nbins):
-                    
-                    r_s = float(i) * 0.5
-                    r_b = float(i) * 0.5 + 0.25
-                    r_m[i] = float(i) * 0.5 + 0.125
-                    
-                    xfit = x[(r < r_b) & (r > r_s)]
-                    yfit = y[(r < r_b) & (r > r_s)]
-                    
-                    l = len(xfit)
-                    
-                    for k in range(0, l):
-                        th_i = math.atan2(yfit[k], xfit[k])
-                        alpha_0[i] = alpha_0[i] + 1
-                        alpha_2[i] = alpha_2[i] + cos(2 * th_i)
-                        beta_2[i] = beta_2[i] + sin(2 * th_i)
-                
-                # Calculate bar strength A_2
-                a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
-                
-                # Plot bar strength as a function of radius plot r_m versus a2
-                # ax.plot(r_m, a2, color=next(colors), label="Au%s-%d max(A2): %.2f" % (s.haloname, levels[0], max(a2)))
-                # ax.text(0.05, 0.92, "z = %.1f" % z, color='k', fontsize=12, transform=ax.transAxes)
-                
-                ihalo += 1
-                ax.plot(z, max(a2), c=next(colors), label="Au%s-%d" % (s.haloname, levels[0]))
-        
-        # pdf.savefig(f)
-        
-        if z == 2.0:
-            ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
-            pdf.savefig(f)
+            mask, = np.where((s.type == 4) & (s.data['age'] > 0.))  # Select stars.
+            z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
+                                                                                  s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+            s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
+            x, y = s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
+            
+            nbins = 40  # Number of radial bins.
+            r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
+            
+            # Initialise Fourier components #
+            r_m = np.zeros(nbins)
+            beta_2 = np.zeros(nbins)
+            alpha_0 = np.zeros(nbins)
+            alpha_2 = np.zeros(nbins)
+            
+            # Split up galaxy in radius bins and calculate Fourier components #
+            for i in range(0, nbins):
+                r_s = float(i) * 0.25
+                r_b = float(i) * 0.25 + 0.25
+                r_m[i] = float(i) * 0.25 + 0.125
+                xfit = x[(r < r_b) & (r > r_s)]
+                yfit = y[(r < r_b) & (r > r_s)]
+                for k in range(0, len(xfit)):
+                    th_i = np.arctan2(yfit[k], xfit[k])
+                    alpha_0[i] = alpha_0[i] + 1
+                    alpha_2[i] = alpha_2[i] + np.cos(2 * th_i)
+                    beta_2[i] = beta_2[i] + np.sin(2 * th_i)
+            
+            # Calculate bar strength A_2
+            a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
+            a2s.append(max(a2))
+            zs.append(z)
+            # Plot bar strength as a function of radius #
+    
+    plt.plot(zs, a2s,  label="Au%s-%d" % (s.haloname, level))
+    ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    pdf.savefig(f)
     
     return None
 
@@ -142,7 +122,6 @@ def circularity(pdf, data, levels, z):
         data.select_haloes(levels[il], z)
         nhalos += data.selected_current_nsnaps
     
-    Gcosmo = 43.0071
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
     

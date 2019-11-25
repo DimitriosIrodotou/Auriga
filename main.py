@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import os
 import time
 import main_scripts.galaxy
 import main_scripts.profiles
@@ -286,7 +287,7 @@ class AurigaPdf:
         # Projections #
         # Stars #
         # main_scripts.projections.stellar_light(pdf, self, level, redshift)
-        main_scripts.projections.stellar_density(pdf, self, level, redshift)
+        # main_scripts.projections.stellar_density(pdf, self, level, redshift)
         # Gas #
         # main_scripts.projections.gas_density(pdf, self, level, redshift)
         # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
@@ -303,16 +304,17 @@ class AurigaPdf:
         # main_scripts.profiles.vertical_profiles(pdf, self, [level], redshift)
         
         # Time evolution #
-        # main.evolution.bar_strength(pdf, self, [level], redshift)
+        main_scripts.evolution.bar_strength(pdf, self, level)
         # for redshift in np.linspace(0, 2, 21):
-        #     main.evolution.circularity(pdf, self, [level], redshift)
-        # main.time_evolution.bfld(pdf, self, [level])
-        # main.time_evolution.galaxy_mass(pdf, self, [level])
-        # # main.time_evolution.bh_mass(pdf, self, [level])
+        #     main.evolution.circularity(pdf, self, level, redshift)
+        # main.time_evolution.bfld(pdf, self, level)
+        # main_scripts.time_evolution.galaxy_mass(pdf, self, level)
+        # main_scripts.time_evolution.bh_mass(pdf, self, level)
         
         # Global galactic relations #
         # main.galaxy.sfr(pdf, self, [level])
         # main.galaxy.delta_sfr(pdf, self, [level])
+        main_scripts.galaxy.hot_cold_gas_fraction(pdf, self, level)
         # main.galaxy.surface_densities(pdf, self, [level])
         # main.galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])
@@ -333,6 +335,7 @@ class AurigaPdf:
         #   main.metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
+        os.system("ls -ltr ../plots")
         return None
 
 

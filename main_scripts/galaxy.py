@@ -477,16 +477,19 @@ def bar_strength(pdf, data, level):
     ax.set_ylabel("$A_{2}/A_{0}$")
     ax.set_xlabel("$r\,\mathrm{[kpc]}$")
     
-    data.select_haloes(level, 0.)
+    data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
     nhalos = data.selected_current_nsnaps
     colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-    data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
     
     for s in data:
-        s.centerat(s.subfind.data['fpos'][0, :])
+        s.calc_sf_indizes(s.subfind)
+        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        istars, = np.where((s.type == 4) & (s.data['age'] > 0.))  # Select stars.
-        x, y = s.pos[istars, 2] * 1e3, s.pos[istars, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
+        mask, = np.where((s.type == 4) & (s.data['age'] > 0.))  # Select stars.
+        z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
+                                                                              s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+        s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
+        x, y = s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
         
         nbins = 40  # Number of radial bins.
         r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
@@ -516,103 +519,6 @@ def bar_strength(pdf, data, level):
         # Plot bar strength as a function of radius plot r_m versus a2
         ax.plot(r_m, a2, color=next(colors), label="Au%s-%d bar strength: %.2f" % (s.haloname, level, max(a2)))
         ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
-    
-    pdf.savefig(f)
-    return None
-
-
-def surface_density(pdf, data, levels):
-    """
-
-    :param pdf:
-    :param data:
-    :param levels:
-    :return:
-    """
-    nlevels = len(levels)
-    
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    ax.set_xlabel("$\\rm{M_{R}\\,[mag]}$")
-    ax.set_ylabel("$\\rm{f_{gas}}$")
-    
-    for il in range(nlevels):
-        level = levels[il]
-        
-        data.select_haloes(level, 0.)
-        nhalos = data.selected_current_nsnaps
-        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-        
-        MR = np.zeros(nhalos)
-        fgas = np.zeros(nhalos)
-        
-        data.select_haloes(level, 0., loadonlyhalo=0)
-        
-        ihalo = 0
-        nshells = 60  # 35 up to galrad is OK
-        zcut = 0.001  # vertical cut in Mpc
-        Rcut = 0.040
-        
-        hname = np.array(data)
-        roptmin = np.array([30.] * len(data))
-        
-        for s in data:
-            
-            galrad = 0.1 * sf.data['frc2'][0]
-            rd = np.linspace(0.0, Rcut, nshells)
-            mnow = np.zeros(len(rd))
-            
-            rad = np.sqrt((s.data['pos'][:, 1:] ** 2).sum(axis=1))
-            z = s.data['pos'][:, 0]
-            
-            ii, = np.where((abs(z) < zcut))
-            
-            weight = s.data['mass']
-            
-            bins = nshells
-            sden, edges = np.histogram(rad[ii], bins=bins, range=(0., Rcut), weights=weight[ii])
-            sa = np.zeros(len(edges) - 1)
-            sa[:] = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
-            sden /= sa
-            
-            x = np.zeros(len(edges) - 1)
-            x[:] = 0.5 * (edges[1:] + edges[:-1])
-            
-            sden *= 1e-6
-            r = x * 1e3
-            
-            print("Surface density at R=8 kpc:", sden[find_nearest(r, [8.])])
-            
-            sdlim = 1.
-            indy = find_nearest(x, [galrad]).astype('int64')
-            
-            indy = find_nearest(sden * 1e4, [sdlim]).astype('int64')
-            
-            rfit = x[indy] * 1e3
-            sdfit = sden[:indy]
-            r = r[:indy][sdfit > 0.]
-            sdfit = sdfit[sdfit > 0.]
-            
-            print("fitting carried out in radial range %f - %f" % (x[0] * 1e3, x[indy] * 1e3))
-            
-            ###############
-            
-            s.centerat(s.subfind.data['fpos'][0, :])
-            
-            age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
-            Rband = convert_rband_to_Rband_mag(s.data['gsph'][istars, 5], s.data['gsph'][istars, 4])
-            MR[ihalo] = -2.5 * np.log10((10. ** (- 2.0 * Rband / 5.0)).sum())
-            
-            igas, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 0))
-            fgas[ihalo] = s.mass[igas].sum() / (s.mass[igas].sum() + s.mass[istars].sum())
-            
-            ax.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s-%d" % (s.haloname, levels[0]))
-            ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
-            
-            ihalo += 1
     
     pdf.savefig(f)
     return None
@@ -708,6 +614,54 @@ def delta_sfr(pdf, data, levels):
         set_axis_evo(s, ax, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
         ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
         ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
+    
+    pdf.savefig(f)
+    return None
+
+
+def hot_cold_gas_fraction(pdf, data, level):
+    
+    
+    plt.close()
+    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+    
+    nbins = 100
+    tmin = 0
+    tmax = 13.
+    timebin = (tmax - tmin) / nbins
+    
+    nhalos = 0
+    data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
+    nhalos += data.selected_current_nsnaps
+    colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
+    i = 0
+    for s in data:
+        s.centerat(s.subfind.data['fpos'][0, :])
+        
+        mask, = np.where((s.data['age'] > 0.) & (s.r() > 0.005) & (s.r() < 0.015) & (s.pos[:, 2] < 0.003))
+        age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
+        
+        counts, bins, bars = ax.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, color=next(colors), histtype='step', bins=nbins,
+                                     range=[tmin, tmax], label="Au%s-%d" % (s.haloname, level))
+        if i == 0:
+            tmp_counts = counts
+        i += 1
+    plt.close()
+    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+    
+    bins = bins[np.where(bins < 13.0)]
+    
+    ax.plot(bins, (counts - tmp_counts))
+    ax2 = ax.twiny()
+    set_axis_evo(s, ax, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+    ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+    ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
     
     pdf.savefig(f)
     return None
