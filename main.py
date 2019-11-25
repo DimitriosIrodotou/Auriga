@@ -304,7 +304,7 @@ class AurigaPdf:
         # main_scripts.profiles.vertical_profiles(pdf, self, [level], redshift)
         
         # Time evolution #
-        main_scripts.evolution.bar_strength(pdf, self, level)
+        # main_scripts.evolution.bar_strength(pdf, self, level)
         # for redshift in np.linspace(0, 2, 21):
         #     main.evolution.circularity(pdf, self, level, redshift)
         # main.time_evolution.bfld(pdf, self, level)
@@ -314,14 +314,14 @@ class AurigaPdf:
         # Global galactic relations #
         # main.galaxy.sfr(pdf, self, [level])
         # main.galaxy.delta_sfr(pdf, self, [level])
-        main_scripts.galaxy.hot_cold_gas_fraction(pdf, self, level)
+        # main_scripts.galaxy.hot_cold_gas_fraction(pdf, self, level)
         # main.galaxy.surface_densities(pdf, self, [level])
         # main.galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])
         # main.galaxy.stellar_vs_total(pdf, self, [level])
         # main.galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
-        # main_scripts.galaxy.bar_strength(pdf, self, level)
+        main_scripts.galaxy.bar_strength(pdf, self, level)
         # main.galaxy.decomposition(pdf, self, [level])
         
         # runs = ['halo_6NOAGN']  # ['halo_22', 'halo_22NOAGN', 'halo_6']

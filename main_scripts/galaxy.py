@@ -485,7 +485,7 @@ def bar_strength(pdf, data, level):
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        mask, = np.where((s.type == 4) & (s.data['age'] > 0.))  # Select stars.
+        mask, = np.where(s.data['age'] > 0.)  # Select stars.
         z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
                                                                               s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
         s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.

@@ -60,20 +60,20 @@ def bar_strength(pdf, data, level):
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_ylabel("$A_{2}$")
-    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+    ax.set_xlabel('z')
+    zs = []
     a2s = []
-    zs=[]
-    # ax.set_ylabel("$\sqrt{a_{2}^{2} + b_{2}^{2}}$")
-    # ax.set_xlabel("$r\,\mathrm{[kpc]}$")
-    
     for z in np.linspace(0, 2, 3):
-        data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0)
+        attributes = ['age', 'mass', 'pos']
+        data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0, loadonly=attributes)
+        nhalos = data.selected_current_nsnaps
+        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
         print(z)
         for s in data:
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
-            mask, = np.where((s.type == 4) & (s.data['age'] > 0.))  # Select stars.
+            mask, = np.where(s.data['age'] > 0.0)  # Select stars.
             z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
                                                                                   s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
             s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
@@ -102,14 +102,26 @@ def bar_strength(pdf, data, level):
                     beta_2[i] = beta_2[i] + np.sin(2 * th_i)
             
             # Calculate bar strength A_2
-            a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
-            a2s.append(max(a2))
-            zs.append(z)
+            a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])  # Plot bar strength as a function of radius #
+            
             # Plot bar strength as a function of radius #
-    
-    plt.plot(zs, a2s,  label="Au%s-%d" % (s.haloname, level))
-    ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
-    pdf.savefig(f)
+            if z == 2.0:
+                ax.scatter(z, max(a2), color=next(colors), label="Au%s-%d" % (s.haloname, level))
+                ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+                pdf.savefig(f)
+            else:
+                ax.scatter(z, max(a2), color=next(colors))
+            
+            # zs.append(z)  # a2s.append(max(a2))
+    # data = np.vstack([zs, a2s]).T
+    # one = data[::2]
+    # two = data[::3]
+    # print(data)
+    # print(one)
+    # print(two)
+    # ax.plot(z, max(a2), c=next(colors), label="Au%s-%d" % (s.haloname, level))
+    # ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    # pdf.savefig(f)
     
     return None
 
