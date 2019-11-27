@@ -130,7 +130,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     :return:
     """
     
-    pos = np.zeros((np.size(mass), 3))  # Define array to hold the new positions of particles.
+    pos = np.zeros((np.size(mass), 3))  # Declare array to hold the new positions of particles.
     
     # Generate projection planes #
     if idir == 0:  # XY plane
@@ -166,12 +166,12 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     tree = pysph.makeTree(pos)
     hsml = tree.calcHsmlMulti(pos, pos, mass, 48, numthreads=8)
     if maxHsml is True:
-        hsml = np.minimum(hsml, 4. * boxsize / res)
+        hsml = np.minimum(hsml, 4.0 * boxsize / res)
     hsml = np.maximum(hsml, 1.001 * boxsize / res * 0.5)
     rho = np.ones(np.size(mass))
     
     datarange = np.array([[4003.36, 800672.], [199.370, 132913.], [133.698, 200548.]])
-    fac = (512. / res) ** 2 * (0.5 * boxsize / 0.025) ** 2
+    fac = (512.0 / res) ** 2 * (0.5 * boxsize / 0.025) ** 2
     datarange *= fac
     
     boxz = max(boxx, boxy)
@@ -231,9 +231,9 @@ def stellar_light(pdf, data, level, redshift):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         # Mask and rotate the data and plot the projections #
-        mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in Mpc.
+        mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in kpc.
         
-        z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+        z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
         s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
         
         face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
@@ -276,8 +276,8 @@ def stellar_density(pdf, data, level, redshift):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         # Mask and rotate the data and plot the projections #
-        mask, = np.where((s.data['age'] > 0.0) & (s.r() < 2. * boxsize))
-        z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+        mask, = np.where((s.data['age'] > 0.0) & (s.r() < 2.0 * boxsize))
+        z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
         s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
         
         face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
@@ -368,8 +368,8 @@ def gas_temperature(pdf, data, level, redshift):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         # Plot the projections #
-        meanweight = 4.0 / (1. + 3. * 0.76 + 4. * 0.76 * s.data['ne']) * 1.67262178e-24
-        temperature = (5. / 3. - 1.) * s.data['u'] / KB * (1e6 * parsec) ** 2. / (1e6 * parsec / 1e5) ** 2 * meanweight
+        meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+        temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
         s.data['temprho'] = s.rho * temperature
         
         face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
@@ -497,7 +497,7 @@ def dm_mass(pdf, data, level, redshift):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         # Mask the data and plot the projections #
-        mask, = np.where((s.r() < 2. * boxsize) & (s.type == 1))
+        mask, = np.where((s.r() < 2.0 * boxsize) & (s.type == 1))
         face_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
                                  'mass') / area * 1e10
         edge_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (

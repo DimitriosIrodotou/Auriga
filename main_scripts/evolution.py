@@ -61,9 +61,8 @@ def bar_strength(pdf, data, level):
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_ylabel("$A_{2}$")
     ax.set_xlabel('z')
-    zs = []
-    a2s = []
-    for z in np.linspace(0, 2, 3):
+    a2s, zs, names = [], [], []
+    for z in np.linspace(0, 2, 11):
         attributes = ['age', 'mass', 'pos']
         data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0, loadonly=attributes)
         nhalos = data.selected_current_nsnaps
@@ -104,25 +103,26 @@ def bar_strength(pdf, data, level):
             # Calculate bar strength A_2
             a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])  # Plot bar strength as a function of radius #
             
-            # Plot bar strength as a function of radius #
-            if z == 2.0:
-                ax.scatter(z, max(a2), color=next(colors), label="Au%s-%d" % (s.haloname, level))
-                ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
-                pdf.savefig(f)
-            else:
-                ax.scatter(z, max(a2), color=next(colors))
-            
-            # zs.append(z)  # a2s.append(max(a2))
-    # data = np.vstack([zs, a2s]).T
-    # one = data[::2]
-    # two = data[::3]
-    # print(data)
-    # print(one)
-    # print(two)
-    # ax.plot(z, max(a2), c=next(colors), label="Au%s-%d" % (s.haloname, level))
-    # ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
-    # pdf.savefig(f)
+            # Calculate bar strength A_2
+            a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
+            a2s.append(max(a2))
+            zs.append(z)  # Plot bar strength as a function of radius #
+            names.append(s.haloname)
+    data = np.vstack([zs, a2s]).T
+    print(data)
+    # Plot bar strength as a function of radius #
     
+    for j in range(0, nhalos):  # Loop over all haloes
+        x, y = [], []
+        for i in range(0, len(data) - nhalos + 1, nhalos):  # Loop over each haloes data
+            x.append(data[i + j][0])
+            y.append(data[i + j][1])
+        print(x)
+        print(y)
+        plt.plot(x, y, color=next(colors), label="Au%s-%d" % (names[j], level))
+        ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    
+    pdf.savefig(f)
     return None
 
 

@@ -297,11 +297,11 @@ class AurigaPdf:
         # Dark matter #
         # main_scripts.projections.dm_mass(pdf, self, level, redshift)
         
-        # TODO fix the rest scripts
-        
         # Profiles #
-        # main_scripts.profiles.radial_profiles(pdf, self, [level], redshift)
+        main_scripts.profiles.radial_profiles(pdf, self, level, redshift)
+        # TODO fix the rest scripts
         # main_scripts.profiles.vertical_profiles(pdf, self, [level], redshift)
+        
         
         # Time evolution #
         # main_scripts.evolution.bar_strength(pdf, self, level)
@@ -321,7 +321,7 @@ class AurigaPdf:
         # main.galaxy.stellar_vs_total(pdf, self, [level])
         # main.galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
-        main_scripts.galaxy.bar_strength(pdf, self, level)
+        # main_scripts.galaxy.bar_strength(pdf, self, level)
         # main.galaxy.decomposition(pdf, self, [level])
         
         # runs = ['halo_6NOAGN']  # ['halo_22', 'halo_22NOAGN', 'halo_6']
