@@ -298,18 +298,17 @@ class AurigaPdf:
         # main_scripts.projections.dm_mass(pdf, self, level, redshift)
         
         # Profiles #
-        main_scripts.profiles.radial_profiles(pdf, self, level, redshift)
+        # main_scripts.profiles.radial_profiles(pdf, self, level, redshift)
+        # main_scripts.profiles.vertical_profiles(pdf, self, level, redshift)
+        
         # TODO fix the rest scripts
-        # main_scripts.profiles.vertical_profiles(pdf, self, [level], redshift)
-        
-        
         # Time evolution #
         # main_scripts.evolution.bar_strength(pdf, self, level)
         # for redshift in np.linspace(0, 2, 21):
-        #     main.evolution.circularity(pdf, self, level, redshift)
+        main_scripts.evolution.circularity(pdf, self, [level], redshift)
         # main.time_evolution.bfld(pdf, self, level)
         # main_scripts.time_evolution.galaxy_mass(pdf, self, level)
-        # main_scripts.time_evolution.bh_mass(pdf, self, level)
+        # main_scripts.time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
         # main.galaxy.sfr(pdf, self, [level])

@@ -22,7 +22,7 @@ def create_axis(f, idx, ncol=5):
     return ax
 
 
-def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5):
+def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None):
     if ylabel is None:
         ax.set_yticks([])
     else:
@@ -62,7 +62,7 @@ def bar_strength(pdf, data, level):
     ax.set_ylabel("$A_{2}$")
     ax.set_xlabel('z')
     a2s, zs, names = [], [], []
-    for z in np.linspace(0, 2, 11):
+    for z in np.linspace(0, 1, 21):
         attributes = ['age', 'mass', 'pos']
         data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0, loadonly=attributes)
         nhalos = data.selected_current_nsnaps
@@ -190,7 +190,7 @@ def circularity(pdf, data, levels, z):
             ax.plot(0.5 * (edges[1:] + edges[:-1]), ydata, 'k')
             
             set_axis(isnap, ax, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
-            ax.text(0.05, 0.90, "Au%s-%d z = %.1f " % (s.haloname, level, z), color='k', fontsize=6, transform=ax.transAxes)
+            ax.text(0.0, 1.01, "Au%s z = %.1f " % (s.haloname, z), color='k', fontsize=6, transform=ax.transAxes)
             ax.set_xlim(-2., 2.)
             ax.set_xticks([-1.5, 0., 1.5])
             

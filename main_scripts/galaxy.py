@@ -582,7 +582,7 @@ def delta_sfr(pdf, data, levels):
     
     nbins = 100
     tmin = 0
-    tmax = 13.
+    tmax = 13.0
     timebin = (tmax - tmin) / nbins
     
     for il in range(nlevels):
@@ -620,8 +620,6 @@ def delta_sfr(pdf, data, levels):
 
 
 def hot_cold_gas_fraction(pdf, data, level):
-    
-    
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
@@ -630,38 +628,44 @@ def hot_cold_gas_fraction(pdf, data, level):
     
     nbins = 100
     tmin = 0
-    tmax = 13.
+    tmax = 13.0
     timebin = (tmax - tmin) / nbins
     
     nhalos = 0
-    data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
+    attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
+    data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0, loadonly=attributes)
     nhalos += data.selected_current_nsnaps
     colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
     i = 0
     for s in data:
+        # Plot the projections #
         s.centerat(s.subfind.data['fpos'][0, :])
+        meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+        temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
+        s.data['temprho'] = s.rho * temperature
         
-        mask, = np.where((s.data['age'] > 0.) & (s.r() > 0.005) & (s.r() < 0.015) & (s.pos[:, 2] < 0.003))
+        age = np.zeros(s.npartall)
+        age[s.type == 4] = s.data['age']
+        mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
         age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
         
-        counts, bins, bars = ax.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, color=next(colors), histtype='step', bins=nbins,
-                                     range=[tmin, tmax], label="Au%s-%d" % (s.haloname, level))
-        if i == 0:
-            tmp_counts = counts
-        i += 1
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
-    
-    bins = bins[np.where(bins < 13.0)]
-    
-    ax.plot(bins, (counts - tmp_counts))
-    ax2 = ax.twiny()
-    set_axis_evo(s, ax, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-    ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
+        ax.scatter(s.data['temprho'], s.data['temprho'], label="Au%s-%d" % (s.haloname, level))
+        # if i == 0:
+        #     tmp_counts = counts
+        # i += 1
+    # plt.close()
+    # f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    # ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    # ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+    # ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+    #
+    # bins = bins[np.where(bins < 13.0)]
+    #
+    # ax.plot(bins, (counts - tmp_counts))
+    # ax2 = ax.twiny()
+    # set_axis_evo(s, ax, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+    # ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+    # ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
     
     pdf.savefig(f)
     return None
