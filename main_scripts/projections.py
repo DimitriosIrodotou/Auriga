@@ -12,7 +12,7 @@ from sfigure import *
 from matplotlib import gridspec
 
 res = 512
-boxsize = 0.05
+boxsize = 0.06
 
 
 def create_axes(res=res, boxsize=boxsize, colorbar=False):
@@ -33,13 +33,14 @@ def create_axes(res=res, boxsize=boxsize, colorbar=False):
     
     # Generate the two panels #
     if colorbar is True:
-        gs = gridspec.GridSpec(2, 2, height_ratios=[2, 1], width_ratios=[1, 0.05])
-        gs.update(hspace=0.05, wspace=0.05)
-        axtop = plt.subplot(gs[0, 0])
-        axbot = plt.subplot(gs[1, 0])
-        axcbar = plt.subplot(gs[:, 1])
+        gs = gridspec.GridSpec(3, 2, height_ratios=[0.1, 2, 1], width_ratios=[2, 1])
+        gs.update(hspace=0.1, wspace=0.1)
+        axtop = plt.subplot(gs[1, 0])
+        axbot = plt.subplot(gs[2, 0])
+        axcbar = plt.subplot(gs[0, :])
+        axright = plt.subplot(gs[1, 1])
         
-        return axtop, axbot, axcbar, x, y, y2, area
+        return axtop, axbot, axright, axcbar, x, y, y2, area
     else:
         gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
         gs.update(hspace=0.05)
@@ -58,7 +59,7 @@ def create_colorbar(axcbar, pcm, label):
     :return: None
     """
     # Set the colorbar axes #
-    cb = plt.colorbar(pcm, cax=axcbar)
+    cb = plt.colorbar(pcm, cax=axcbar, orientation='horizontal')
     
     # Set the colorbar parameters #
     cb.set_label(label, size=16)
@@ -244,7 +245,7 @@ def stellar_light(pdf, data, level, redshift):
         axbot.imshow(edge_on, interpolation='nearest')
         
         set_axes(axtop, axbot)
-        pdf.savefig(f)  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save figure.
     
     return None
 
@@ -267,9 +268,9 @@ def stellar_density(pdf, data, level, redshift):
     for s in data:
         # Generate the figure #
         plt.close()
-        f = plt.figure(figsize=(8, 8), dpi=300)
-        axtop, axbot, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        axtop.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=axtop.transAxes)
+        f = plt.figure(figsize=(10, 10), dpi=300)
+        axtop, axbot, axright, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        f.text(0.5, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=axtop.transAxes)
         
         # Rotate halo based on principal axes #
         s.calc_sf_indizes(s.subfind)
@@ -284,15 +285,19 @@ def stellar_density(pdf, data, level, redshift):
                                  'mass') / area * 1e10
         edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
             0.5 * area) * 1e10
-        pcm = axtop.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='Oranges', rasterized=True)
-        axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='Oranges', rasterized=True)
+        end_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 2, res, boxsize, 'mass') / (
+            0.5 * area) * 1e10
+        
+        pcm = axtop.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='gist_heat_r', rasterized=True)
+        axbot.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='gist_heat_r', rasterized=True)
+        axright.pcolormesh(y2, x, end_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='gist_heat_r', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         
         # Plot the contour lines #
-        count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70, range=[[-25, 25], [-25, 25]])
-        axtop.contour(np.log10(count).T, colors="k", extent=[-25, 25, -25, 25], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
-        count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 0] * 1e3, bins=70, range=[[-25, 25], [-25, 25]])
-        axbot.contour(np.log10(count).T, colors="k", extent=[-25, 25, -25, 25], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+        # count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70, range=[[-30, 30], [-30, 30]])
+        # axtop.contour(np.log10(count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+        # count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 0] * 1e3, bins=70, range=[[-30, 30], [-30, 30]])
+        # axbot.contour(np.log10(count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
         
         set_axes(axtop, axbot, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         

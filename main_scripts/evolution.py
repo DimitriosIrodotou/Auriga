@@ -133,7 +133,7 @@ def circularity(pdf, data, levels, z):
     for il in range(nlevels):
         data.select_haloes(levels[il], z)
         nhalos += data.selected_current_nsnaps
-    
+
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
     
@@ -145,29 +145,29 @@ def circularity(pdf, data, levels, z):
         for s in data:
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, do_rotation=True)
-            
+
             age = np.zeros(s.npartall)
             age[s.type == 4] = s.data['age']
-            
+
             galrad = 0.1 * s.subfind.data['frc2'][0]
             iall, = np.where((s.r() < galrad) & (s.r() > 0.))
             istars, = np.where((s.r() < galrad) & (s.r() > 0.) & (s.type == 4) & (age > 0.))
             nall = np.size(iall)
             nstars = np.size(istars)
-            
+
             rsort = s.r()[iall].argsort()
             msum = np.zeros(nall)
             msum[rsort] = np.cumsum(s.mass[iall][rsort])
-            
+
             nn, = np.where((s.type[iall] == 4) & (age[iall] > 0.))
             smass = s.mass[iall][nn]
             jz = np.cross(s.pos[iall, :][nn, :].astype('f8'), s.data['vel'][iall, :][nn, :])[:, 0]
             ene = 0.5 * (s.vel[iall, :][nn, :].astype('f8') ** 2.).sum(axis=1) + s.data['pot'][iall][nn].astype('f8')
             esort = ene.argsort()
-            
+
             jz = jz[esort]
             smass = smass[esort]
-            
+
             jcmax = np.zeros(nstars)
             for nn in range(nstars):
                 if nn < 50:
@@ -179,21 +179,21 @@ def circularity(pdf, data, levels, z):
                 else:
                     left = nn - 50
                     right = nn + 50
-                
+
                 jcmax[nn] = np.max(jz[left:right])
-            
+
             eps = jz / jcmax
-            
+
             ax = create_axis(f, isnap)
             ydata, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
             ydata /= edges[1:] - edges[:-1]
             ax.plot(0.5 * (edges[1:] + edges[:-1]), ydata, 'k')
-            
+
             set_axis(isnap, ax, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
             ax.text(0.0, 1.01, "Au%s z = %.1f " % (s.haloname, z), color='k', fontsize=6, transform=ax.transAxes)
             ax.set_xlim(-2., 2.)
             ax.set_xticks([-1.5, 0., 1.5])
-            
+
             isnap += 1
     
     pdf.savefig(f)

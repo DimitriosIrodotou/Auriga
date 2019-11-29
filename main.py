@@ -121,7 +121,6 @@ class AurigaHalo:
         redshifts = np.zeros(self.nsnaps)
         for idx, (snapid, snap) in enumerate(self.snaps.items()):
             redshifts[idx] = snap.redshift
-        
         return redshifts
     
     
@@ -171,7 +170,7 @@ class AurigaOutput:
     
     def get_snapshots(self, redshift):
         """
-        Collect snapshot numbers for an Auriga halo.
+        Collect snapshot(s)'s information for an Auriga halo.
         :param redshift: redshift from select_haloes
         :return: snaps
         """
@@ -182,7 +181,8 @@ class AurigaOutput:
             snap = self.haloes[name].get_snap_redshift(redshift)
             snap.haloname = name
             snaps += [snap]
-        
+            
+        print('Analysing snapdir_' + str(snap.__getattribute__('snapid')) + ' with redshift ' + str(snap.__getattribute__('redshift')))
         return snaps
 
 
@@ -287,7 +287,7 @@ class AurigaPdf:
         # Projections #
         # Stars #
         # main_scripts.projections.stellar_light(pdf, self, level, redshift)
-        # main_scripts.projections.stellar_density(pdf, self, level, redshift)
+        main_scripts.projections.stellar_density(pdf, self, level, redshift)
         # Gas #
         # main_scripts.projections.gas_density(pdf, self, level, redshift)
         # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
@@ -304,8 +304,8 @@ class AurigaPdf:
         # TODO fix the rest scripts
         # Time evolution #
         # main_scripts.evolution.bar_strength(pdf, self, level)
-        # for redshift in np.linspace(0, 2, 21):
-        main_scripts.evolution.circularity(pdf, self, [level], redshift)
+        # for redshift in np.linspace(0, 2, 5):
+        #     main_scripts.evolution.circularity(pdf, self, [level], redshift)
         # main.time_evolution.bfld(pdf, self, level)
         # main_scripts.time_evolution.galaxy_mass(pdf, self, level)
         # main_scripts.time_evolution.bh_mass(pdf, self, [level])
