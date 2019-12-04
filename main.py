@@ -283,11 +283,12 @@ class AurigaPdf:
         """
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
-        
+
+        # TODO remove set_axes from projections
         # Projections #
         # Stars #
         # main_scripts.projections.stellar_light(pdf, self, level, redshift)
-        main_scripts.projections.stellar_density(pdf, self, level, redshift)
+        # main_scripts.projections.stellar_density(pdf, self, level, redshift)
         # Gas #
         # main_scripts.projections.gas_density(pdf, self, level, redshift)
         # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
@@ -304,15 +305,15 @@ class AurigaPdf:
         # TODO fix the rest scripts
         # Time evolution #
         # main_scripts.evolution.bar_strength(pdf, self, level)
-        # for redshift in np.linspace(0, 2, 5):
+        # for redshift in np.linspace(0.56, 0.58, 5):
         #     main_scripts.evolution.circularity(pdf, self, [level], redshift)
         # main.time_evolution.bfld(pdf, self, level)
         # main_scripts.time_evolution.galaxy_mass(pdf, self, level)
         # main_scripts.time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
-        # main.galaxy.sfr(pdf, self, [level])
-        # main.galaxy.delta_sfr(pdf, self, [level])
+        # main_scripts.galaxy.sfr(pdf, self, [level])
+        main_scripts.galaxy.delta_sfr(pdf, self, [level])
         # main_scripts.galaxy.hot_cold_gas_fraction(pdf, self, level)
         # main.galaxy.surface_densities(pdf, self, [level])
         # main.galaxy.circularity(pdf, self, [level])
