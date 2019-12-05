@@ -49,7 +49,7 @@ def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5)
     return None
 
 
-def set_axis_evo(s, ax, ax2, ylabel, ylim=None, ncol=5):
+def set_axis_evo(s, ax, ax2):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
     a = 1. / (1 + z)
     
@@ -67,24 +67,16 @@ def set_axis_evo(s, ax, ax2, ylabel, ylim=None, ncol=5):
             else:
                 lb += ["%.0f" % v]
     
-    ax.set_xlim(0., 13.)
+    ax.set_xlim(0, 13)
     ax.invert_xaxis()
-    ax2.set_xlim(ax.get_xlim())
+    ax.tick_params(direction='out', which='both', right='on')
+    ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=12)
+    
     ax2.set_xticks(times)
     ax2.set_xticklabels(lb)
-    
-    ax.set_ylabel(ylabel, size=12)
-    ax.set_xlabel("$t_\mathrm{look}\,\mathrm{[Gyr]}$", size=12)
-    ax2.set_xlabel("$z$", size=12)
-    
-    for a in [ax, ax2]:
-        for label in a.xaxis.get_ticklabels():
-            label.set_size(12)
-        for label in a.yaxis.get_ticklabels():
-            label.set_size(12)
-    
-    if ylim is not None:
-        ax.set_ylim(ylim)
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xlabel('$z$', size=12)
+    ax2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
 
@@ -97,7 +89,6 @@ def circularity(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    Gcosmo = 43.0071
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
     
@@ -559,7 +550,7 @@ def sfr(pdf, data, levels):
                     label="Au%s-%d" % (s.haloname, levels[0]))
             
             ax2 = ax.twiny()
-            set_axis_evo(s, ax, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+            # set_axis_evo(s, ax, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
             ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
             ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
     
@@ -578,86 +569,89 @@ def delta_sfr(pdf, data, levels):
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(10, 10))
     gs = gridspec.GridSpec(3, 3)
-    gs.update(hspace=0.05, wspace=0.05)
+    gs.update(hspace=0.5, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])
     ax01 = plt.subplot(gs[0, 1])
     ax02 = plt.subplot(gs[0, 2])
     ax10 = plt.subplot(gs[1, 0])
     ax11 = plt.subplot(gs[1, 1])
     ax12 = plt.subplot(gs[1, 2])
-    ax00.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    ax10.set_xlabel("$r\,\mathrm{[kpc]}$")
-
-    for a in [ax00, ax01, ax02, ax10, ax11, ax12]:
-        a.set_ylim(0, 18)
-        a.tick_params(direction='out', which='both', top='on', right='on')
-        
+    ax00.set_ylabel('$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
+    ax10.set_ylabel('$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
+    
+    for a in [ax01, ax02, ax11, ax12]:
+        a.set_yticklabels([])
+    
+    for a in [ax00, ax01, ax02]:
+        a.set_ylim(0, 20)
+    
+    for a in [ax10, ax11, ax12]:
+        a.set_ylim(-9, 14)
+    
     nbins = 100
-    tmin = 0
+    tmin = 0.0
     tmax = 13.0
     timebin = (tmax - tmin) / nbins
-
+    i = 0
     for il in range(nlevels):
         level = levels[il]
         data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-        i = 0
-        a = [ax00, ax01, ax02]
         for s in data:
-            a = a[i]
+            color = next(colors)
             s.centerat(s.subfind.data['fpos'][0, :])
-
+            
             mask, = np.where((s.data['age'] > 0.) & (s.r() < 0.001) & (s.pos[:, 2] < 0.003))
             age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
-
-            counts, bins, bars = a.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, color=next(colors), histtype='step', bins=nbins,
-                                         range=[tmin, tmax], label="Au%s-%d" % (s.haloname, levels[0]))
-            ax2 = a.twiny()
-            set_axis_evo(s, a, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-            a.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-            a.text(0.05, 0.92, "r < 1kpc", color='k', fontsize=12, transform=a.transAxes)
-            i += 1
+            
+            counts00, bins00, bars00 = ax00.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, histtype='step', color=color, bins=nbins,
+                                                 range=[tmin, tmax], label="Au%s" % s.haloname)
+            ax2 = ax00.twiny()
+            set_axis_evo(s, ax00, ax2)
+            ax00.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
+            ax00.text(0.05, 0.92, "r < 1kpc", color='k', fontsize=8, transform=ax00.transAxes)
             
             mask, = np.where((s.data['age'] > 0.) & (s.r() > 0.001) & (s.r() < 0.005) & (s.pos[:, 2] < 0.003))
             age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
-
-            counts, bins, bars = a.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, color=next(colors), histtype='step', bins=nbins,
-                                         range=[tmin, tmax], label="Au%s-%d" % (s.haloname, levels[0]))
-            ax2 = a.twiny()
-            set_axis_evo(s, a, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-            a.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-            a.text(0.05, 0.92, "1kpc < r < 5kpc", color='k', fontsize=12, transform=a.transAxes)
-            i += 1
+            
+            counts01, bins01, bars01 = ax01.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, histtype='step', color=color, bins=nbins,
+                                                 range=[tmin, tmax], label="Au%s" % s.haloname)
+            ax2 = ax01.twiny()
+            set_axis_evo(s, ax01, ax2)
+            ax01.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
+            ax01.text(0.05, 0.92, "1kpc < r < 5kpc", color='k', fontsize=8, transform=ax01.transAxes)
             
             mask, = np.where((s.data['age'] > 0.) & (s.r() > 0.005) & (s.r() < 0.015) & (s.pos[:, 2] < 0.003))
             age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
-
-            counts, bins, bars = a.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, color=next(colors), histtype='step', bins=nbins,
-                                         range=[tmin, tmax], label="Au%s-%d" % (s.haloname, levels[0]))
-            ax2 = a.twiny()
-            set_axis_evo(s, a, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-            a.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-            a.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=a.transAxes)
-            i += 1
             
-    #         if i == 0:
-    #             tmp_counts = counts
-    #         i += 1
-    #     plt.close()
-    #     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    #     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    #     ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    #     ax.set_xlabel("$r\,\mathrm{[kpc]}$")
-    #
-    #     bins = bins[np.where(bins <= 13.0)]
-    #
-    #     ax.plot(bins, (counts - tmp_counts))
-    #     ax2 = ax.twiny()
-    #     set_axis_evo(s, ax10, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    #     ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-    #     ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
+            counts02, bins02, bars02 = ax02.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, histtype='step', color=color, bins=nbins,
+                                                 range=[tmin, tmax], label="Au%s" % s.haloname)
+            ax2 = ax02.twiny()
+            set_axis_evo(s, ax02, ax2)
+            ax02.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
+            ax02.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=8, transform=ax02.transAxes)
+            
+            if i == 0:
+                tmp_counts = np.vstack([counts00, counts01, counts02]).T
+                tmp_bins = np.vstack([bins00, bins01, bins02]).T
+            i += 1
+        
+        ax10.plot(tmp_bins[:-1, 0], (counts00 - tmp_counts[:, 0]))
+        ax2 = ax10.twiny()
+        set_axis_evo(s, ax10, ax2)
+        ax10.text(0.05, 0.92, "r < 1kpc", color='k', fontsize=8, transform=ax10.transAxes)
+        
+        ax11.plot(tmp_bins[:-1, 1], (counts01 - tmp_counts[:, 1]))
+        ax2 = ax11.twiny()
+        set_axis_evo(s, ax11, ax2)
+        ax11.text(0.05, 0.92, "1kpc < r < 5kpc", color='k', fontsize=8, transform=ax11.transAxes)
+        
+        ax12.plot(tmp_bins[:-1, 2], (counts02 - tmp_counts[:, 2]))
+        ax2 = ax12.twiny()
+        set_axis_evo(s, ax12, ax2)
+        ax12.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=8, transform=ax12.transAxes)
     
-    pdf.savefig(f,bbox_inches='tight')
+    pdf.savefig(f, bbox_inches='tight')
     return None
 
 
@@ -692,19 +686,6 @@ def hot_cold_gas_fraction(pdf, data, level):
         age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
         
         ax.scatter(s.data['temprho'], s.data['temprho'], label="Au%s-%d" % (s.haloname, level))  # if i == 0:  #     tmp_counts = counts  # i += 1
-    # plt.close()
-    # f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    # ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    # ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    # ax.set_xlabel("$r\,\mathrm{[kpc]}$")
-    #
-    # bins = bins[np.where(bins < 13.0)]
-    #
-    # ax.plot(bins, (counts - tmp_counts))
-    # ax2 = ax.twiny()
-    # set_axis_evo(s, ax, ax2, "$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    # ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-    # ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
     
     pdf.savefig(f)
     return None

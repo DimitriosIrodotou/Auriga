@@ -305,15 +305,16 @@ class AurigaPdf:
         # TODO fix the rest scripts
         # Time evolution #
         # main_scripts.evolution.bar_strength(pdf, self, level)
-        # for redshift in np.linspace(0.56, 0.58, 5):
+        # for redshift in np.linspace(0.0, 2, 21):
+        #     print(redshift)
         #     main_scripts.evolution.circularity(pdf, self, [level], redshift)
         # main.time_evolution.bfld(pdf, self, level)
         # main_scripts.time_evolution.galaxy_mass(pdf, self, level)
-        # main_scripts.time_evolution.bh_mass(pdf, self, [level])
+        main_scripts.time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
         # main_scripts.galaxy.sfr(pdf, self, [level])
-        main_scripts.galaxy.delta_sfr(pdf, self, [level])
+        # main_scripts.galaxy.delta_sfr(pdf, self, [level])
         # main_scripts.galaxy.hot_cold_gas_fraction(pdf, self, level)
         # main.galaxy.surface_densities(pdf, self, [level])
         # main.galaxy.circularity(pdf, self, [level])
@@ -335,16 +336,17 @@ class AurigaPdf:
         #   main.metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
-        os.system("ls -ltr ../plots")
+        file_name = 'Auriga-' + date + '.pdf'
+        os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 
 
 # Set the path to the simulation data and the level of the run #
 b = AurigaPdf()
-b.add_directory("/u/di43/Auriga/output/", 4)
+b.add_directory('/u/di43/Auriga/output/', 4)
 # Generate the pdf #
 b.make_pdf(4)
 
 # Print total time #
 print('–––––––––––––––––––––––––––––––––––––––––––––')
-print("Finished main.py in %.4s s" % (time.time() - start_time))
+print('Finished main.py in %.4s s' % (time.time() - start_time))
