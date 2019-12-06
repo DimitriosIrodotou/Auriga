@@ -181,7 +181,7 @@ class AurigaOutput:
             snap = self.haloes[name].get_snap_redshift(redshift)
             snap.haloname = name
             snaps += [snap]
-            
+        
         print('Analysing snapdir_' + str(snap.__getattribute__('snapid')) + ' with redshift ' + str(snap.__getattribute__('redshift')))
         return snaps
 
@@ -283,7 +283,7 @@ class AurigaPdf:
         """
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
-
+        
         # TODO remove set_axes from projections
         # Projections #
         # Stars #
@@ -293,6 +293,7 @@ class AurigaPdf:
         # main_scripts.projections.gas_density(pdf, self, level, redshift)
         # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
         # main_scripts.projections.gas_metallicity(pdf, self, level, redshift)
+        main_scripts.projections.gas_slice(pdf, self, level, redshift)
         # Magnetic fields #
         # main_scripts.projections.bfld(pdf, self, level, redshift)
         # Dark matter #
@@ -304,13 +305,13 @@ class AurigaPdf:
         
         # TODO fix the rest scripts
         # Time evolution #
-        # main_scripts.evolution.bar_strength(pdf, self, level)
+        # main_scripts.evolution.bar_strength(pdf, self, level, read=False)
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     main_scripts.evolution.circularity(pdf, self, [level], redshift)
         # main.time_evolution.bfld(pdf, self, level)
         # main_scripts.time_evolution.galaxy_mass(pdf, self, level)
-        main_scripts.time_evolution.bh_mass(pdf, self, [level])
+        # main_scripts.time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
         # main_scripts.galaxy.sfr(pdf, self, [level])

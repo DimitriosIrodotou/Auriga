@@ -2,14 +2,12 @@ from __future__ import division
 
 import main_scripts.projections
 
+import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-import numpy as np
 
 from const import *
 from sfigure import *
-
-mass_proton = 1.6726219e-27
 
 
 def create_axis(f, idx, ncol=5):
@@ -47,12 +45,13 @@ def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None):
     return None
 
 
-def bar_strength(pdf, data, level):
+def bar_strength(pdf, data, level, read):
     """
         Calculate bar strength from Fourier modes of surface density.
         :param pdf:
         :param data:
         :param level:
+        :param read: boolean.
         :return:
         """
     
@@ -62,71 +61,72 @@ def bar_strength(pdf, data, level):
     ax.set_ylabel("$A_{2}$")
     ax.set_xlabel('z')
     a2s, zs, names = [], [], []
-    for z in np.linspace(0, 2, 3):
+    for redshift in np.linspace(0, 2, 51):
         attributes = ['age', 'mass', 'pos']
-        data.select_haloes(level, z, loadonlytype=[4], loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=[4], loadonlyhalo=0, loadonly=attributes)
         nhalos = data.selected_current_nsnaps
         colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-        print(z)
-        for s in data:
-            s.calc_sf_indizes(s.subfind)
-            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            
-            mask, = np.where(s.data['age'] > 0.0)  # Select stars.
-            z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
-                                                                                  s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
-            s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
-            x, y = s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
-            
-            nbins = 40  # Number of radial bins.
-            r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
-            
-            # Initialise Fourier components #
-            r_m = np.zeros(nbins)
-            beta_2 = np.zeros(nbins)
-            alpha_0 = np.zeros(nbins)
-            alpha_2 = np.zeros(nbins)
-            
-            # Split up galaxy in radius bins and calculate Fourier components #
-            for i in range(0, nbins):
-                r_s = float(i) * 0.25
-                r_b = float(i) * 0.25 + 0.25
-                r_m[i] = float(i) * 0.25 + 0.125
-                xfit = x[(r < r_b) & (r > r_s)]
-                yfit = y[(r < r_b) & (r > r_s)]
-                for k in range(0, len(xfit)):
-                    th_i = np.arctan2(yfit[k], xfit[k])
-                    alpha_0[i] = alpha_0[i] + 1
-                    alpha_2[i] = alpha_2[i] + np.cos(2 * th_i)
-                    beta_2[i] = beta_2[i] + np.sin(2 * th_i)
-            
-            # Calculate bar strength A_2
-            a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])  # Plot bar strength as a function of radius #
-            
-            # Calculate bar strength A_2
-            a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
-            a2s.append(max(a2))
-            zs.append(z)  # Plot bar strength as a function of radius #
-            names.append(s.haloname)
-            
-            np.save('/u/di43/Auriga/plots/data/' + 'a2s_' + str(s.haloname) + '_' + str(z), a2s)
-            np.save('/u/di43/Auriga/plots/data/' + 'zs_' + str(s.haloname) + '_' + str(z),
-                    zs)  # a2s = np.load(('/u/di43/Auriga/plots/data/' + 'a2s_' + str(s.haloname) + '_' + str(z) + '.npy'))  # zs = np.load((
-            # '/u/di43/Auriga/plots/data/' + 'zs_' + str(s.haloname) + '_' + str(z) + '.npy'))
+        print(redshift)
+        if read is True:
+            for s in data:
+                s.calc_sf_indizes(s.subfind)
+                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+                
+                mask, = np.where(s.data['age'] > 0.0)  # Select stars.
+                z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
+                                                                                      s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+                s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
+                x, y = s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
+                
+                nbins = 40  # Number of radial bins.
+                r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
+                
+                # Initialise Fourier components #
+                r_m = np.zeros(nbins)
+                beta_2 = np.zeros(nbins)
+                alpha_0 = np.zeros(nbins)
+                alpha_2 = np.zeros(nbins)
+                
+                # Split up galaxy in radius bins and calculate Fourier components #
+                for i in range(0, nbins):
+                    r_s = float(i) * 0.25
+                    r_b = float(i) * 0.25 + 0.25
+                    r_m[i] = float(i) * 0.25 + 0.125
+                    xfit = x[(r < r_b) & (r > r_s)]
+                    yfit = y[(r < r_b) & (r > r_s)]
+                    for k in range(0, len(xfit)):
+                        th_i = np.arctan2(yfit[k], xfit[k])
+                        alpha_0[i] = alpha_0[i] + 1
+                        alpha_2[i] = alpha_2[i] + np.cos(2 * th_i)
+                        beta_2[i] = beta_2[i] + np.sin(2 * th_i)
+                
+                # Calculate bar strength A_2 #
+                a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
+                
+                zs.append(redshift)
+                a2s.append(max(a2))
+                names.append(s.haloname)
     
-    # data = np.vstack([zs, a2s]).T
-    # print(data)
-    # # Plot bar strength as a function of radius #
-    #
-    # for j in range(0, nhalos):  # Loop over all haloes
-    #     x, y = [], []
-    #     for i in range(0, len(data) - nhalos + 1, nhalos):  # Loop over each haloes data
-    #         x.append(data[i + j][0])
-    #         y.append(data[i + j][1])
-    #     print(x)
-    #     print(y)
-    #     plt.plot(x, y, color=next(colors), label="Au%s-%d" % (names[j], level))
-    #     ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    if read is True:
+        np.save('/u/di43/Auriga/plots/data/' + 'zs', zs)
+        np.save('/u/di43/Auriga/plots/data/' + 'a2s', a2s)
+        np.save('/u/di43/Auriga/plots/data/' + 'names', names)
+    
+    else:
+        zs = np.load(('/u/di43/Auriga/plots/data/' + 'zs.npy'))
+        a2s = np.load(('/u/di43/Auriga/plots/data/' + 'a2s.npy'))
+        names = np.load(('/u/di43/Auriga/plots/data/' + 'names.npy'))
+    
+    data = np.vstack([zs, a2s]).T
+    
+    # Plot bar strength as a function of radius #
+    for j in range(0, nhalos):  # Loop over all haloes
+        x, y = [], []
+        for i in range(0, len(data) - nhalos + 1, nhalos):  # Loop over each haloes data
+            x.append(data[i + j][0])
+            y.append(data[i + j][1])
+        plt.plot(x, y, color=next(colors), label="Au%s-%d" % (names[j], level))
+        ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     
     pdf.savefig(f)
     return None
