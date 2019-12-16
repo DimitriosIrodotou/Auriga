@@ -318,7 +318,7 @@ class AurigaPdf:
         # main_scripts.galaxy.delta_sfr(pdf, self, [level])
         # main_scripts.galaxy.hot_cold_gas_fraction(pdf, self, level)
         # main.galaxy.surface_densities(pdf, self, [level])
-        # main.galaxy.circularity(pdf, self, [level])
+        # main_scripts.galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])
         # main.galaxy.stellar_vs_total(pdf, self, [level])
         # main.galaxy.gas_fraction(pdf, self, [level])

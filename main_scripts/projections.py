@@ -509,21 +509,21 @@ def gas_slice(pdf, data, level, redshift):
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        # Plot the projections #
-        meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-        temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
-        s.data['temprho'] = s.rho * temperature
-        
-        face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-        rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-        ratio = (face_on / rho).T
-        ratio = np.where(ratio > 1e5, ratio, np.nan)
-        pcm = ax00.pcolormesh(x, y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
-        rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
-        ratio = (edge_on / rho).T
-        ratio = np.where(ratio > 1e5, ratio, np.nan)
-        ax10.pcolormesh(x, 0.5 * y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        # # Plot the projections #
+        # meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+        # temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
+        # s.data['temprho'] = s.rho * temperature
+        #
+        # face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+        # rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+        # ratio = (face_on / rho).T
+        # ratio = np.where(ratio > 1e5, ratio, np.nan)
+        # pcm = ax00.pcolormesh(x, y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        # edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
+        # rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
+        # ratio = (edge_on / rho).T
+        # ratio = np.where(ratio > 1e5, ratio, np.nan)
+        # ax10.pcolormesh(x, 0.5 * y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
@@ -538,7 +538,7 @@ def gas_slice(pdf, data, level, redshift):
                                                 range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
         vxgrid /= pn
         vygrid /= pn
-        
+
         xbin = np.zeros(len(xedges) - 1)
         ybin = np.zeros(len(yedges) - 1)
         xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
@@ -547,11 +547,11 @@ def gas_slice(pdf, data, level, redshift):
         xbin *= (10 * res) * (0.1 / boxsize)
         ybin -= yedges[-1]
         ybin *= (-10 * res) * (0.1 / boxsize)
-        
+
         xc, yc = np.meshgrid(xbin, ybin)
-        
+
         vygrid *= (-1.)
-        p = plt.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), scale=ascale, pivot='middle', color='yellow', alpha=0.8)
+        p = ax00.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), pivot='middle', color='yellow', alpha=0.8)
         
         pdf.savefig(f, bbox_inches='tight')  # Save figure.
     
