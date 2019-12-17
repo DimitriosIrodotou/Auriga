@@ -281,7 +281,7 @@ class AurigaPdf:
         :param level: level of the run
         :return: None
         """
-        redshift = 0.0
+        redshift = 0.95
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
         # TODO remove set_axes from projections

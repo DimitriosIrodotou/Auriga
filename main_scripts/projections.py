@@ -72,12 +72,13 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax10, ax01, x, y, y2, area
     
     elif velocity_vectors is True:
-        gs = gridspec.GridSpec(2, 1)
+        gs = gridspec.GridSpec(2, 2, width_ratios=[1, 0.05])
         gs.update(hspace=0.05, wspace=0.05)
         ax00 = plt.subplot(gs[0, 0])
         ax10 = plt.subplot(gs[1, 0])
+        ax01 = plt.subplot(gs[:, 1])
         
-        return ax00, ax10, x, y, y2, area
+        return ax00, ax10, ax01, x, y, y2, area
     
     else:
         gs = gridspec.GridSpec(2, 1, height_ratios=[1, 0.5])
@@ -491,7 +492,6 @@ def gas_slice(pdf, data, level, redshift):
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    ascale = [4000]  # 2000.]
     # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
     particle_type = [0, 4]
     attributes = ['mass', 'ne', 'pos', 'rho', 'u']
@@ -502,14 +502,31 @@ def gas_slice(pdf, data, level, redshift):
         # Generate the figure #
         plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
-        ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
+        ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Rotate halo based on principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        # # Plot the projections #
+        dist = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
+        igas, = np.where((s.type == 0) & (dist < 0.5 * boxsize))
+        
+        for j in range(2):
+            indy = [[1, 2, 0], [1, 0, 2]]
+            temp_pos = s.pos[igas, :].astype('float64')
+            pos = np.zeros((np.size(igas), 3))
+            pos[:, 0] = temp_pos[:, indy[j][0]]  # 0:1
+            pos[:, 1] = temp_pos[:, indy[j][1]]  # 1:2
+            pos[:, 2] = temp_pos[:, indy[j][2]]  # 2:0
+            
+            temp_vel = s.vel[igas, :].astype('float64')
+            vel = np.zeros((np.size(igas), 3))
+            vel[:, 0] = temp_vel[:, indy[j][0]]
+            vel[:, 1] = temp_vel[:, indy[j][1]]
+            vel[:, 2] = temp_vel[:, indy[j][2]]
+            
+        # Plot the projections #
         # meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
         # temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
         # s.data['temprho'] = s.rho * temperature
@@ -517,41 +534,50 @@ def gas_slice(pdf, data, level, redshift):
         # face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
         # rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
         # ratio = (face_on / rho).T
-        # ratio = np.where(ratio > 1e5, ratio, np.nan)
-        # pcm = ax00.pcolormesh(x, y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        # ratio = np.where(ratio > 5e5, ratio, np.nan)
+        # pcm = ax00.pcolormesh(x, y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e5, vmax=1e7), cmap='Reds', rasterized=True)
+        # create_colorbar(ax01, pcm, "$T\,\mathrm{[K]}$")
         # edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
         # rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
         # ratio = (edge_on / rho).T
-        # ratio = np.where(ratio > 1e5, ratio, np.nan)
-        # ax10.pcolormesh(x, 0.5 * y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        # ratio = np.where(ratio > 5e5, ratio, np.nan)
+        # ax10.pcolormesh(x, 0.5 * y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e5, vmax=1e7), cmap='Reds', rasterized=True)
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
         # Arrows for velocity field
-        nbin = 30
-        d1, d2 = 0, 1  # 2,1
-        pn, xedges, yedges = np.histogram2d(s.pos[:, d1], s.pos[:, d2], bins=(nbin, nbin),
-                                            range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
-        vxgrid, xedges, yedges = np.histogram2d(s.pos[:, d1], s.pos[:, d2], bins=(nbin, nbin), weights=s.vel[:, d1],
-                                                range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
-        vygrid, xedges, yedges = np.histogram2d(s.pos[:, d1], s.pos[:, d2], bins=(nbin, nbin), weights=s.vel[:, d2],
-                                                range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
-        vxgrid /= pn
-        vygrid /= pn
-
+        ascale = [4000., 4000.]
+        d1, d2 = 2, 1
+        h, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, range=[[-30, 30], [-30, 30]])
+        vxgrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d1], range=[[-30, 30], [-30, 30]])
+        vygrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d2], range=[[-30, 30], [-30, 30]])
+        
+        vxgrid /= h
+        vygrid /= h
         xbin = np.zeros(len(xedges) - 1)
         ybin = np.zeros(len(yedges) - 1)
         xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
         ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
-        xbin -= xedges[0]
-        xbin *= (10 * res) * (0.1 / boxsize)
-        ybin -= yedges[-1]
-        ybin *= (-10 * res) * (0.1 / boxsize)
-
         xc, yc = np.meshgrid(xbin, ybin)
-
-        vygrid *= (-1.)
-        p = ax00.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), pivot='middle', color='yellow', alpha=0.8)
+        vygrid *= -1
+        
+        p = ax00.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=ascale[1], pivot='middle', color='black', alpha=0.8, width=0.001)
+        
+        d1, d2 = 0, 1
+        h, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, range=[[-30, 30], [-15, 15]])
+        vxgrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d1], range=[[-30, 30], [-15, 15]])
+        vygrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d2], range=[[-30, 30], [-15, 15]])
+        vxgrid /= h
+        vygrid /= h
+        
+        xbin = np.zeros(len(xedges) - 1)
+        ybin = np.zeros(len(yedges) - 1)
+        xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
+        ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
+        xc, yc = np.meshgrid(xbin, ybin)
+        vygrid *= -1
+        
+        p = ax10.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), pivot='middle', color='black', width=0.001)
         
         pdf.savefig(f, bbox_inches='tight')  # Save figure.
     
