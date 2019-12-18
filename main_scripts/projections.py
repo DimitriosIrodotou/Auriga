@@ -73,7 +73,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
     
     elif velocity_vectors is True:
         gs = gridspec.GridSpec(2, 2, width_ratios=[1, 0.05])
-        gs.update(hspace=0.05, wspace=0.05)
+        gs.update(hspace=0.1, wspace=0.05)
         ax00 = plt.subplot(gs[0, 0])
         ax10 = plt.subplot(gs[1, 0])
         ax01 = plt.subplot(gs[:, 1])
@@ -173,19 +173,19 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     
     # Generate projection planes #
     if idir == 0:  # XY plane
-        pos[:, 0] = pos_orig[:, 1]
-        pos[:, 1] = pos_orig[:, 2]
-        pos[:, 2] = pos_orig[:, 0]
+        pos[:, 0] = pos_orig[:, 1]  # y-axis.
+        pos[:, 1] = pos_orig[:, 2]  # x-axis.
+        pos[:, 2] = pos_orig[:, 0]  # 3rd dimension.
         
         xres = res
         yres = res
         boxx = boxsize
         boxy = boxsize
     
-    elif idir == 1:  # ZY plane
-        pos[:, 0] = pos_orig[:, 0]
-        pos[:, 1] = pos_orig[:, 2]
-        pos[:, 2] = pos_orig[:, 1]
+    elif idir == 1:  # XZ plane
+        pos[:, 0] = pos_orig[:, 0]  # y-axis.
+        pos[:, 1] = pos_orig[:, 2]  # x-axis.
+        pos[:, 2] = pos_orig[:, 1]  # 3rd dimension.
         
         xres = res // 2
         yres = res
@@ -510,22 +510,11 @@ def gas_slice(pdf, data, level, redshift):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         dist = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-        igas, = np.where((s.type == 0) & (dist < 0.5 * boxsize))
+        igas, = np.where((s.type == 0))
         
-        for j in range(2):
-            indy = [[1, 2, 0], [1, 0, 2]]
-            temp_pos = s.pos[igas, :].astype('float64')
-            pos = np.zeros((np.size(igas), 3))
-            pos[:, 0] = temp_pos[:, indy[j][0]]  # 0:1
-            pos[:, 1] = temp_pos[:, indy[j][1]]  # 1:2
-            pos[:, 2] = temp_pos[:, indy[j][2]]  # 2:0
-            
-            temp_vel = s.vel[igas, :].astype('float64')
-            vel = np.zeros((np.size(igas), 3))
-            vel[:, 0] = temp_vel[:, indy[j][0]]
-            vel[:, 1] = temp_vel[:, indy[j][1]]
-            vel[:, 2] = temp_vel[:, indy[j][2]]
-            
+        pos = s.pos[igas]
+        vel = s.vel[igas]
+        
         # Plot the projections #
         # meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
         # temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
@@ -546,7 +535,6 @@ def gas_slice(pdf, data, level, redshift):
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
         # Arrows for velocity field
-        ascale = [4000., 4000.]
         d1, d2 = 2, 1
         h, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, range=[[-30, 30], [-30, 30]])
         vxgrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d1], range=[[-30, 30], [-30, 30]])
@@ -561,9 +549,14 @@ def gas_slice(pdf, data, level, redshift):
         xc, yc = np.meshgrid(xbin, ybin)
         vygrid *= -1
         
-        p = ax00.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=ascale[1], pivot='middle', color='black', alpha=0.8, width=0.001)
+        p = ax00.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=6000.0, pivot='middle', color='black', alpha=0.8, width=0.001)
         
-        d1, d2 = 0, 1
+        count, xedges, yedges = np.histogram2d(pos[:, 2] * 1e3, pos[:, 1] * 1e3, bins=70, range=[[-30, 30], [-30, 30]])
+        extent = [-30, 30, -30, 30]
+        countlog = np.ma.log10(count)
+        ax00.imshow(countlog.T, extent=extent, origin='lower', cmap='magma', interpolation='bicubic')
+        
+        d1, d2 = 2, 0
         h, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, range=[[-30, 30], [-15, 15]])
         vxgrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d1], range=[[-30, 30], [-15, 15]])
         vygrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d2], range=[[-30, 30], [-15, 15]])
@@ -577,7 +570,12 @@ def gas_slice(pdf, data, level, redshift):
         xc, yc = np.meshgrid(xbin, ybin)
         vygrid *= -1
         
-        p = ax10.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), pivot='middle', color='black', width=0.001)
+        p = ax10.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=6000.0, pivot='middle', color='black', width=0.001)
+        
+        count, xedges, yedges = np.histogram2d(pos[:, 2] * 1e3, pos[:, 0] * 1e3, bins=70, range=[[-30, 30], [-15, 15]])
+        extent = [-30, 30, -15, 15]
+        countlog = np.ma.log10(count)
+        ax10.imshow(countlog.T, extent=extent, origin='lower', cmap='magma', interpolation='bicubic')
         
         pdf.savefig(f, bbox_inches='tight')  # Save figure.
     
