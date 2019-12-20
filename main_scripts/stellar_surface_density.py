@@ -22,7 +22,7 @@ def plot_stellar_surfden(pdf, runs, dirs):
     for d in range(len(runs)):
         
         plt.close()
-        figure = plt.figure(figsize=(10, 7.5), dpi=100)
+        figure = plt.figure(0, figsize=(10, 7.5))
         plt.xlabel("$\\rm{R [kpc]}$")
         plt.ylabel("$\\rm{\Sigma [M_{\odot} pc^{-2}]}$")
         plt.xlim(0.0, 25.0)
@@ -32,7 +32,7 @@ def plot_stellar_surfden(pdf, runs, dirs):
         
         nshells = 60  # 35 up to galrad is OK
         
-        snaps = [251]
+        snaps = [127]  # 251
         
         time = np.zeros(len(snaps))
         
@@ -42,8 +42,7 @@ def plot_stellar_surfden(pdf, runs, dirs):
             snap = snaps[isnap]
             print("Doing dir %s snap %d." % (dd, snap))
             
-            attrs = ['pos', 'vel', 'mass', 'age']
-            attrs.append('gsph')
+            attrs = ['pos', 'vel', 'mass', 'age', 'gsph']
             s = gadget_readsnap(snap, snappath=dd + '/output/', hdf5=True, loadonlytype=loadonlytype, loadonly=attrs)
             sf = load_subfind(snap, dir=dd + '/output/', hdf5=True, loadonly=['fpos', 'frc2', 'svel', 'flty', 'fnsh', 'slty', 'fmc2', 'spos', 'ffsh'])
             s.calc_sf_indizes(sf)
@@ -60,9 +59,6 @@ def plot_stellar_surfden(pdf, runs, dirs):
             Rcut = 0.040
             rad = pylab.sqrt((pos[:, 1:] ** 2).sum(axis=1))
             ii, = np.where((abs(pos[:, 0]) < 0.005))  # Vertical cut in Mpc.
-            iband=1
-            luminosity = 10 ** (-0.4 * (sdata[iband] - Msunabs[band[iband]]))
-            weight = luminosity
             
             bins = nshells
             sden, edges = np.histogram(rad[ii], bins=bins, range=(0., Rcut), weights=mass[ii])
@@ -99,14 +95,14 @@ def plot_stellar_surfden(pdf, runs, dirs):
                 print("fitting failed")
             
             plt.semilogy(r, 1e10 * sdfit * 1e-6, 'o', markersize=5, color='k', linewidth=0.0)
-            plt.semilogy(r, 1e10 * p.exp_prof(r, popt[0], popt[1]) * 1e-6, 'b-', label=r'$R_d = %.2f$' % (popt[1]))
-            plt.semilogy(r, 1e10 * p.sersic_prof1(r, popt[2], popt[3], popt[4]) * 1e-6, 'r--', label=r'$R_{eff}=%.2f$' % (1. / popt[4]))
+            plt.semilogy(r, 1e10 * p.exp_prof(r, popt[0], popt[1]) * 1e-6, 'b-')
+            plt.semilogy(r, 1e10 * p.sersic_prof1(r, popt[2], popt[3], popt[4]) * 1e-6, 'r--')
             plt.semilogy(r, 1e10 * p.total_profile(r, popt[0], popt[1], popt[2], popt[3], popt[4]) * 1e-6, 'k-')
             
             plt.axvline(rfit, color='gray', linestyle='--')
-            plt.legend(loc='upper right', frameon=False, prop={'size': 12})
+            figure.text(0.5, 0.5, r'$R_{d} = %.2f$' '\n' r'$R_{eff} = %.2f$' '\n' r'$n = %.2f$' % (
+                popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4]), 1. / popt[4]))
         
-        plt.legend(loc='upper left', frameon=False, prop={'size': 12})
         plt.savefig('/u/di43/Auriga/plots/' + 'Test' + str(d) + '.png')
 
 

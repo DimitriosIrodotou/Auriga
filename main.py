@@ -293,7 +293,7 @@ class AurigaPdf:
         # main_scripts.projections.gas_density(pdf, self, level, redshift)
         # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
         # main_scripts.projections.gas_metallicity(pdf, self, level, redshift)
-        main_scripts.projections.gas_slice(pdf, self, level, redshift)
+        # main_scripts.projections.gas_slice(pdf, self, level, redshift)
         # Magnetic fields #
         # main_scripts.projections.bfld(pdf, self, level, redshift)
         # Dark matter #
@@ -324,17 +324,16 @@ class AurigaPdf:
         # main.galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
         # main_scripts.galaxy.bar_strength(pdf, self, level)
-        # main.galaxy.decomposition(pdf, self, [level])
         
-        # runs = ['halo_6NOAGN']  # ['halo_22', 'halo_22NOAGN', 'halo_6']
-        # nruns = len(runs)
-        # dir5 = '/u/di43/Auriga/output/'
-        # dirs = [dir5] * nruns
-        #
-        # main.stellar_surface_density.plot_stellar_surfden(pdf, runs, dirs)
+        runs = ['halo_6']  # ['halo_22', 'halo_22NOAGN', 'halo_6']
+        nruns = len(runs)
+        dir5 = '/u/di43/Auriga/output/'
+        dirs = [dir5] * nruns
+
+        main_scripts.stellar_surface_density.plot_stellar_surfden(pdf, runs, dirs)
         
         # Metallicities #
-        #   main.metallicities.ratios(pdf, self, [level], 0.)
+        # main_scripts.metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
         file_name = 'Auriga-' + date + '.pdf'
