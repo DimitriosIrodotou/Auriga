@@ -7,11 +7,14 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
 from const import *
+from pylab import *
 from sfigure import *
-
+from loadmodules import *
 from matplotlib import gridspec
-
-mass_proton = 1.6726219e-27
+from scipy.special import gamma
+from scipy.optimize import curve_fit
+from parse_particledata import parse_particledata
+from scripts.gigagalaxy.util import plot_helper
 
 
 def create_axis(f, idx, ncol=5):
@@ -655,39 +658,124 @@ def delta_sfr(pdf, data, levels):
     return None
 
 
-def hot_cold_gas_fraction(pdf, data, level):
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
-    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
-    
-    nbins = 100
-    tmin = 0
-    tmax = 13.0
-    timebin = (tmax - tmin) / nbins
-    
-    nhalos = 0
+def gas_temperature_fraction(pdf, data, level):
     attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
     data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0, loadonly=attributes)
-    nhalos += data.selected_current_nsnaps
-    colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-    i = 0
     for s in data:
-        # Plot the projections #
-        s.centerat(s.subfind.data['fpos'][0, :])
-        meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-        temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
-        s.data['temprho'] = s.rho * temperature
+        plt.close()
+        f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+        ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+        ax.set_ylabel(r'Gas fraction')
+        plt.ylim(-0.2, 1.2)
+        ax.grid(True, color='black')
         
-        age = np.zeros(s.npartall)
-        age[s.type == 4] = s.data['age']
-        mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
-        age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
+        s.calc_sf_indizes(s.subfind, verbose=False)
+        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
         
-        ax.scatter(s.data['temprho'], s.data['temprho'], label="Au%s-%d" % (s.haloname, level))  # if i == 0:  #     tmp_counts = counts  # i += 1
+        igas, = np.where(s.type == 0)
+        ngas = np.size(igas)
+        
+        mass = s.data['mass'][igas].astype('float64')
+        u = np.zeros(ngas)
+        
+        ne = s.data['ne'][igas].astype('float64')
+        metallicity = s.data['gz'][igas].astype('float64')
+        XH = s.data['gmet'][igas, element['H']].astype('float64')
+        yhelium = (1 - XH - metallicity) / (4. * XH)
+        mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+        u[:] = GAMMA_MINUS1 * s.data['u'][igas].astype('float64') * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+        
+        sfgas = np.where((u < 2e4))
+        medgas = np.where((u >= 2e4) & (u < 5e5))
+        hotgas = np.where((u >= 5e5))
+        
+        hotgmass = np.zeros((np.size(hotgas)))
+        hotgmass[:] = mass[hotgas]
+        medgmass = np.zeros((np.size(medgas)))
+        medgmass[:] = mass[medgas]
+        sfgmass = np.zeros((np.size(sfgas)))
+        sfgmass[:] = mass[sfgas]
+        
+        plt.bar('Au-' + str(s.haloname), np.sum(sfgmass) / np.sum(mass), width=0.2, alpha=0.6, color='blue', label=r'cold star-forming gas')
+        plt.bar('Au-' + str(s.haloname), np.sum(hotgmass) / np.sum(mass), bottom=np.sum(sfgmass) / np.sum(mass), width=0.2, alpha=0.6, color='green',
+                label=r'warm gas')
+        plt.bar('Au-' + str(s.haloname), np.sum(medgmass) / np.sum(mass), bottom=(np.sum(sfgmass) + np.sum(hotgmass)) / np.sum(mass), width=0.2,
+                alpha=0.6, color='red', label=r'hot gas')
+        ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+        pdf.savefig(f)
+    return None
+
+
+def stellar_surface_density_decomposition(pdf, data, redshift):
+    particle_type = [4]
+    attributes = ['pos', 'vel', 'mass', 'age', 'gsph']
+    data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
     
-    pdf.savefig(f)
+    # Loop over all haloes #
+    for s in data:
+        # Generate the figure #
+        plt.close()
+        f = plt.figure(0, figsize=(10, 7.5))
+        plt.xlim(0.0, 40.0)
+        plt.ylim(1e0, 1e6)
+        plt.xlabel("$\mathrm{R [kpc]}$", size=12)
+        plt.ylabel("$\mathrm{\Sigma [M_{\odot} pc^{-2}]}$", size=12)
+        plt.tick_params(direction='out', which='both', top='on', right='on')
+        
+        s.calc_sf_indizes(s.subfind)
+        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        
+        g = parse_particledata(s, s.subfind, attributes, radialcut=0.1 * s.subfind.data['frc2'][0])
+        g.prep_data()
+        sdata = g.sgdata['sdata']
+        
+        # Define the radial and vertical cuts and
+        radial_cut = 0.1 * s.subfind.data['frc2'][0]  # Radial cut in Mpc.
+        ii, = np.where((abs(sdata['pos'][:, 0]) < 0.005))  # Vertical cut in Mpc.
+        rad = np.sqrt((sdata['pos'][:, 1:] ** 2).sum(axis=1))
+        sden, edges = np.histogram(rad[ii], bins=50, range=(0., radial_cut), weights=sdata['mass'][ii])
+        sa = np.zeros(len(edges) - 1)
+        sa[:] = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
+        sden /= sa
+        
+        x = np.zeros(len(edges) - 1)
+        x[:] = 0.5 * (edges[1:] + edges[:-1])
+        sden *= 1e-6
+        r = x * 1e3
+        
+        sdlim = 1.0
+        indy = find_nearest(sden * 1e4, [sdlim]).astype('int64')
+        rfit = x[indy] * 1e3
+        sdfit = sden[:indy]
+        r = r[:indy][sdfit > 0.0]
+        sdfit = sdfit[sdfit > 0.0]
+        p = plot_helper.plot_helper()  # Load the helper.
+        
+        try:
+            sigma = 0.1 * sdfit
+            bounds = ([0.01, 0.0, 0.01, 0.5, 0.25], [1.0, 6.0, 10.0, 2.0, 10.0])
+            (popt, pcov) = curve_fit(p.total_profile, r, sdfit, sigma=sigma, bounds=bounds)
+            
+            # Compute component masses from the fit #
+            disc_mass = 2.0 * np.pi * popt[0] * popt[1] * popt[1]
+            bulge_mass = np.pi * popt[2] * popt[3] * popt[3] * gamma(2.0 / popt[4] + 1)
+            disc_to_total = disc_mass / (bulge_mass + disc_mass)
+        
+        except:
+            popt = np.zeros(5)
+            print('Fitting failed')
+        
+        plt.axvline(rfit, color='gray', linestyle='--')
+        plt.semilogy(r, 1e10 * sdfit * 1e-6, 'o', markersize=5, color='k', linewidth=0.0)
+        plt.semilogy(r, 1e10 * p.exp_prof(r, popt[0], popt[1]) * 1e-6, 'b-')
+        plt.semilogy(r, 1e10 * p.sersic_prof1(r, popt[2], popt[3], popt[4]) * 1e-6, 'r-')
+        plt.semilogy(r, 1e10 * p.total_profile(r, popt[0], popt[1], popt[2], popt[3], popt[4]) * 1e-6, 'k-')
+        
+        f.text(0.15, 0.75, r'$\mathrm{n} = %.2f$' '\n'r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n'  r'$\mathrm{D/T} = %.2f$' % (
+            1. / popt[4], popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4]), disc_to_total))
+        
+        pdf.savefig(f, bbox_inches='tight')  # Save figure.
     return None
 
 
@@ -700,53 +788,3 @@ def find_nearest(array, value):
             idx[i] = (np.abs(array - value[i])).argmin()
     
     return idx
-
-
-def table(pdf, data, levels):
-    """
-
-    :param pdf:
-    :param data:
-    :param levels:
-    :return:
-    """
-    nlevels = len(levels)
-    
-    nhalos = 0
-    for il in range(nlevels):
-        data.select_haloes(levels[il], 0.)
-        nhalos += data.selected_current_nsnaps
-    
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
-    
-    text = []
-    names = []
-    
-    for il in range(nlevels):
-        level = levels[il]
-        
-        data.select_haloes(level, 0., loadonlyhalo=0)
-        
-        for s in data:
-            s.centerat(s.subfind.data['fpos'][0, :])
-            
-            mass = s.subfind.data['fmc2'][0]
-            
-            age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
-            istars, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.))
-            mstar = s.mass[istars].sum()
-            
-            igas, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))
-            mgas = s.mass[igas].sum()
-            
-            text.append(["%d" % level, "%g" % mass, "%g" % mstar, "%g" % mgas])
-            names += [s.haloname]
-    
-    ax.table(cellText=text, rowLabels=names, colLabels=["level", "Mhalo", "Mstar", "Mgas"], loc='center')
-    ax.axis("off")
-    
-    pdf.savefig(f)
-    return None

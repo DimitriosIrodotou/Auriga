@@ -8,8 +8,6 @@ import main_scripts.evolution
 import main_scripts.projections
 import main_scripts.metallicities
 import main_scripts.time_evolution
-import main_scripts.stellar_surface_density
-# hewwoc-dItnub-8fejza
 
 import numpy as np
 
@@ -284,7 +282,7 @@ class AurigaPdf:
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
-        # TODO remove set_axes from projections
+        # TODO remove set_axes and level from projections
         # Projections #
         # Stars #
         # main_scripts.projections.stellar_light(pdf, self, level, redshift)
@@ -316,7 +314,7 @@ class AurigaPdf:
         # Global galactic relations #
         # main_scripts.galaxy.sfr(pdf, self, [level])
         # main_scripts.galaxy.delta_sfr(pdf, self, [level])
-        # main_scripts.galaxy.hot_cold_gas_fraction(pdf, self, level)
+        main_scripts.galaxy.gas_temperature_fraction(pdf, self,level)
         # main.galaxy.surface_densities(pdf, self, [level])
         # main_scripts.galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])
@@ -324,13 +322,7 @@ class AurigaPdf:
         # main.galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
         # main_scripts.galaxy.bar_strength(pdf, self, level)
-        
-        runs = ['halo_6']  # ['halo_22', 'halo_22NOAGN', 'halo_6']
-        nruns = len(runs)
-        dir5 = '/u/di43/Auriga/output/'
-        dirs = [dir5] * nruns
-
-        main_scripts.stellar_surface_density.plot_stellar_surfden(pdf, runs, dirs)
+        # main_scripts.galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         
         # Metallicities #
         # main_scripts.metallicities.ratios(pdf, self, [level], 0.)
@@ -344,9 +336,8 @@ class AurigaPdf:
 # Set the path to the simulation data and the level of the run #
 b = AurigaPdf()
 b.add_directory('/u/di43/Auriga/output/', 4)
-# Generate the pdf #
-b.make_pdf(4)
+b.make_pdf(4)  # Generate the pdf.
 
-# Print total time #
+# Print total time ## hewwoc-dItnub-8fejza
 print('–––––––––––––––––––––––––––––––––––––––––––––')
 print('Finished main.py in %.4s s' % (time.time() - start_time))
