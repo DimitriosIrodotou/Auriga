@@ -659,8 +659,10 @@ def delta_sfr(pdf, data, levels):
 
 
 def gas_temperature_fraction(pdf, data, level):
+    sfg_ratio, hg_ratio, wg_ratio, names = [], [], [], []
     attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
     data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0, loadonly=attributes)
+    nhalos = data.selected_current_nsnaps
     for s in data:
         plt.close()
         f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
@@ -687,23 +689,27 @@ def gas_temperature_fraction(pdf, data, level):
         u[:] = GAMMA_MINUS1 * s.data['u'][igas].astype('float64') * 1.0e10 * mu * PROTONMASS / BOLTZMANN
         
         sfgas = np.where((u < 2e4))
-        medgas = np.where((u >= 2e4) & (u < 5e5))
+        warmgas = np.where((u >= 2e4) & (u < 5e5))
         hotgas = np.where((u >= 5e5))
         
-        hotgmass = np.zeros((np.size(hotgas)))
-        hotgmass[:] = mass[hotgas]
-        medgmass = np.zeros((np.size(medgas)))
-        medgmass[:] = mass[medgas]
         sfgmass = np.zeros((np.size(sfgas)))
         sfgmass[:] = mass[sfgas]
+        warmgmass = np.zeros((np.size(warmgas)))
+        warmgmass[:] = mass[warmgas]
+        hotgmass = np.zeros((np.size(hotgas)))
+        hotgmass[:] = mass[hotgas]
         
-        plt.bar('Au-' + str(s.haloname), np.sum(sfgmass) / np.sum(mass), width=0.2, alpha=0.6, color='blue', label=r'cold star-forming gas')
-        plt.bar('Au-' + str(s.haloname), np.sum(hotgmass) / np.sum(mass), bottom=np.sum(sfgmass) / np.sum(mass), width=0.2, alpha=0.6, color='green',
-                label=r'warm gas')
-        plt.bar('Au-' + str(s.haloname), np.sum(medgmass) / np.sum(mass), bottom=(np.sum(sfgmass) + np.sum(hotgmass)) / np.sum(mass), width=0.2,
-                alpha=0.6, color='red', label=r'hot gas')
-        ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
-        pdf.savefig(f)
+        sfg_ratio.append(np.sum(sfgmass) / np.sum(mass))
+        wg_ratio.append(np.sum(warmgmass) / np.sum(mass))
+        hg_ratio.append(np.sum(hotgmass) / np.sum(mass))
+        names.append(s.haloname)
+    for i in range(nhalos):
+        plt.bar('Au-' + str(names[i]), sfg_ratio[i], width=0.2, alpha=0.6, color='blue', label=r'cold star-forming gas')
+        plt.bar('Au-' + str(names[i]), wg_ratio[i], bottom=sfg_ratio[i], width=0.2, alpha=0.6, color='green', label=r'warm gas')
+        plt.bar('Au-' + str(names[i]), hg_ratio[i], bottom=np.sum(np.vstack([sfg_ratio[i], wg_ratio[i]]).T), width=0.2, alpha=0.6, color='red',
+                label=r'hot gas')
+    ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    pdf.savefig(f)
     return None
 
 
