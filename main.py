@@ -314,7 +314,7 @@ class AurigaPdf:
         # Global galactic relations #
         # main_scripts.galaxy.sfr(pdf, self, [level])
         # main_scripts.galaxy.delta_sfr(pdf, self, [level])
-        main_scripts.galaxy.gas_temperature_fraction(pdf, self,level)
+        main_scripts.galaxy.gas_temperature_fraction(pdf, self, level, read=False)
         # main.galaxy.surface_densities(pdf, self, [level])
         # main_scripts.galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])

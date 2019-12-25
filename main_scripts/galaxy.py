@@ -1,5 +1,7 @@
 from __future__ import division
 
+import os
+import time
 import main_scripts.projections
 
 import numpy as np
@@ -658,57 +660,86 @@ def delta_sfr(pdf, data, levels):
     return None
 
 
-def gas_temperature_fraction(pdf, data, level):
+def gas_temperature_fraction(pdf, data, level, read):
+    """
+    
+    :param pdf:
+    :param data:
+    :param level:
+    :param read:
+    :return:
+    """
     sfg_ratio, hg_ratio, wg_ratio, names = [], [], [], []
     attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
     data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0, loadonly=attributes)
     nhalos = data.selected_current_nsnaps
-    for s in data:
-        plt.close()
-        f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-        ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-        ax.set_ylabel(r'Gas fraction')
-        plt.ylim(-0.2, 1.2)
-        ax.grid(True, color='black')
-        
-        s.calc_sf_indizes(s.subfind, verbose=False)
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-        element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
-        
-        igas, = np.where(s.type == 0)
-        ngas = np.size(igas)
-        
-        mass = s.data['mass'][igas].astype('float64')
-        u = np.zeros(ngas)
-        
-        ne = s.data['ne'][igas].astype('float64')
-        metallicity = s.data['gz'][igas].astype('float64')
-        XH = s.data['gmet'][igas, element['H']].astype('float64')
-        yhelium = (1 - XH - metallicity) / (4. * XH)
-        mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-        u[:] = GAMMA_MINUS1 * s.data['u'][igas].astype('float64') * 1.0e10 * mu * PROTONMASS / BOLTZMANN
-        
-        sfgas = np.where((u < 2e4))
-        warmgas = np.where((u >= 2e4) & (u < 5e5))
-        hotgas = np.where((u >= 5e5))
-        
-        sfgmass = np.zeros((np.size(sfgas)))
-        sfgmass[:] = mass[sfgas]
-        warmgmass = np.zeros((np.size(warmgas)))
-        warmgmass[:] = mass[warmgas]
-        hotgmass = np.zeros((np.size(hotgas)))
-        hotgmass[:] = mass[hotgas]
-        
-        sfg_ratio.append(np.sum(sfgmass) / np.sum(mass))
-        wg_ratio.append(np.sum(warmgmass) / np.sum(mass))
-        hg_ratio.append(np.sum(hotgmass) / np.sum(mass))
-        names.append(s.haloname)
+    
+    path = '/u/di43/Auriga/plots/data/' + 'gtf/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    plt.close()
+    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
+    ax.set_ylabel(r'Gas fraction')
+    plt.ylim(-0.2, 1.2)
+    plt.xlim(-0.2, 1.2)
+    ax.grid(True, color='black')
+    
+    if read is True:
+        for s in data:
+            
+            s.calc_sf_indizes(s.subfind, verbose=False)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
+            
+            igas, = np.where(s.type == 0)
+            ngas = np.size(igas)
+            
+            mass = s.data['mass'][igas].astype('float64')
+            u = np.zeros(ngas)
+            
+            ne = s.data['ne'][igas].astype('float64')
+            metallicity = s.data['gz'][igas].astype('float64')
+            XH = s.data['gmet'][igas, element['H']].astype('float64')
+            yhelium = (1 - XH - metallicity) / (4. * XH)
+            mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+            u[:] = GAMMA_MINUS1 * s.data['u'][igas].astype('float64') * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            
+            sfgas = np.where((u < 2e4))
+            warmgas = np.where((u >= 2e4) & (u < 5e5))
+            hotgas = np.where((u >= 5e5))
+            
+            sfgmass = np.zeros((np.size(sfgas)))
+            sfgmass[:] = mass[sfgas]
+            warmgmass = np.zeros((np.size(warmgas)))
+            warmgmass[:] = mass[warmgas]
+            hotgmass = np.zeros((np.size(hotgas)))
+            hotgmass[:] = mass[hotgas]
+            
+            sfg_ratio.append(np.sum(sfgmass) / np.sum(mass))
+            wg_ratio.append(np.sum(warmgmass) / np.sum(mass))
+            hg_ratio.append(np.sum(hotgmass) / np.sum(mass))
+            names.append(s.haloname)
+            
+            np.save(path + 'sfg_ratio', sfg_ratio)
+            np.save(path + 'wg_ratio', wg_ratio)
+            np.save(path + 'hg_ratio', hg_ratio)
+            np.save(path + 'names', names)
+    
+    if read is not True:
+        sfg_ratio = np.load((path + 'sfg_ratio' + '.npy'))
+        wg_ratio = np.load((path + 'wg_ratio' + '.npy'))
+        hg_ratio = np.load((path + 'hg_ratio' + '.npy'))
+        names = np.load((path + 'names' + '.npy'))
+    
     for i in range(nhalos):
-        plt.bar('Au-' + str(names[i]), sfg_ratio[i], width=0.2, alpha=0.6, color='blue', label=r'cold star-forming gas')
-        plt.bar('Au-' + str(names[i]), wg_ratio[i], bottom=sfg_ratio[i], width=0.2, alpha=0.6, color='green', label=r'warm gas')
-        plt.bar('Au-' + str(names[i]), hg_ratio[i], bottom=np.sum(np.vstack([sfg_ratio[i], wg_ratio[i]]).T), width=0.2, alpha=0.6, color='red',
-                label=r'hot gas')
-    ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+        b1, = plt.bar(np.divide(i, 5), sfg_ratio[i], width=0.1, alpha=0.6, color='blue')
+        b2, = plt.bar(np.divide(i, 5), wg_ratio[i], bottom=sfg_ratio[i], width=0.1, alpha=0.6, color='green')
+        b3, = plt.bar(np.divide(i, 5), hg_ratio[i], bottom=np.sum(np.vstack([sfg_ratio[i], wg_ratio[i]]).T), width=0.1, alpha=0.6, color='red')
+        x_tick_labels = np.array(['', 'Au-' + str(names[0]), 'Au-' + str(names[1])])
+        ax.set_xticklabels(x_tick_labels)
+    ax.legend([b3, b2, b1], [r'hot gas', r'warm gas', r'cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
     pdf.savefig(f)
     return None
 
