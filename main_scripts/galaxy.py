@@ -669,14 +669,15 @@ def gas_temperature_fraction(pdf, data, level, read):
     :param read:
     :return:
     """
+    # Check/create a folder to save the data #
+    path = '/u/di43/Auriga/plots/data/' + 'gtf/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
     sfg_ratio, hg_ratio, wg_ratio, names = [], [], [], []
     attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
     data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0, loadonly=attributes)
     nhalos = data.selected_current_nsnaps
-    
-    path = '/u/di43/Auriga/plots/data/' + 'gtf/'
-    if not os.path.exists(path):
-        os.makedirs(path)
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
@@ -727,7 +728,7 @@ def gas_temperature_fraction(pdf, data, level, read):
             np.save(path + 'hg_ratio', hg_ratio)
             np.save(path + 'names', names)
     
-    if read is not True:
+    if read is False:
         sfg_ratio = np.load((path + 'sfg_ratio' + '.npy'))
         wg_ratio = np.load((path + 'wg_ratio' + '.npy'))
         hg_ratio = np.load((path + 'hg_ratio' + '.npy'))
@@ -737,9 +738,9 @@ def gas_temperature_fraction(pdf, data, level, read):
         b1, = plt.bar(np.divide(i, 5), sfg_ratio[i], width=0.1, alpha=0.6, color='blue')
         b2, = plt.bar(np.divide(i, 5), wg_ratio[i], bottom=sfg_ratio[i], width=0.1, alpha=0.6, color='green')
         b3, = plt.bar(np.divide(i, 5), hg_ratio[i], bottom=np.sum(np.vstack([sfg_ratio[i], wg_ratio[i]]).T), width=0.1, alpha=0.6, color='red')
-        x_tick_labels = np.array(['', 'Au-' + str(names[0]), 'Au-' + str(names[1])])
-        ax.set_xticklabels(x_tick_labels)
-    ax.legend([b3, b2, b1], [r'hot gas', r'warm gas', r'cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+
+    ax.set_xticklabels(np.append('', ['Au-' + x for x in names]))
+    ax.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
     pdf.savefig(f)
     return None
 
