@@ -169,7 +169,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     :return:
     """
     
-    pos = np.zeros((np.size(mass), 3))  # Declare array to hold the new positions of particles.
+    pos = np.zeros((np.size(mass), 3))  # Declare array to store the new positions of particles.
     
     # Generate projection planes #
     if idir == 0:  # XY plane
@@ -269,7 +269,7 @@ def stellar_light(pdf, data, level, redshift):
             a.set_xticklabels([])
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -320,14 +320,14 @@ def stellar_density(pdf, data, level, redshift):
         ax01.set_xticklabels([])
         ax01.set_yticklabels([])
         ax12.set_yticklabels([])
-        ax10.set_xlabel('$x\,\mathrm{[kpc]}$', size=16)
-        ax11.set_xlabel('$x\,\mathrm{[kpc]}$', size=16)
-        ax00.set_ylabel('$y\,\mathrm{[kpc]}$', size=16)
-        ax10.set_ylabel('$z\,\mathrm{[kpc]}$', size=16)
+        ax10.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+        ax11.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+        ax00.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=16)
+        ax10.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
         
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -380,7 +380,7 @@ def gas_density(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -419,7 +419,7 @@ def gas_temperature(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -465,7 +465,7 @@ def gas_metallicity(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -505,7 +505,7 @@ def gas_slice(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -604,7 +604,7 @@ def bfld(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -647,7 +647,7 @@ def dm_mass(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Rotate halo based on principal axes #
+        # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         

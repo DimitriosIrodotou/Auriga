@@ -1,7 +1,9 @@
 from __future__ import division
 
 import os
+import re
 import time
+import glob
 import main_scripts.projections
 
 import numpy as np
@@ -17,6 +19,8 @@ from scipy.special import gamma
 from scipy.optimize import curve_fit
 from parse_particledata import parse_particledata
 from scripts.gigagalaxy.util import plot_helper
+
+element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
 
 
 def create_axis(f, idx, ncol=5):
@@ -405,8 +409,8 @@ def gas_fraction(pdf, data, levels):
             Rband = convert_rband_to_Rband_mag(s.data['gsph'][istars, 5], s.data['gsph'][istars, 4])
             MR[ihalo] = -2.5 * np.log10((10. ** (- 2.0 * Rband / 5.0)).sum())
             
-            igas, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 0))
-            fgas[ihalo] = s.mass[igas].sum() / (s.mass[igas].sum() + s.mass[istars].sum())
+            mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 0))
+            fgas[ihalo] = s.mass[mask].sum() / (s.mass[mask].sum() + s.mass[istars].sum())
             
             ax.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s-%d" % (s.haloname, levels[0]))
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
@@ -669,79 +673,68 @@ def gas_temperature_fraction(pdf, data, level, read):
     :param read:
     :return:
     """
-    # Check/create a folder to save the data #
+    # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'gtf/'
     if not os.path.exists(path):
         os.makedirs(path)
     
-    sfg_ratio, hg_ratio, wg_ratio, names = [], [], [], []
-    attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
-    data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0, loadonly=attributes)
-    nhalos = data.selected_current_nsnaps
-    
+    # Generate the figure #
     plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    ax.set_ylabel(r'Gas fraction')
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.2)
-    ax.grid(True, color='black')
+    plt.grid(True, color='black')
+    plt.ylabel(r'Gas fraction', size=16)
     
     if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+        particle_type = [0, 4]
+        attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
+        data.select_haloes(level, 0., loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
         for s in data:
-            
+            # Select the halo and rotate it based on its principal axes #
             s.calc_sf_indizes(s.subfind, verbose=False)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
             
-            igas, = np.where(s.type == 0)
-            ngas = np.size(igas)
+            # Mask the data: select gas cells within the virial radius R200 #
+            mask, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))
             
-            mass = s.data['mass'][igas].astype('float64')
-            u = np.zeros(ngas)
-            
-            ne = s.data['ne'][igas].astype('float64')
-            metallicity = s.data['gz'][igas].astype('float64')
-            XH = s.data['gmet'][igas, element['H']].astype('float64')
+            # Calculate the temperature of the gas cells #
+            ne = s.data['ne'][mask]
+            metallicity = s.data['gz'][mask]
+            XH = s.data['gmet'][mask, element['H']]
             yhelium = (1 - XH - metallicity) / (4. * XH)
             mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            u[:] = GAMMA_MINUS1 * s.data['u'][igas].astype('float64') * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
             
-            sfgas = np.where((u < 2e4))
-            warmgas = np.where((u >= 2e4) & (u < 5e5))
-            hotgas = np.where((u >= 5e5))
+            # Calculate the mass of the gas cells within three temperatures regimes #
+            mass = s.data['mass'][mask]
+            sfgmass = mass[np.where((u < 2e4))]
+            warmgmass = mass[np.where((u >= 2e4) & (u < 5e5))]
+            hotgmass = mass[np.where((u >= 5e5))]
             
-            sfgmass = np.zeros((np.size(sfgas)))
-            sfgmass[:] = mass[sfgas]
-            warmgmass = np.zeros((np.size(warmgas)))
-            warmgmass[:] = mass[warmgas]
-            hotgmass = np.zeros((np.size(hotgas)))
-            hotgmass[:] = mass[hotgas]
-            
-            sfg_ratio.append(np.sum(sfgmass) / np.sum(mass))
-            wg_ratio.append(np.sum(warmgmass) / np.sum(mass))
-            hg_ratio.append(np.sum(hotgmass) / np.sum(mass))
-            names.append(s.haloname)
-            
-            np.save(path + 'sfg_ratio', sfg_ratio)
-            np.save(path + 'wg_ratio', wg_ratio)
-            np.save(path + 'hg_ratio', hg_ratio)
-            np.save(path + 'names', names)
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'sfg_ratio_' + str(s.haloname), np.sum(sfgmass) / np.sum(mass))
+            np.save(path + 'wg_ratio_' + str(s.haloname), np.sum(warmgmass) / np.sum(mass))
+            np.save(path + 'hg_ratio_' + str(s.haloname), np.sum(hotgmass) / np.sum(mass))
     
-    if read is False:
-        sfg_ratio = np.load((path + 'sfg_ratio' + '.npy'))
-        wg_ratio = np.load((path + 'wg_ratio' + '.npy'))
-        hg_ratio = np.load((path + 'hg_ratio' + '.npy'))
-        names = np.load((path + 'names' + '.npy'))
-    
-    for i in range(nhalos):
-        b1, = plt.bar(np.divide(i, 5), sfg_ratio[i], width=0.1, alpha=0.6, color='blue')
-        b2, = plt.bar(np.divide(i, 5), wg_ratio[i], bottom=sfg_ratio[i], width=0.1, alpha=0.6, color='green')
-        b3, = plt.bar(np.divide(i, 5), hg_ratio[i], bottom=np.sum(np.vstack([sfg_ratio[i], wg_ratio[i]]).T), width=0.1, alpha=0.6, color='red')
-
-    ax.set_xticklabels(np.append('', ['Au-' + x for x in names]))
-    ax.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
-    pdf.savefig(f)
+    else:
+        # Load and plot the data #
+        names = glob.glob(path + '/name_*')
+        names.sort()
+        for i in range(len(names)):
+            sfg_ratio = np.load(path + 'sfg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            wg_ratio = np.load(path + 'wg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            hg_ratio = np.load(path + 'hg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            b1, = plt.bar(np.divide(i, 5), sfg_ratio, width=0.1, alpha=0.6, color='blue')
+            b2, = plt.bar(np.divide(i, 5), wg_ratio, bottom=sfg_ratio, width=0.1, alpha=0.6, color='green')
+            b3, = plt.bar(np.divide(i, 5), hg_ratio, bottom=np.sum(np.vstack([sfg_ratio, wg_ratio]).T), width=0.1, alpha=0.6, color='red')
+        
+        ax.set_xticklabels(np.append('', ['Au-' + re.split('_|.npy', halo)[1] for halo in names]))
+        plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+        pdf.savefig(f)
     return None
 
 

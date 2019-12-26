@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import time
+import glob
 import main_scripts.galaxy
 import main_scripts.profiles
 import main_scripts.evolution
@@ -92,9 +93,6 @@ class AurigaHalo:
         Initialise the attributes of the class.
         :param directory: halo path from AurigaOutput.
         """
-        import os
-        import glob
-        
         self.snaps = {}
         self.directory = directory
         
@@ -145,9 +143,6 @@ class AurigaOutput:
         :param directory: path from AurigaPdf.add_directory
         :param level: level of the run.
         """
-        import os
-        import glob
-        
         self.haloes = {}
         self.level = level
         self.directory = directory
