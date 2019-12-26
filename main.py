@@ -298,18 +298,16 @@ class AurigaPdf:
         
         # TODO fix the rest scripts
         # Time evolution #
-        # main_scripts.evolution.bar_strength(pdf, self, level, read=False)
+        main_scripts.evolution.bar_strength(pdf, self, read=False)
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     main_scripts.evolution.circularity(pdf, self, [level], redshift)
         # main.time_evolution.bfld(pdf, self, level)
-        # main_scripts.time_evolution.galaxy_mass(pdf, self, level)
-        # main_scripts.time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
         # main_scripts.galaxy.sfr(pdf, self, [level])
         # main_scripts.galaxy.delta_sfr(pdf, self, [level])
-        main_scripts.galaxy.gas_temperature_fraction(pdf, self, level, read=False)
+        # main_scripts.galaxy.gas_temperature_fraction(pdf, self, level, read=False)
         # main.galaxy.surface_densities(pdf, self, [level])
         # main_scripts.galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])

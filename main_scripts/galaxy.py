@@ -2,7 +2,6 @@ from __future__ import division
 
 import os
 import re
-import time
 import glob
 import main_scripts.projections
 
@@ -686,19 +685,20 @@ def gas_temperature_fraction(pdf, data, level, read):
     plt.grid(True, color='black')
     plt.ylabel(r'Gas fraction', size=16)
     
+    # Read the data #
     if read is True:
         # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
         particle_type = [0, 4]
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
         data.select_haloes(level, 0., loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
+        # Loop over all haloes #
         for s in data:
             # Select the halo and rotate it based on its principal axes #
             s.calc_sf_indizes(s.subfind, verbose=False)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
-            # Mask the data: select gas cells within the virial radius R200 #
-            mask, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))
+            mask, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
             
             # Calculate the temperature of the gas cells #
             ne = s.data['ne'][mask]
@@ -720,8 +720,8 @@ def gas_temperature_fraction(pdf, data, level, read):
             np.save(path + 'wg_ratio_' + str(s.haloname), np.sum(warmgmass) / np.sum(mass))
             np.save(path + 'hg_ratio_' + str(s.haloname), np.sum(hotgmass) / np.sum(mass))
     
+    # Load and plot the data #
     else:
-        # Load and plot the data #
         names = glob.glob(path + '/name_*')
         names.sort()
         for i in range(len(names)):
@@ -806,7 +806,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         f.text(0.15, 0.75, r'$\mathrm{n} = %.2f$' '\n'r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n'  r'$\mathrm{D/T} = %.2f$' % (
             1. / popt[4], popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4]), disc_to_total))
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     return None
 
 

@@ -286,7 +286,7 @@ def stellar_light(pdf, data, level, redshift):
         ax00.imshow(face_on, interpolation='nearest')
         ax10.imshow(edge_on, interpolation='nearest')
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -352,7 +352,7 @@ def stellar_density(pdf, data, level, redshift):
         count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 0] * 1e3, bins=20, range=[[-30, 30], [-30, 30]])
         ax10.contour(np.log10(count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -393,7 +393,7 @@ def gas_density(pdf, data, level, redshift):
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     return None
 
 
@@ -438,7 +438,7 @@ def gas_temperature(pdf, data, level, redshift):
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -478,7 +478,7 @@ def gas_metallicity(pdf, data, level, redshift):
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -577,7 +577,7 @@ def gas_slice(pdf, data, level, redshift):
         countlog = np.ma.log10(count)
         ax10.imshow(countlog.T, extent=extent, origin='lower', cmap='magma', interpolation='bicubic')
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -618,7 +618,7 @@ def bfld(pdf, data, level, redshift):
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -663,7 +663,7 @@ def dm_mass(pdf, data, level, redshift):
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
-        pdf.savefig(f, bbox_inches='tight')  # Save figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     
     return None
 
