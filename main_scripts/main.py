@@ -3,12 +3,12 @@ from __future__ import print_function
 import os
 import time
 import glob
-import main_scripts.galaxy
-import main_scripts.profiles
-import main_scripts.evolution
-import main_scripts.projections
-import main_scripts.metallicities
-import main_scripts.time_evolution
+import galaxy
+import profiles
+import evolution
+import projections
+import metallicities
+import time_evolution
 
 import numpy as np
 
@@ -270,7 +270,7 @@ class AurigaPdf:
     
     def make_pdf(self, level):
         """
-        Create a pdf with the desired plots from main_scripts.
+        Create a pdf with the desired plots from
         :param level: level of the run
         :return: None
         """
@@ -280,45 +280,46 @@ class AurigaPdf:
         # TODO remove set_axes and level from projections
         # Projections #
         # Stars #
-        # main_scripts.projections.stellar_light(pdf, self, level, redshift)
-        # main_scripts.projections.stellar_density(pdf, self, level, redshift)
+        # projections.stellar_light(pdf, self, level, redshift)
+        # projections.stellar_density(pdf, self, level, redshift)
         # Gas #
-        # main_scripts.projections.gas_density(pdf, self, level, redshift)
-        # main_scripts.projections.gas_temperature(pdf, self, level, redshift)
-        # main_scripts.projections.gas_metallicity(pdf, self, level, redshift)
-        # main_scripts.projections.gas_slice(pdf, self, level, redshift)
+        # projections.gas_density(pdf, self, level, redshift)
+        # projections.gas_temperature(pdf, self, level, redshift)
+        # projections.gas_metallicity(pdf, self, level, redshift)
+        # projections.gas_slice(pdf, self, level, redshift)
         # Magnetic fields #
-        # main_scripts.projections.bfld(pdf, self, level, redshift)
+        # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
-        # main_scripts.projections.dm_mass(pdf, self, level, redshift)
+        # projections.dm_mass(pdf, self, level, redshift)
         
         # Profiles #
-        # main_scripts.profiles.radial_profiles(pdf, self, level, redshift)
-        # main_scripts.profiles.vertical_profiles(pdf, self, level, redshift)
+        # profiles.radial_profiles(pdf, self, level, redshift)
+        # profiles.vertical_profiles(pdf, self, level, redshift)
+        profiles.stellar_profiles(pdf, self, level, redshift)
         
         # TODO fix the rest scripts
         # Time evolution #
-        main_scripts.evolution.bar_strength(pdf, self, read=False)
+        # evolution.bar_strength(pdf, self, read=False)
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
-        #     main_scripts.evolution.circularity(pdf, self, [level], redshift)
+        #     evolution.circularity(pdf, self, [level], redshift)
         # main.time_evolution.bfld(pdf, self, level)
+        # time_evolution.bh_mass(pdf, self, [level])
         
         # Global galactic relations #
-        # main_scripts.galaxy.sfr(pdf, self, [level])
-        # main_scripts.galaxy.delta_sfr(pdf, self, [level])
-        # main_scripts.galaxy.gas_temperature_fraction(pdf, self, level, read=False)
-        # main.galaxy.surface_densities(pdf, self, [level])
-        # main_scripts.galaxy.circularity(pdf, self, [level])
+        # galaxy.sfr(pdf, self, [level])
+        # galaxy.delta_sfr(pdf, self, [level])
+        # galaxy.gas_temperature_fraction(pdf, self, level, read=False)
+        # galaxy.circularity(pdf, self, [level])
         # main.galaxy.tully_fisher(pdf, self, [level])
         # main.galaxy.stellar_vs_total(pdf, self, [level])
         # main.galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
-        # main_scripts.galaxy.bar_strength(pdf, self, level)
-        # main_scripts.galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
+        # galaxy.bar_strength(pdf, self, level)
+        # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         
         # Metallicities #
-        # main_scripts.metallicities.ratios(pdf, self, [level], 0.)
+        # metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
         file_name = 'Auriga-' + date + '.pdf'
@@ -331,6 +332,6 @@ b = AurigaPdf()
 b.add_directory('/u/di43/Auriga/output/', 4)
 b.make_pdf(4)  # Generate the pdf.
 
-# Print total time ## hewwoc-dItnub-8fejza
+# Print total time # hewwoc-dItnub-8fejza
 print('–––––––––––––––––––––––––––––––––––––––––––––')
 print('Finished main.py in %.4s s' % (time.time() - start_time))

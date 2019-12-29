@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from const import *
 from sfigure import *
 from scipy import interpolate
+from matplotlib import gridspec
 
 
 def create_axes(f, idx, ncol=5):
@@ -60,7 +61,7 @@ def set_axes(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None):
 
 def radial_profiles(pdf, data, level, redshift):
     """
-    Plot radial gas density, gs metallicity, gas energy density, magnetic field strength and gas velocity dispersion profiles for Auriga halo(es).
+    Plot radial gas density, gas metallicity, gas energy density, magnetic field strength and gas velocity dispersion profiles for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param level: level from main.make_pdf
@@ -84,7 +85,7 @@ def radial_profiles(pdf, data, level, redshift):
         
         ngas = s.nparticlesall[0]  # Number of gas particles.
         z = np.abs(s.pos[:, 0]) * 1e3  # Convert z direction to kpc.
-        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane.
+        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
         bfld = np.sqrt((s.data['bfld'] ** 2).sum(axis=1)) * bfac * 1e6
         mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40.0], weights=s.mass.astype('f8'))
         for i in range(1, 60):
@@ -105,15 +106,11 @@ def radial_profiles(pdf, data, level, redshift):
         vel = (s.data['vel'][i, :].astype('f8') * s.mass[i][:, None]).sum(axis=0) / s.mass[i].astype('f8').sum()
         vrad = ((s.data['vel'][:, 1:] - vel[1:]) * s.pos[:, 1:] * 1e3).sum(axis=1) / rxy
         
-        # Mask the data and calculate the volume and mass weighted distances for gas particles #
+        # Mask the data and calculate the mass and volume weighted distances for gas particles #
         i, = np.where((rxy < 30.0) & (z < 1.0) & (s.type == 0))
         mass, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['mass'][i].astype('f8'))
         vol, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['vol'][i].astype('f8'))
         center = 0.5 * (edges[1:] + edges[:-1])
-        
-        # Mask the data and calculate the mass weighted distances for stellar particles #
-        mask, = np.where((rxy < 30.0) & (z < 1.0) & (s.type == 4))
-        np.histogram(rxy[mask], bins=30, range=[0, 30.0], weights=s.data['mass'][mask])
         
         for ipanel in range(5):
             ax = create_axes(f, isnap * 5 + ipanel)
@@ -165,8 +162,7 @@ def radial_profiles(pdf, data, level, redshift):
                 velr /= mass
                 
                 binid = np.digitize(rxy[i], edges) - 1
-                sigmaz, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0],
-                                             weights=s.data['mass'][i] * (s.data['vel'][i, 0] - velz[binid]) ** 2)
+                sigmaz, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['mass'][i] * (s.data['vel'][i, 0] - velz[binid]) ** 2)
                 sigmaz = np.sqrt(sigmaz / mass)
                 sigmar, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['mass'][i] * (vrad[i] - velr[binid]) ** 2)
                 sigmar = np.sqrt(sigmar / mass)
@@ -190,7 +186,8 @@ def radial_profiles(pdf, data, level, redshift):
 
 def vertical_profiles(pdf, data, level, redshift):
     """
-        Plot radial gas density, gs metallicity, gas energy density, magnetic field strength and gas velocity dispersion profiles for Auriga halo(es).
+        Plot radial gas density, gas metallicity, gas energy density, magnetic field strength and gas velocity dispersion profiles for Auriga halo(
+        es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param level: level from main.make_pdf
@@ -214,7 +211,7 @@ def vertical_profiles(pdf, data, level, redshift):
         
         ngas = s.nparticlesall[0]  # Number of gas particles.
         z = np.abs(s.pos[:, 0]) * 1e3  # Convert z direction to kpc.
-        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane.
+        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
         bfld = np.sqrt((s.data['bfld'] ** 2).sum(axis=1)) * bfac * 1e6
         mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40], weights=s.mass.astype('f8'))
         for i in range(1, 60):
@@ -309,6 +306,86 @@ def vertical_profiles(pdf, data, level, redshift):
                 ax.text(0.0, 1.01, "Au%s" % s.haloname, color='k', fontsize=6, transform=ax.transAxes)
         
         isnap += 1
+    
+    pdf.savefig(f)
+    return None
+
+
+def stellar_profiles(pdf, data, level, redshift):
+    """
+    Plot radial and vertical stellar density profiles for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param level: level from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :return:
+    """
+    
+    # Read specific particle type(s) for Auriga haloes #
+    data.select_haloes(level, redshift, loadonlytype=[4], loadonlyhalo=0)
+    
+    # Generate the figure #
+    gs = gridspec.GridSpec(2, 2)
+    gs.update(hspace=0.05, wspace=0.05)
+    ax00 = plt.subplot(gs[0, 0])
+    ax01 = plt.subplot(gs[0, 1])
+    ax10 = plt.subplot(gs[1, 0])
+    ax11 = plt.subplot(gs[1, 1])
+    
+    ax00.set_xlabel(r'$r\,\mathrm{[kpc]}$', size=16)
+    ax00.set_ylabel(r'$\\rho\,\mathrm{[M_\odot\,kpc^{-3}]}$', size=16)
+    # ax11.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+    # ax10.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
+    
+    plt.close()
+    f = plt.figure(figsize=(10, 7.5))
+    for s in data:
+        # Rotate halo based on principal axes #
+        s.calc_sf_indizes(s.subfind)
+        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        
+        z = np.abs(s.pos[:, 0]) * 1e3  # Convert z direction to kpc.
+        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
+        mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40.0], weights=s.mass.astype('f8'))
+        for i in range(1, 60):
+            mcum[i] += mcum[i - 1]
+        
+        # Mask the data and calculate the mass weighted distances for stellar particles #
+        nr = 10
+        nz = 10
+        mask, = np.where((rxy < 30.0) & (z < 1.0) & (s.type == 4))
+        mass, edges = np.histogram(rxy[mask], bins=(nr, nz), range=[0, 30.0], weights=s.data['mass'][mask])
+        center = 0.5 * (edges[1:] + edges[:-1])
+        
+        # Plot stellar density #
+        pn, xedges, yedges = np.histogram2d(rxy[mask], z[mask], bins=(nr, nz), weights=s.data['mass'][mask], range=[[0., galrad], [0., zmax]])
+        rc = np.zeros(nr)
+        rc[:] = 0.5 * (xedges[1:] + xedges[:-1]) * 1e3
+        
+        pn /= 2.
+        
+        s = (nr, nz)
+        dv = np.zeros(nr)
+        rho = np.zeros(s)
+        rbin[:] = 0.5 * (xedges[1:] + xedges[:-1])
+        zbin[:] = 0.5 * (yedges[1:] + yedges[:-1])
+        
+        # Stellar density
+        dv[:] = np.pi * ((xedges[1:] ** 2 - xedges[:-1] ** 2) * 1e6) * (dz * 1e3)
+        dv = [dv] * nz
+        dv = np.array(dv)
+        dv = dv.T
+        rho[:, :] = pn[:, :] * 1e10 / dv[:, :]
+        rho[:, :] *= 1e-9  # /pc^3
+        ax00.semilogy(center, rho, 'k')
+        # set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$\\rho\,\mathrm{[M_\odot\,kpc^{-3}]}$", "$\mathrm{Gas\ density}$", [1e5, 1e8])
+        
+        # Plot stellar metallicity.
+        metals, edges = np.histogram(rxy[mask], bins=30, range=[0.0, 30.0], weights=s.data['mass'][mask] * s.data['gz'][mask])
+        ax01.semilogy(center, metals / mass / 0.0134,
+                      'k')  # set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$Z\,\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.5, 20.0])
+        
+        # f.text(0.0, 1.01, "Au%s" % s.haloname, color='k', fontsize=6, transform=ax.transAxes)
     
     pdf.savefig(f)
     return None

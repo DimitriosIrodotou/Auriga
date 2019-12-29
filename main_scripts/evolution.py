@@ -3,7 +3,7 @@ from __future__ import division
 import os
 import re
 import glob
-import main_scripts.projections
+import projections
 
 import numpy as np
 import matplotlib.cm as cm
@@ -75,7 +75,7 @@ def bar_strength(pdf, data, read):
     
     # Read the data #
     if read is True:
-        max_A2, names = [], []  # Declare lists to store the data.
+        A2, names = [], []  # Declare lists to store the data.
         for redshift in redshifts[np.where(redshifts <= 5.0)]:
             # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
             particle_type = [4]
@@ -91,7 +91,7 @@ def bar_strength(pdf, data, read):
                 mask, = np.where(s.data['age'] > 0.0)  # Mask the data: select stellar particles.
                 
                 # Rotate the particle positions so the bar is along the x-axis #
-                z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
+                z_rotated, y_rotated, x_rotated = projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
                                                                                       s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
                 s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
                 x, y = s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
@@ -106,7 +106,7 @@ def bar_strength(pdf, data, read):
                 alpha_0 = np.zeros(nbins)
                 alpha_2 = np.zeros(nbins)
                 
-                # Calculate the Fourier components for each bin #
+                # Calculate the Fourier components for each bin as in sec 2.3.2 from Athanassoula et al. 2013 #
                 for i in range(0, nbins):
                     r_s = float(i) * 0.25
                     r_b = float(i) * 0.25 + 0.25
@@ -120,11 +120,11 @@ def bar_strength(pdf, data, read):
                         beta_2[i] = beta_2[i] + np.sin(2 * th_i)
                 
                 # Calculate bar strength A_2 #
-                A2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
-                max_A2.append(max(A2))
+                A2 = max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:]))
+                A2.append(A2)
 
                 # Save data for each halo in numpy arrays #
-                np.save(path + 'max_A2_' + str(s.haloname), max_A2)
+                np.save(path + 'A2_' + str(s.haloname), A2)
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
     
     # Load and plot the data #
@@ -134,10 +134,9 @@ def bar_strength(pdf, data, read):
         names.sort()
         colors = iter(cm.rainbow(np.linspace(0, 1, 10)))
         for i in range(len(names)):
-            max_A2 = np.load(path + 'max_A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        print(max_A2)
+            A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         # Plot bar strength as a function of radius #
-        plt.plot(redshifts[np.where(redshifts <= 5.0)], max_A2, color=next(colors))
+        plt.plot(redshifts[np.where(redshifts <= 5.0)], A2, color=next(colors))
         ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.

@@ -3,7 +3,7 @@ from __future__ import division
 import os
 import re
 import glob
-import main_scripts.projections
+import projections
 
 import numpy as np
 import matplotlib.cm as cm
@@ -487,8 +487,8 @@ def bar_strength(pdf, data, level):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         mask, = np.where(s.data['age'] > 0.)  # Select stars.
-        z_rotated, y_rotated, x_rotated = main_scripts.projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
-                                                                              s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
+        z_rotated, y_rotated, x_rotated = projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
+                                                                 s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
         s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
         x, y = s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
         
@@ -761,14 +761,14 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         g.prep_data()
         sdata = g.sgdata['sdata']
         
-        # Define the radial and vertical cuts and
+        # Define the radial and vertical cuts and calculate the mass surface density #
         radial_cut = 0.1 * s.subfind.data['frc2'][0]  # Radial cut in Mpc.
         ii, = np.where((abs(sdata['pos'][:, 0]) < 0.005))  # Vertical cut in Mpc.
         rad = np.sqrt((sdata['pos'][:, 1:] ** 2).sum(axis=1))
-        sden, edges = np.histogram(rad[ii], bins=50, range=(0., radial_cut), weights=sdata['mass'][ii])
-        sa = np.zeros(len(edges) - 1)
-        sa[:] = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
-        sden /= sa
+        mass, edges = np.histogram(rad[ii], bins=50, range=(0., radial_cut), weights=sdata['mass'][ii])
+        surface = np.zeros(len(edges) - 1)
+        surface[:] = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
+        sden = np.divide(mass, surface)
         
         x = np.zeros(len(edges) - 1)
         x[:] = 0.5 * (edges[1:] + edges[:-1])
