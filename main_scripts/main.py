@@ -295,11 +295,11 @@ class AurigaPdf:
         # Profiles #
         # profiles.radial_profiles(pdf, self, level, redshift)
         # profiles.vertical_profiles(pdf, self, level, redshift)
-        profiles.stellar_profiles(pdf, self, level, redshift)
+        # profiles.stellar_profiles(pdf, self, level, redshift)
         
         # TODO fix the rest scripts
         # Time evolution #
-        # evolution.bar_strength(pdf, self, read=False)
+        evolution.bar_strength(pdf, self, read=True)
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)

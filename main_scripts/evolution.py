@@ -120,8 +120,7 @@ def bar_strength(pdf, data, read):
                         beta_2[i] = beta_2[i] + np.sin(2 * th_i)
                 
                 # Calculate bar strength A_2 #
-                A2 = max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:]))
-                A2.append(A2)
+                A2.append(max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])))
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'A2_' + str(s.haloname), A2)
