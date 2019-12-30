@@ -4,8 +4,8 @@ import pysph
 import calcGrid
 import matplotlib
 
-import numpy as np
 import scipy.misc
+import numpy as np
 
 import matplotlib.pyplot as plt
 

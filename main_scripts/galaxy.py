@@ -3,6 +3,7 @@ from __future__ import division
 import os
 import re
 import glob
+import calcGrid
 import projections
 
 import numpy as np
@@ -10,7 +11,6 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
 from const import *
-from pylab import *
 from sfigure import *
 from loadmodules import *
 from matplotlib import gridspec
@@ -78,12 +78,12 @@ def set_axis_evo(s, ax, ax2):
     ax.set_xlim(0, 13)
     ax.invert_xaxis()
     ax.tick_params(direction='out', which='both', right='on')
-    ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=12)
+    ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=16)
     
     ax2.set_xticks(times)
     ax2.set_xticklabels(lb)
     ax2.set_xlim(ax.get_xlim())
-    ax2.set_xlabel('$z$', size=12)
+    ax2.set_xlabel('$z$', size=16)
     ax2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
@@ -99,6 +99,7 @@ def circularity(pdf, data, levels):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
+    plt.grid(True, color='black')
     
     for il in range(nlevels):
         level = levels[il]
@@ -216,6 +217,7 @@ def tully_fisher(pdf, data, levels):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
     ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     ax.set_ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$")
@@ -317,6 +319,7 @@ def stellar_vs_total(pdf, data, levels):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
     ax.set_xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
     ax.set_ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
@@ -382,6 +385,7 @@ def gas_fraction(pdf, data, levels):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_xlabel("$\\rm{M_{R}\\,[mag]}$")
     ax.set_ylabel("$\\rm{f_{gas}}$")
@@ -425,6 +429,7 @@ def central_bfld(pdf, data, levels):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     ax.set_ylabel("$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$")
@@ -474,6 +479,7 @@ def bar_strength(pdf, data, level):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_ylabel("$A_{2}/A_{0}$")
     ax.set_xlabel("$r\,\mathrm{[kpc]}$")
@@ -535,6 +541,7 @@ def sfr(pdf, data, levels):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
     
@@ -576,6 +583,7 @@ def delta_sfr(pdf, data, levels):
     
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(10, 10))
+    plt.grid(True, color='black')
     gs = gridspec.GridSpec(3, 3)
     gs.update(hspace=0.5, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])
@@ -680,6 +688,7 @@ def gas_temperature_fraction(pdf, data, level, read):
     # Generate the figure #
     plt.close()
     f, ax = plt.subplots(1, figsize=(10, 7.5))
+    plt.grid(True, color='black')
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.2)
     plt.grid(True, color='black')
@@ -748,10 +757,11 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         # Generate the figure #
         plt.close()
         f = plt.figure(0, figsize=(10, 7.5))
-        plt.xlim(0.0, 40.0)
         plt.ylim(1e0, 1e6)
-        plt.xlabel("$\mathrm{R [kpc]}$", size=12)
-        plt.ylabel("$\mathrm{\Sigma [M_{\odot} pc^{-2}]}$", size=12)
+        plt.xlim(0.0, 40.0)
+        plt.grid(True, color='black')
+        plt.xlabel("$\mathrm{R [kpc]}$", size=16)
+        plt.ylabel("$\mathrm{\Sigma [M_{\odot} pc^{-2}]}$", size=16)
         plt.tick_params(direction='out', which='both', top='on', right='on')
         
         s.calc_sf_indizes(s.subfind)
@@ -805,6 +815,75 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         
         f.text(0.15, 0.75, r'$\mathrm{n} = %.2f$' '\n'r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n'  r'$\mathrm{D/T} = %.2f$' % (
             1. / popt[4], popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4]), disc_to_total))
+        
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    return None
+
+
+def circular_velocity_curves(pdf, data, redshift):
+    particle_type = [0, 1, 4, 5]
+    attributes = ['pos', 'vel', 'mass', 'age']
+    data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    
+    # Loop over all haloes #
+    for s in data:
+        # Generate the figure #
+        plt.close()
+        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        plt.xlim(0.0, 24.0)
+        plt.ylim(0.0, 500.0)
+        plt.grid(True, color='black')
+        plt.xlabel("$\mathrm{R [kpc]}$")
+        plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$")
+        plt.tick_params(direction='out', which='both', top='on', right='on')
+        ax.set_yticks([150, 160, 170, 180], minor=True)
+        f.text(0.0, 1.01, 'Au' + str(s.haloname), color='k', fontsize=12, transform=ax.transAxes)
+        
+        s.calc_sf_indizes(s.subfind)
+        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        
+        nshells = 100
+        radius = 0.04
+        dr = radius / nshells
+        
+        na = s.nparticlesall
+        end = na.copy()
+        
+        for i in range(1, len(end)):
+            end[i] += end[i - 1]
+        
+        start = np.zeros(len(na), dtype='int32')
+        for i in range(1, len(start)):
+            start[i] = end[i - 1]
+        
+        shmass = np.zeros((nshells, 6))
+        shvel = np.zeros((nshells, 6))
+        for i in range(6):
+            rp = calcGrid.calcRadialProfile(s.pos[start[i]:end[i], :].astype('float64'), s.data['mass'][start[i]:end[i]].astype('float64'), 0,
+                                            nshells, dr, s.center[0], s.center[1], s.center[2])
+            
+            radius = rp[1, :]
+            shmass[:, i] = rp[0, :]
+            for j in range(1, nshells):
+                shmass[j, i] += shmass[j - 1, i]
+            shvel[:, i] = np.sqrt(G * shmass[:, i] * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
+        
+        rp = calcGrid.calcRadialProfile(s.pos.astype('float64'), s.data['mass'].astype('float64'), 0, nshells, dr, s.center[0], s.center[1],
+                                        s.center[2])
+        
+        radius = rp[1, :]
+        mtot = rp[0, :]
+        
+        for j in range(1, nshells):
+            mtot[j] += mtot[j - 1]
+        
+        vtot = np.sqrt(G * mtot * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
+        
+        plt.plot(radius * 1e3, vtot, 'k-', linewidth=4, label='Total')
+        plt.plot(radius * 1e3, shvel[:, 0], 'b--', linewidth=4, label='Gas')
+        plt.plot(radius * 1e3, shvel[:, 4], 'g:', linewidth=4, label='Stars')
+        plt.plot(radius * 1e3, shvel[:, 1], 'r-.', linewidth=4, label='Dark matter')
+        ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     return None
