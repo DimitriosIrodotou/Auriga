@@ -299,10 +299,10 @@ class AurigaPdf:
         
         # TODO fix the rest scripts
         # Time evolution #
-        # evolution.bar_strength(pdf, self, read=True)
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)
+        time_evolution.bar_strength(pdf, self, read=True)
         # main.time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, [level])
         
@@ -317,7 +317,7 @@ class AurigaPdf:
         # main.galaxy.central_bfld(pdf, self, [level])
         # galaxy.bar_strength(pdf, self, level)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
-        galaxy.circular_velocity_curves(pdf, self, redshift)
+        # galaxy.circular_velocity_curves(pdf, self, redshift)
         
         # Metallicities #
         # metallicities.ratios(pdf, self, [level], 0.)
