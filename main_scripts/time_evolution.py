@@ -93,7 +93,6 @@ def sfr(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
     nbins = 100
@@ -120,7 +119,8 @@ def sfr(pdf, data, levels):
             
             isnap += 1
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -143,7 +143,6 @@ def bfld(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
     for il in range(nlevels):
@@ -179,9 +178,9 @@ def bfld(pdf, data, levels):
             set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$", [1e-2, 1e2])
             ax.set_xlim([13., 11.])
     
-    pdf.savefig(f)
-    
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
+    
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
     for il in range(nlevels):
@@ -200,7 +199,8 @@ def bfld(pdf, data, levels):
             ax.plot(res[name]["time"], res[name]["bfld"] * 1e6)
             set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$", [0., 100.])
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -226,7 +226,6 @@ def bh_mass(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
     for il in range(nlevels):
@@ -263,12 +262,14 @@ def bh_mass(pdf, data, levels):
             
             ax.semilogy(res[name]["time"], res[name]["mass"] * 1e10)
             set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$M_\mathrm{BH}\,\mathrm{[M_\odot]}$")
+            ax.text(0.05, 0.92, "Au%s" % name, color='k', fontsize=6, transform=ax.transAxes)
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
-def bar_strength(pdf, data, read):
+def bar_strength_evolution(pdf, data, read):
     """
         Calculate bar strength from Fourier modes of surface density.
         :param pdf:
@@ -277,13 +278,13 @@ def bar_strength(pdf, data, read):
         :return:
         """
     # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'bs/'
+    path = '/u/di43/Auriga/plots/data/' + 'bse/'
     if not os.path.exists(path):
         os.makedirs(path)
     
     # Read the data #
     if read is True:
-        redshift_cut = 0.01
+        redshift_cut = 5.0
         A2, names = [], []  # Declare lists to store the data.
         # Get all available redshifts #
         haloes = data.get_haloes(4)
@@ -298,7 +299,6 @@ def bar_strength(pdf, data, read):
             
             # Loop over all haloes #
             for s in data:
-                
                 # Select the halo and rotate it based on its principal axes #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -343,10 +343,9 @@ def bar_strength(pdf, data, read):
                 np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
     # Generate the figure #
-    plt.close()
     f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.xlim(0, 2)
-    plt.ylim(0, 0.9)
+    plt.ylim(0, 1)
     plt.ylabel(r'$A_{2}$')
     plt.xlabel(r'Redshift')
     
@@ -362,4 +361,5 @@ def bar_strength(pdf, data, read):
     ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None

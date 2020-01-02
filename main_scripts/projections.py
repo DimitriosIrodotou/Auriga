@@ -1,12 +1,13 @@
 from __future__ import print_function, division
 
+import os
+import re
+import glob
 import pysph
 import calcGrid
 import matplotlib
 
-import scipy.misc
 import numpy as np
-
 import matplotlib.pyplot as plt
 
 from const import *
@@ -14,21 +15,7 @@ from sfigure import *
 from matplotlib import gridspec
 
 res = 512
-ZSUN = 0.0127
 boxsize = 0.06
-MSUN = 1.989e33
-Gcosmo = 43.0071
-MPC = 3.085678e24
-KPC = 3.085678e21
-GAMMA = 5.0 / 3.0
-toinch = 0.393700787
-BOLTZMANN = 1.38065e-16
-GAMMA_MINUS1 = GAMMA - 1.0
-PROTONMASS = 1.67262178e-24
-
-element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
-# from Asplund et al. (2009) Table 5
-SUNABUNDANCES = {'H': 12.0, 'He': 10.98, 'C': 8.47, 'N': 7.87, 'O': 8.73, 'Ne': 7.97, 'Mg': 7.64, 'Si': 7.55, 'Fe': 7.54}
 
 
 def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False):
@@ -260,7 +247,6 @@ def stellar_light(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize)
         for a in [ax00, ax10]:
@@ -287,73 +273,109 @@ def stellar_light(pdf, data, level, redshift):
         ax10.imshow(edge_on, interpolation='nearest')
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    
+        plt.close()
     return None
 
 
-def stellar_density(pdf, data, level, redshift):
+def stellar_density(pdf, data, redshift, read):
     """
     Plot stellar density projection for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
-    particle_type = [4]
-    attributes = ['mass', 'pos']
-    data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'sd/'
+    if not os.path.exists(path):
+        os.makedirs(path)
     
-    # Loop over all haloes #
-    for s in data:
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+        particle_type = [4]
+        attributes = ['mass', 'pos']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Generate the axes #
+            ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
+            
+            # Select the halo and rotate it based on its principal axes #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            # Mask and rotate the data and get the projections #
+            mask, = np.where((s.data['age'] > 0.0) & (s.r() < 2.0 * boxsize))
+            z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
+            s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
+            
+            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
+                                     'mass') / area * 1e10
+            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
+                0.5 * area) * 1e10
+            
+            # Get the contour lines #
+            face_on_count, face_on_xedges, face_on_yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70,
+                                                                           range=[[-30, 30], [-30, 30]])
+            edge_on_count, edge_on_xedges, edge_on_yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 0] * 1e3, bins=20,
+                                                                           range=[[-30, 30], [-30, 30]])
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'face_on_' + str(s.haloname), face_on)
+            np.save(path + 'edge_on_' + str(s.haloname), edge_on)
+            np.save(path + 'face_on_count_' + str(s.haloname), face_on_count)
+            np.save(path + 'edge_on_count_' + str(s.haloname), edge_on_count)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    for i in range(len(names)):
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 7.5), dpi=300)
         ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
         for a in [ax00, ax01, ax02, ax10, ax11, ax12]:
             a.set_xlim(-30, 30)
             a.set_ylim(-30, 30)
             a.tick_params(direction='out', which='both', top='on', right='on')
-        
         ax00.set_xticklabels([])
         ax01.set_xticklabels([])
         ax01.set_yticklabels([])
-        ax12.set_yticklabels([])
+        ax11.set_yticklabels([])
         ax10.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
         ax11.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
         ax00.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=16)
         ax10.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
         
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        # Load and plot the data #
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on_count = np.load(path + 'face_on_count_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on_count = np.load(path + 'edge_on_count_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        # Select the halo and rotate it based on its principal axes #
-        s.calc_sf_indizes(s.subfind)
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-        
-        # Mask and rotate the data and plot the projections #
-        mask, = np.where((s.data['age'] > 0.0) & (s.r() < 2.0 * boxsize))
-        z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
-        s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
-        
-        face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
-                                 'mass') / area * 1e10
-        edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
-            0.5 * area) * 1e10
-        
+        # Plot the projections #
         pcm = ax01.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='twilight', rasterized=True)
         ax11.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='twilight', rasterized=True)
         create_colorbar(ax02, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         create_colorbar(ax12, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         
         # Plot the contour lines #
-        count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70, range=[[-30, 30], [-30, 30]])
-        ax00.contour(np.log10(count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
-        count, xedges, yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 0] * 1e3, bins=20, range=[[-30, 30], [-30, 30]])
-        ax10.contour(np.log10(count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+        ax00.contour(np.log10(face_on_count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+        ax10.contour(np.log10(edge_on_count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
         
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+               transform=ax00.transAxes)
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    
+        plt.close()
     return None
 
 
@@ -375,7 +397,6 @@ def gas_density(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -394,6 +415,7 @@ def gas_density(pdf, data, level, redshift):
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        plt.close()
     return None
 
 
@@ -414,7 +436,6 @@ def gas_temperature(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -439,7 +460,7 @@ def gas_temperature(pdf, data, level, redshift):
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    
+        plt.close()
     return None
 
 
@@ -460,7 +481,6 @@ def gas_metallicity(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -479,7 +499,7 @@ def gas_metallicity(pdf, data, level, redshift):
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    
+        plt.close()
     return None
 
 
@@ -500,7 +520,6 @@ def gas_slice(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -578,7 +597,7 @@ def gas_slice(pdf, data, level, redshift):
         ax10.imshow(countlog.T, extent=extent, origin='lower', cmap='magma', interpolation='bicubic')
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    
+        plt.close()
     return None
 
 
@@ -599,7 +618,6 @@ def bfld(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -619,7 +637,7 @@ def bfld(pdf, data, level, redshift):
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    
+        plt.close()
     return None
 
 
@@ -642,7 +660,6 @@ def dm_mass(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -664,7 +681,7 @@ def dm_mass(pdf, data, level, redshift):
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    
+        plt.close()
     return None
 
 

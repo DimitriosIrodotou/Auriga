@@ -97,7 +97,6 @@ def circularity(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
     plt.grid(True, color='black')
     
@@ -165,7 +164,8 @@ def circularity(pdf, data, levels):
             
             isnap += 1
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -215,12 +215,11 @@ def courteau_convert_luminosity_to_mass(loglum):
 def tully_fisher(pdf, data, levels):
     nlevels = len(levels)
     
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='black')
-    ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
-    ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
-    ax.set_ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$")
+    plt.xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$", size=16)
+    plt.ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$", size=16)
     
     # plot Pizagno et al. (2007) sample
     tablename = "./data/pizagno.txt"
@@ -253,7 +252,7 @@ def tully_fisher(pdf, data, levels):
     
     ax.semilogx(1.0e10 * mass_c, vcirc_c, 'o', mfc='lightgray', ms=2.5, mec='None')
     
-    # plot best fit from Dutton et al. (2011)
+    # Plot best fit from Dutton et al. (2011)
     masses = np.arange(0.1, 50.)
     ax.semilogx(1.0e10 * masses, np.log10(obs_tullyfisher_fit(masses)), ls='--', color='darkgray', lw=0.8)
     label = ['Pizagno+ 07', 'Verheijen 01', 'Courteau+ 07']
@@ -292,13 +291,13 @@ def tully_fisher(pdf, data, levels):
             vtot[ihalo] = vel[np.abs(smcum - 0.8 * mstars).argmin()]
             
             ax.semilogx(mstar[ihalo] * 1e10, np.log10(vtot[ihalo]), color=next(colors), linestyle="None", marker='*', ms=15.0,
-                        label="Au%s-%d" % (s.haloname, levels[0]))
+                        label="Au%s" % s.haloname)
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             ax.add_artist(l1)
             ihalo += 1
     
-    pdf.savefig(f)
-    
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -317,12 +316,11 @@ def guo_abundance_matching(mass):
 def stellar_vs_total(pdf, data, levels):
     nlevels = len(levels)
     
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='black')
-    ax = f.iaxes(1.0, 1.0, 7., 7., top=True)
-    ax.set_xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
-    ax.set_ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
+    plt.xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
+    plt.ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     
     masses = np.arange(15., 300.)
     cosmic_baryon_frac = 0.048 / 0.307
@@ -363,14 +361,14 @@ def stellar_vs_total(pdf, data, levels):
             iall, = np.where(s.r() < s.subfind.data['frc2'][0])
             mhalo[ihalo] = s.mass[iall].sum()
             
-            ax.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0,
-                      label="Au%s-%d" % (s.haloname, levels[0]))
+            ax.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s" % s.haloname)
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             ax.add_artist(l1)
             
             ihalo += 1
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -383,12 +381,11 @@ def convert_rband_to_Rband_mag(r, g):
 def gas_fraction(pdf, data, levels):
     nlevels = len(levels)
     
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='black')
-    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    ax.set_xlabel("$\\rm{M_{R}\\,[mag]}$")
-    ax.set_ylabel("$\\rm{f_{gas}}$")
+    plt.xlabel("$\\rm{M_{R}\\,[mag]}$", size=16)
+    plt.ylabel("$\\rm{f_{gas}}$", size=16)
     
     for il in range(nlevels):
         level = levels[il]
@@ -412,22 +409,23 @@ def gas_fraction(pdf, data, levels):
             Rband = convert_rband_to_Rband_mag(s.data['gsph'][istars, 5], s.data['gsph'][istars, 4])
             MR[ihalo] = -2.5 * np.log10((10. ** (- 2.0 * Rband / 5.0)).sum())
             
+            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.))
             mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 0))
             fgas[ihalo] = s.mass[mask].sum() / (s.mass[mask].sum() + s.mass[istars].sum())
             
-            ax.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s-%d" % (s.haloname, levels[0]))
+            ax.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s" % s.haloname)
             ax.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             
             ihalo += 1
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
 def central_bfld(pdf, data, levels):
     nlevels = len(levels)
     
-    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
@@ -464,7 +462,8 @@ def central_bfld(pdf, data, levels):
             
             ihalo += 1
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -477,12 +476,14 @@ def bar_strength(pdf, data, level):
     :return:
     """
     
-    plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
+    # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='black')
-    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    ax.set_ylabel("$A_{2}/A_{0}$")
-    ax.set_xlabel("$r\,\mathrm{[kpc]}$")
+    plt.ylim(-0.2, 1.2)
+    plt.xlim(0.0, 10.0)
+    plt.grid(True, color='black')
+    plt.ylabel("$A_{2}$")
+    plt.xlabel("$r\,\mathrm{[kpc]}$")
     
     data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
     nhalos = data.selected_current_nsnaps
@@ -524,10 +525,11 @@ def bar_strength(pdf, data, level):
         a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
         
         # Plot bar strength as a function of radius plot r_m versus a2
-        ax.plot(r_m, a2, color=next(colors), label="Au%s-%d bar strength: %.2f" % (s.haloname, level, max(a2)))
+        ax.plot(r_m, a2, color=next(colors), label="Au%s bar strength: %.2f" % (s.haloname, max(a2)))
         ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -539,7 +541,6 @@ def sfr(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
     plt.grid(True, color='black')
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
@@ -569,7 +570,8 @@ def sfr(pdf, data, levels):
             ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
             ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
     
-    pdf.savefig(f)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -581,7 +583,6 @@ def delta_sfr(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(10, 10))
     plt.grid(True, color='black')
     gs = gridspec.GridSpec(3, 3)
@@ -667,7 +668,8 @@ def delta_sfr(pdf, data, levels):
         set_axis_evo(s, ax12, ax2)
         ax12.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=8, transform=ax12.transAxes)
     
-    pdf.savefig(f, bbox_inches='tight')
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -685,15 +687,6 @@ def gas_temperature_fraction(pdf, data, level, read):
     if not os.path.exists(path):
         os.makedirs(path)
     
-    # Generate the figure #
-    plt.close()
-    f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='black')
-    plt.ylim(-0.2, 1.2)
-    plt.xlim(-0.2, 1.2)
-    plt.grid(True, color='black')
-    plt.ylabel(r'Gas fraction', size=16)
-    
     # Read the data #
     if read is True:
         # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
@@ -703,6 +696,12 @@ def gas_temperature_fraction(pdf, data, level, read):
         
         # Loop over all haloes #
         for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
             # Select the halo and rotate it based on its principal axes #
             s.calc_sf_indizes(s.subfind, verbose=False)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -729,21 +728,29 @@ def gas_temperature_fraction(pdf, data, level, read):
             np.save(path + 'wg_ratio_' + str(s.haloname), np.sum(warmgmass) / np.sum(mass))
             np.save(path + 'hg_ratio_' + str(s.haloname), np.sum(hotgmass) / np.sum(mass))
     
+    # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
+    plt.grid(True, color='black')
+    plt.ylim(-0.2, 1.2)
+    plt.xlim(-0.2, 1.2)
+    plt.grid(True, color='black')
+    plt.ylabel(r'Gas fraction', size=16)
+    
     # Load and plot the data #
-    else:
-        names = glob.glob(path + '/name_*')
-        names.sort()
-        for i in range(len(names)):
-            sfg_ratio = np.load(path + 'sfg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            wg_ratio = np.load(path + 'wg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            hg_ratio = np.load(path + 'hg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            b1, = plt.bar(np.divide(i, 5), sfg_ratio, width=0.1, alpha=0.6, color='blue')
-            b2, = plt.bar(np.divide(i, 5), wg_ratio, bottom=sfg_ratio, width=0.1, alpha=0.6, color='green')
-            b3, = plt.bar(np.divide(i, 5), hg_ratio, bottom=np.sum(np.vstack([sfg_ratio, wg_ratio]).T), width=0.1, alpha=0.6, color='red')
-        
-        ax.set_xticklabels(np.append('', ['Au-' + re.split('_|.npy', halo)[1] for halo in names]))
-        plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
-        pdf.savefig(f)
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    for i in range(len(names)):
+        sfg_ratio = np.load(path + 'sfg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        wg_ratio = np.load(path + 'wg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        hg_ratio = np.load(path + 'hg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        b1, = plt.bar(np.divide(i, 5), sfg_ratio, width=0.1, alpha=0.6, color='blue')
+        b2, = plt.bar(np.divide(i, 5), wg_ratio, bottom=sfg_ratio, width=0.1, alpha=0.6, color='green')
+        b3, = plt.bar(np.divide(i, 5), hg_ratio, bottom=np.sum(np.vstack([sfg_ratio, wg_ratio]).T), width=0.1, alpha=0.6, color='red')
+    
+    ax.set_xticklabels(np.append('', ['Au-' + re.split('_|.npy', halo)[1] for halo in names]))
+    plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 
@@ -755,7 +762,6 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f = plt.figure(0, figsize=(10, 7.5))
         plt.ylim(1e0, 1e6)
         plt.xlim(0.0, 40.0)
@@ -817,6 +823,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
             1. / popt[4], popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4]), disc_to_total))
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        plt.close()
     return None
 
 
@@ -828,10 +835,9 @@ def circular_velocity_curves(pdf, data, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure #
-        plt.close()
         f, ax = plt.subplots(1, figsize=(10, 7.5))
         plt.xlim(0.0, 24.0)
-        plt.ylim(0.0, 500.0)
+        plt.ylim(0.0, 700.0)
         plt.grid(True, color='black')
         plt.xlabel("$\mathrm{R [kpc]}$")
         plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$")
@@ -886,6 +892,7 @@ def circular_velocity_curves(pdf, data, redshift):
         ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        plt.close()
     return None
 
 

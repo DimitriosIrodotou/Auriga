@@ -281,7 +281,7 @@ class AurigaPdf:
         # Projections #
         # Stars #
         # projections.stellar_light(pdf, self, level, redshift)
-        # projections.stellar_density(pdf, self, level, redshift)
+        # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
         # projections.gas_density(pdf, self, level, redshift)
         # projections.gas_temperature(pdf, self, level, redshift)
@@ -302,7 +302,7 @@ class AurigaPdf:
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)
-        time_evolution.bar_strength(pdf, self, read=True)
+        time_evolution.bar_strength_evolution(pdf, self, read=False)  # Only works for one halo (in the output folder) at a time.
         # main.time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, [level])
         
@@ -311,9 +311,9 @@ class AurigaPdf:
         # galaxy.delta_sfr(pdf, self, [level])
         # galaxy.gas_temperature_fraction(pdf, self, level, read=False)
         # galaxy.circularity(pdf, self, [level])
-        # main.galaxy.tully_fisher(pdf, self, [level])
-        # main.galaxy.stellar_vs_total(pdf, self, [level])
-        # main.galaxy.gas_fraction(pdf, self, [level])
+        # galaxy.tully_fisher(pdf, self, [level])
+        # galaxy.stellar_vs_total(pdf, self, [level])
+        # galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
         # galaxy.bar_strength(pdf, self, level)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
