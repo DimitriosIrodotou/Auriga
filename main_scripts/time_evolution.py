@@ -348,6 +348,7 @@ def bar_strength_evolution(pdf, data, read):
     plt.ylim(0, 1)
     plt.ylabel(r'$A_{2}$')
     plt.xlabel(r'Redshift')
+    plt.grid(True, color='black')
     
     # Load and plot the data #
     names = glob.glob(path + '/name_*')
@@ -357,7 +358,7 @@ def bar_strength_evolution(pdf, data, read):
         A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         # Plot bar strength as a function of radius #
-        plt.plot(redshifts, A2, color=next(colors))
+        plt.plot(redshifts, A2, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
     ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.

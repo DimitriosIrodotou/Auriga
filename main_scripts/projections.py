@@ -253,7 +253,7 @@ def stellar_light(pdf, data, level, redshift):
             a.set_yticks([])
             a.set_xticks([])
             a.set_xticklabels([])
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Select the halo and rotate it based on its principal axes #
         s.calc_sf_indizes(s.subfind)

@@ -299,10 +299,10 @@ class AurigaPdf:
         
         # TODO fix the rest scripts
         # Time evolution #
-        # for redshift in np.linspace(0.0, 2, 21):
-        #     print(redshift)
-        #     evolution.circularity(pdf, self, [level], redshift)
-        time_evolution.bar_strength_evolution(pdf, self, read=False)  # Only works for one halo (in the output folder) at a time.
+        for redshift in np.linspace(0.0, 2, 21):
+            print(redshift)
+            evolution.circularity(pdf, self, [level], redshift)
+        # time_evolution.bar_strength_evolution(pdf, self, read=False)  # Only works for one halo (in the output folder) at a time.
         # main.time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, [level])
         

@@ -78,12 +78,12 @@ def set_axis_evo(s, ax, ax2):
     ax.set_xlim(0, 13)
     ax.invert_xaxis()
     ax.tick_params(direction='out', which='both', right='on')
-    ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=16)
+    ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=12)
     
     ax2.set_xticks(times)
     ax2.set_xticklabels(lb)
     ax2.set_xlim(ax.get_xlim())
-    ax2.set_xlabel('$z$', size=16)
+    ax2.set_xlabel('$z$', size=12)
     ax2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
@@ -600,10 +600,10 @@ def delta_sfr(pdf, data, levels):
         a.set_yticklabels([])
     
     for a in [ax00, ax01, ax02]:
-        a.set_ylim(0, 20)
+        a.set_ylim(0, 22)
     
     for a in [ax10, ax11, ax12]:
-        a.set_ylim(-9, 14)
+        a.set_ylim(-7, 17)
     
     nbins = 100
     tmin = 0.0
@@ -622,7 +622,7 @@ def delta_sfr(pdf, data, levels):
             age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
             
             counts00, bins00, bars00 = ax00.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, histtype='step', color=color, bins=nbins,
-                                                 range=[tmin, tmax], label="Au%s" % s.haloname)
+                                                 range=[tmin, tmax], label="Au-%s" % s.haloname)
             ax2 = ax00.twiny()
             set_axis_evo(s, ax00, ax2)
             ax00.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
@@ -632,7 +632,7 @@ def delta_sfr(pdf, data, levels):
             age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
             
             counts01, bins01, bars01 = ax01.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, histtype='step', color=color, bins=nbins,
-                                                 range=[tmin, tmax], label="Au%s" % s.haloname)
+                                                 range=[tmin, tmax], label="Au-%s" % s.haloname)
             ax2 = ax01.twiny()
             set_axis_evo(s, ax01, ax2)
             ax01.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
@@ -642,7 +642,7 @@ def delta_sfr(pdf, data, levels):
             age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
             
             counts02, bins02, bars02 = ax02.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, histtype='step', color=color, bins=nbins,
-                                                 range=[tmin, tmax], label="Au%s" % s.haloname)
+                                                 range=[tmin, tmax], label="Au-%s" % s.haloname)
             ax2 = ax02.twiny()
             set_axis_evo(s, ax02, ax2)
             ax02.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
@@ -843,12 +843,12 @@ def circular_velocity_curves(pdf, data, redshift):
         plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$")
         plt.tick_params(direction='out', which='both', top='on', right='on')
         ax.set_yticks([150, 160, 170, 180], minor=True)
-        f.text(0.0, 1.01, 'Au' + str(s.haloname), color='k', fontsize=12, transform=ax.transAxes)
+        f.text(0.0, 1.01, 'Au-' + str(s.haloname), color='k', fontsize=12, transform=ax.transAxes)
         
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        nshells = 100
+        nshells = 400
         radius = 0.04
         dr = radius / nshells
         
@@ -876,7 +876,6 @@ def circular_velocity_curves(pdf, data, redshift):
         
         rp = calcGrid.calcRadialProfile(s.pos.astype('float64'), s.data['mass'].astype('float64'), 0, nshells, dr, s.center[0], s.center[1],
                                         s.center[2])
-        
         radius = rp[1, :]
         mtot = rp[0, :]
         
@@ -884,7 +883,6 @@ def circular_velocity_curves(pdf, data, redshift):
             mtot[j] += mtot[j - 1]
         
         vtot = np.sqrt(G * mtot * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
-        
         plt.plot(radius * 1e3, vtot, 'k-', linewidth=4, label='Total')
         plt.plot(radius * 1e3, shvel[:, 0], 'b--', linewidth=4, label='Gas')
         plt.plot(radius * 1e3, shvel[:, 4], 'g:', linewidth=4, label='Stars')
