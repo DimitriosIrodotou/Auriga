@@ -13,7 +13,7 @@ from const import *
 from sfigure import *
 
 
-def create_axis(f, idx, ncol=5):
+def create_axis(f, idx, ncol=6):
     ix = idx % ncol
     iy = idx // ncol
     
@@ -39,8 +39,8 @@ def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None):
     for label in ax.yaxis.get_ticklabels():
         label.set_size(6)
     
-    if ylim is not None:
-        ax.set_ylim(ylim)
+    # if ylim is not None:
+    ax.set_ylim(0, 4.5)
     
     if isnap == 0 and title is not None:
         ax.set_title(title, size=7)
@@ -116,7 +116,7 @@ def circularity(pdf, data, levels, z):
             ax.plot(0.5 * (edges[1:] + edges[:-1]), ydata, 'k')
             
             set_axis(isnap, ax, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
-            ax.text(0.0, 1.01, "Au%s z = %.1f " % (s.haloname, z), color='k', fontsize=6, transform=ax.transAxes)
+            ax.text(0.0, 1.01, "Au-%s z = %.1f " % (s.haloname, z), color='k', fontsize=6, transform=ax.transAxes)
             ax.text(0.05, 0.8, "D/T = %.2f" % disc_frac, color='k', fontsize=6, transform=ax.transAxes)
             ax.set_xlim(-2., 2.)
             ax.set_xticks([-1.5, 0., 1.5])

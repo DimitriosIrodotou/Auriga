@@ -482,8 +482,8 @@ def bar_strength(pdf, data, level):
     plt.ylim(-0.2, 1.2)
     plt.xlim(0.0, 10.0)
     plt.grid(True, color='black')
-    plt.ylabel("$A_{2}$")
-    plt.xlabel("$r\,\mathrm{[kpc]}$")
+    plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
+    plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
     
     data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
     nhalos = data.selected_current_nsnaps
@@ -525,7 +525,7 @@ def bar_strength(pdf, data, level):
         a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
         
         # Plot bar strength as a function of radius plot r_m versus a2
-        ax.plot(r_m, a2, color=next(colors), label="Au%s bar strength: %.2f" % (s.haloname, max(a2)))
+        ax.plot(r_m, a2, color=next(colors), label="Au-%s bar strength: %.2f" % (s.haloname, max(a2)))
         ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
@@ -764,7 +764,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         # Generate the figure #
         f = plt.figure(0, figsize=(10, 7.5))
         plt.ylim(1e0, 1e6)
-        plt.xlim(0.0, 40.0)
+        plt.xlim(0.0, 30.0)
         plt.grid(True, color='black')
         plt.xlabel("$\mathrm{R [kpc]}$", size=16)
         plt.ylabel("$\mathrm{\Sigma [M_{\odot} pc^{-2}]}$", size=16)
@@ -819,8 +819,8 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         plt.semilogy(r, 1e10 * p.sersic_prof1(r, popt[2], popt[3], popt[4]) * 1e-6, 'r-')
         plt.semilogy(r, 1e10 * p.total_profile(r, popt[0], popt[1], popt[2], popt[3], popt[4]) * 1e-6, 'k-')
         
-        f.text(0.15, 0.75, r'$\mathrm{n} = %.2f$' '\n'r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n'  r'$\mathrm{D/T} = %.2f$' % (
-            1. / popt[4], popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4]), disc_to_total))
+        f.text(0.15, 0.8, 'Au-%s' '\n' r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
+            s.haloname, 1. / popt[4], popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4])))
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
@@ -839,8 +839,8 @@ def circular_velocity_curves(pdf, data, redshift):
         plt.xlim(0.0, 24.0)
         plt.ylim(0.0, 700.0)
         plt.grid(True, color='black')
-        plt.xlabel("$\mathrm{R [kpc]}$")
-        plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$")
+        plt.xlabel("$\mathrm{R [kpc]}$", size=16)
+        plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$", size=16)
         plt.tick_params(direction='out', which='both', top='on', right='on')
         ax.set_yticks([150, 160, 170, 180], minor=True)
         f.text(0.0, 1.01, 'Au-' + str(s.haloname), color='k', fontsize=12, transform=ax.transAxes)

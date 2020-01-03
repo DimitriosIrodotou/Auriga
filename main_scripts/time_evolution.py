@@ -346,8 +346,8 @@ def bar_strength_evolution(pdf, data, read):
     f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.xlim(0, 2)
     plt.ylim(0, 1)
-    plt.ylabel(r'$A_{2}$')
-    plt.xlabel(r'Redshift')
+    plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
+    plt.xlabel(r'Redshift', size=16)
     plt.grid(True, color='black')
     
     # Load and plot the data #
