@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_06*" % self.directory)
+        haloes = glob.glob("%s/halo_18*" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -310,12 +310,14 @@ class AurigaPdf:
         # galaxy.sfr(pdf, self, [level])
         # galaxy.delta_sfr(pdf, self, [level])
         # galaxy.gas_temperature_fraction(pdf, self, level, read=False)
-        # galaxy.circularity(pdf, self, [level])
+        for redshift in np.linspace(0.0, 1.0, 11):
+            print(redshift)
+            galaxy.circularity(pdf, self, [level], redshift)
         # galaxy.tully_fisher(pdf, self, [level])
         # galaxy.stellar_vs_total(pdf, self, [level])
         # galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
-        galaxy.bar_strength(pdf, self, level)
+        # galaxy.bar_strength(pdf, self, level)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
         

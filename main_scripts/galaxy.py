@@ -89,20 +89,25 @@ def set_axis_evo(s, ax, ax2):
     return None
 
 
-def circularity(pdf, data, levels):
+def circularity(pdf, data, levels, redshift):
     nlevels = len(levels)
     
     nhalos = 0
     for il in range(nlevels):
-        data.select_haloes(levels[il], 0.)
+        data.select_haloes(levels[il], redshift)
         nhalos += data.selected_current_nsnaps
-    
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
+    colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
+    # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='black')
+    plt.xlabel(r'$\mathrm{\epsilon}$', size=16)
+    plt.ylabel(r'$\mathrm{f(\epsilon )}$', size=16)
+    plt.ylim(0, 3.0)
     
     for il in range(nlevels):
         level = levels[il]
-        data.select_haloes(level, 0., loadonlyhalo=0)
+        particle_type = [4]
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0)
         
         isnap = 0
         for s in data:
@@ -151,14 +156,12 @@ def circularity(pdf, data, levels):
             ll, = np.where((eps > -1.7) & (eps < 1.7))
             disc_frac = smass[jj].sum() / smass[ll].sum()
             
-            ax = create_axis(f, isnap)
+            # ax = create_axis(f, isnap)
             ydata, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
             ydata /= edges[1:] - edges[:-1]
-            ax.plot(0.5 * (edges[1:] + edges[:-1]), ydata, 'k')
-            
-            set_axis(isnap, ax, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
-            ax.text(0.05, 0.90, "Au%s-%d" % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
-            ax.text(0.05, 0.8, "D/T = %.2f" % disc_frac, color='k', fontsize=6, transform=ax.transAxes)
+            ax.plot(0.5 * (edges[1:] + edges[:-1]), ydata, color=next(colors), label='Au-%s D/T = %.2f' % (s.haloname, disc_frac))
+            ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+            ax.text(0.0, 1.01, "redshift = %.1f " % redshift, color='k', fontsize=16, transform=ax.transAxes)
             ax.set_xlim(-2., 2.)
             ax.set_xticks([-1.5, 0., 1.5])
             
