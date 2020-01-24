@@ -99,7 +99,7 @@ def circularity(pdf, data, levels, redshift):
     colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
     # Generate the figure #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.xlabel(r'$\mathrm{\epsilon}$', size=16)
     plt.ylabel(r'$\mathrm{f(\epsilon )}$', size=16)
     plt.ylim(0, 3.0)
@@ -220,7 +220,7 @@ def tully_fisher(pdf, data, levels):
     
     # Generate the figure #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$", size=16)
     plt.ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$", size=16)
     
@@ -321,7 +321,7 @@ def stellar_vs_total(pdf, data, levels):
     
     # Generate the figure #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
     plt.ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     
@@ -386,7 +386,7 @@ def gas_fraction(pdf, data, levels):
     
     # Generate the figure #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.xlabel("$\\rm{M_{R}\\,[mag]}$", size=16)
     plt.ylabel("$\\rm{f_{gas}}$", size=16)
     
@@ -430,7 +430,7 @@ def central_bfld(pdf, data, levels):
     nlevels = len(levels)
     
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    plt.grid(True, color='black')
+    plt.grid(True)
     ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     ax.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     ax.set_ylabel("$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$")
@@ -481,10 +481,10 @@ def bar_strength(pdf, data, level):
     
     # Generate the figure #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.ylim(-0.2, 1.2)
     plt.xlim(0.0, 10.0)
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
     plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
     
@@ -544,10 +544,12 @@ def sfr(pdf, data, levels):
         data.select_haloes(levels[il], 0.)
         nhalos += data.selected_current_nsnaps
     
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 8.2))
-    plt.grid(True, color='black')
-    ax = f.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    ax.set_ylabel("$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+    # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
+    plt.grid(True)
+    plt.grid(True)
+    plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
+    plt.ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$', size=16)
     
     nbins = 100
     tmin = 0
@@ -562,16 +564,15 @@ def sfr(pdf, data, levels):
         for s in data:
             s.centerat(s.subfind.data['fpos'][0, :])
             
-            mask, = np.where((s.data['age'] > 0.) & (s.r() > 0.005) & (s.r() < 0.015) & (s.pos[:, 2] < 0.003))
+            mask, = np.where((s.data['age'] > 0.) & (s.r() < 0.03))
             age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
             
             ax.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / timebin, color=next(colors), histtype='step', bins=nbins, range=[tmin, tmax],
-                    label="Au%s-%d" % (s.haloname, levels[0]))
+                    label="Au-%s" % s.haloname)
             
             ax2 = ax.twiny()
-            # set_axis_evo(s, ax, ax2, "$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$")
+            set_axis_evo(s, ax, ax2)
             ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-            ax.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=12, transform=ax.transAxes)
     
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
@@ -587,7 +588,7 @@ def delta_sfr(pdf, data, levels):
         nhalos += data.selected_current_nsnaps
     
     f = plt.figure(FigureClass=sfig, figsize=(10, 10))
-    plt.grid(True, color='black')
+    plt.grid(True)
     gs = gridspec.GridSpec(3, 3)
     gs.update(hspace=0.5, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])
@@ -596,8 +597,8 @@ def delta_sfr(pdf, data, levels):
     ax10 = plt.subplot(gs[1, 0])
     ax11 = plt.subplot(gs[1, 1])
     ax12 = plt.subplot(gs[1, 2])
-    ax00.set_ylabel('$\\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
-    ax10.set_ylabel('$\\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
+    ax00.set_ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
+    ax10.set_ylabel('$\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
     
     for a in [ax01, ax02, ax11, ax12]:
         a.set_yticklabels([])
@@ -705,7 +706,7 @@ def gas_temperature_fraction(pdf, data, level, read):
             if str(s.haloname) in names:
                 continue
             
-            # Select the halo and rotate it based on its principal axes #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind, verbose=False)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -733,10 +734,10 @@ def gas_temperature_fraction(pdf, data, level, read):
     
     # Generate the figure #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.2)
-    plt.grid(True, color='black')
+    plt.grid(True)
     plt.ylabel(r'Gas fraction', size=16)
     
     # Load and plot the data #
@@ -768,7 +769,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         f = plt.figure(0, figsize=(10, 7.5))
         plt.ylim(1e0, 1e6)
         plt.xlim(0.0, 30.0)
-        plt.grid(True, color='black')
+        plt.grid(True)
         plt.xlabel("$\mathrm{R [kpc]}$", size=16)
         plt.ylabel("$\mathrm{\Sigma [M_{\odot} pc^{-2}]}$", size=16)
         plt.tick_params(direction='out', which='both', top='on', right='on')
@@ -841,7 +842,7 @@ def circular_velocity_curves(pdf, data, redshift):
         f, ax = plt.subplots(1, figsize=(10, 7.5))
         plt.xlim(0.0, 24.0)
         plt.ylim(0.0, 700.0)
-        plt.grid(True, color='black')
+        plt.grid(True)
         plt.xlabel("$\mathrm{R [kpc]}$", size=16)
         plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$", size=16)
         plt.tick_params(direction='out', which='both', top='on', right='on')

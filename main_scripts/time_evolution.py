@@ -299,7 +299,7 @@ def bar_strength_evolution(pdf, data, read):
             
             # Loop over all haloes #
             for s in data:
-                # Select the halo and rotate it based on its principal axes #
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
@@ -348,7 +348,7 @@ def bar_strength_evolution(pdf, data, read):
     plt.ylim(0, 1)
     plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
     plt.xlabel(r'Redshift', size=16)
-    plt.grid(True, color='black')
+    plt.grid(True)
     
     # Load and plot the data #
     names = glob.glob(path + '/name_*')

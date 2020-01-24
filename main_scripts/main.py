@@ -277,11 +277,11 @@ class AurigaPdf:
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
-        # TODO remove set_axes and level from projections
+        # TODO remove set_axes and level from projections and add read
         # Projections #
         # Stars #
         # projections.stellar_light(pdf, self, level, redshift)
-        # projections.stellar_density(pdf, self, redshift, read=True)
+        projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
         # projections.gas_density(pdf, self, level, redshift)
         # projections.gas_temperature(pdf, self, level, redshift)
@@ -310,9 +310,9 @@ class AurigaPdf:
         # galaxy.sfr(pdf, self, [level])
         # galaxy.delta_sfr(pdf, self, [level])
         # galaxy.gas_temperature_fraction(pdf, self, level, read=False)
-        for redshift in np.linspace(0.0, 1.0, 11):
-            print(redshift)
-            galaxy.circularity(pdf, self, [level], redshift)
+        # for redshift in np.linspace(0.0, 1.0, 11):
+        #     print(redshift)
+        #     galaxy.circularity(pdf, self, [level], redshift)
         # galaxy.tully_fisher(pdf, self, [level])
         # galaxy.stellar_vs_total(pdf, self, [level])
         # galaxy.gas_fraction(pdf, self, [level])

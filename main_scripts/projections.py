@@ -255,7 +255,7 @@ def stellar_light(pdf, data, level, redshift):
             a.set_xticklabels([])
         f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -308,7 +308,7 @@ def stellar_density(pdf, data, redshift, read):
             # Generate the axes #
             ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
             
-            # Select the halo and rotate it based on its principal axes #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -401,7 +401,7 @@ def gas_density(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -440,7 +440,7 @@ def gas_temperature(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -485,7 +485,7 @@ def gas_metallicity(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -524,7 +524,7 @@ def gas_slice(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -622,7 +622,7 @@ def bfld(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -664,7 +664,7 @@ def dm_mass(pdf, data, level, redshift):
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
