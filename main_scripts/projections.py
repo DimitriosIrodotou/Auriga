@@ -239,7 +239,7 @@ def stellar_light(pdf, data, level, redshift):
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [4]
     attributes = ['age', 'gsph', 'mass', 'pos']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -292,7 +292,7 @@ def stellar_density(pdf, data, redshift, read):
     
     # Read the data #
     if read is True:
-        # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['mass', 'pos']
         data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -389,7 +389,7 @@ def gas_density(pdf, data, level, redshift):
     :return: None
     """
     
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'pos', 'rho']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -428,7 +428,7 @@ def gas_temperature(pdf, data, level, redshift):
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'ne', 'pos', 'rho', 'u']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -473,7 +473,7 @@ def gas_metallicity(pdf, data, level, redshift):
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'pos', 'gz']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -512,7 +512,7 @@ def gas_slice(pdf, data, level, redshift):
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'ne', 'pos', 'rho', 'u']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -610,7 +610,7 @@ def bfld(pdf, data, level, redshift):
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'pos', 'bfld']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -652,7 +652,7 @@ def dm_mass(pdf, data, level, redshift):
     """
     boxsize = 0.4  # Increase the boxsize
     
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [1, 4]
     attributes = ['mass', 'pos']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)

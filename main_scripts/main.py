@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_18*" % self.directory)
+        haloes = glob.glob("%s/halo_18N*" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -281,7 +281,7 @@ class AurigaPdf:
         # Projections #
         # Stars #
         # projections.stellar_light(pdf, self, level, redshift)
-        projections.stellar_density(pdf, self, redshift, read=True)
+        # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
         # projections.gas_density(pdf, self, level, redshift)
         # projections.gas_temperature(pdf, self, level, redshift)
@@ -303,6 +303,7 @@ class AurigaPdf:
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)
         # time_evolution.bar_strength_evolution(pdf, self, read=False)  # Only works for one halo (in the output folder) at a time.
+        time_evolution.gas_temperature_fraction_evolution(pdf, self, read=True)  # Only works for one halo (in the output folder) at a time.
         # main.time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, [level])
         

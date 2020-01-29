@@ -12,7 +12,10 @@ import matplotlib.pyplot as plt
 
 from const import *
 from sfigure import *
+from loadmodules import *
 from parallel_decorators import vectorize_parallel
+
+element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
 
 
 def get_names_sorted(names):
@@ -292,7 +295,7 @@ def bar_strength_evolution(pdf, data, read):
             redshifts = halo.get_redshifts()
         
         for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
-            # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+            # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [4]
             attributes = ['age', 'mass', 'pos']
             data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -361,6 +364,105 @@ def bar_strength_evolution(pdf, data, read):
         plt.plot(redshifts, A2, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
     ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
+    return None
+
+
+def gas_temperature_fraction_evolution(pdf, data, read):
+    """
+        Calculate bar strength from Fourier modes of surface density.
+        :param pdf:
+        :param data:
+        :param read: boolean.
+        :return:
+        """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'gtfe/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        redshift_cut = 5.0
+        sfg_ratios, wg_ratios, hg_ratios, names, masses = [], [], [], [], []  # Declare lists to store the data.
+        
+        # Get all available redshifts #
+        haloes = data.get_haloes(4)
+        for name, halo in haloes.items():
+            redshifts = halo.get_redshifts()
+        
+        for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
+            # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+            particle_type = [0, 4]
+            attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
+            data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            
+            # Loop over all haloes #
+            for s in data:
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+                s.calc_sf_indizes(s.subfind, verbose=False)
+                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+                
+                mask, = np.where(
+                    (s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
+                
+                # Calculate the temperature of the gas cells #
+                ne = s.data['ne'][mask]
+                metallicity = s.data['gz'][mask]
+                XH = s.data['gmet'][mask, element['H']]
+                yhelium = (1 - XH - metallicity) / (4. * XH)
+                mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+                u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+                
+                # Calculate the mass of the gas cells within three temperatures regimes #
+                mass = s.data['mass'][mask]
+                masses.append(np.sum(mass))
+                sfg_ratios.append(np.sum(mass[np.where((u < 2e4))]) / np.sum(mass))
+                wg_ratios.append(np.sum(mass[np.where((u >= 2e4) & (u < 5e5))]) / np.sum(mass))
+                hg_ratios.append(np.sum(mass[np.where((u >= 5e5))]) / np.sum(mass))
+        
+        # Save data for each halo in numpy arrays #
+        np.save(path + 'masses_' + str(s.haloname), masses)
+        np.save(path + 'name_' + str(s.haloname), s.haloname)
+        np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
+        np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
+        np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
+        np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
+    
+    # # Generate the figure #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
+    plt.grid(True)
+    plt.ylim(-0.2, 1.2)
+    plt.xlim(0, 5)
+    plt.grid(True)
+    plt.ylabel(r'Gas fraction', size=16)
+    plt.xlabel(r'Redshift', size=16)
+    
+    # Load and plot the data #
+    names = glob.glob(path + '/name_18N*')
+    names.sort()
+    
+    for i in range(len(names)):
+        sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts = np.insert(redshifts, 0, 5.1)
+        sfg_ratios = np.flip(sfg_ratios)
+        wg_ratios = np.flip(wg_ratios)
+        hg_ratios = np.flip(hg_ratios)
+        redshifts = np.flip(redshifts)
+        
+        for j in range(len(redshifts) - 1):
+            b1, = plt.bar(redshifts[j], sfg_ratios[j], width=redshifts[j + 1] - redshifts[j], alpha=0.6, color='blue', align='edge', edgecolor='none')
+            b2, = plt.bar(redshifts[j], wg_ratios[j], bottom=sfg_ratios[j], width=redshifts[j + 1] - redshifts[j], alpha=0.6, color='green',
+                          align='edge', edgecolor='none')
+            b3, = plt.bar(redshifts[j], hg_ratios[j], bottom=np.sum(np.vstack([sfg_ratios[j], wg_ratios[j]]).T),
+                          width=redshifts[j + 1] - redshifts[j], alpha=0.6, align='edge', color='red', edgecolor='none')
+    
+    plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None

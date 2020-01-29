@@ -693,7 +693,7 @@ def gas_temperature_fraction(pdf, data, level, read):
     
     # Read the data #
     if read is True:
-        # Read desired galactic property(ies) for specific particle type(s) for Auriga haloes #
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
         data.select_haloes(level, 0., loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
