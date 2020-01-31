@@ -274,7 +274,7 @@ def bh_mass(pdf, data, levels):
 
 def bar_strength_evolution(pdf, data, read):
     """
-        Calculate bar strength from Fourier modes of surface density.
+        Calculate the evolution of bar strength from Fourier modes of surface density.
         :param pdf:
         :param data:
         :param read: boolean.
@@ -371,7 +371,7 @@ def bar_strength_evolution(pdf, data, read):
 
 def gas_temperature_fraction_evolution(pdf, data, read):
     """
-        Calculate bar strength from Fourier modes of surface density.
+        Calculate the evolution of gas fraction in different temperature regimes.
         :param pdf:
         :param data:
         :param read: boolean.
@@ -465,4 +465,118 @@ def gas_temperature_fraction_evolution(pdf, data, read):
     ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
+    return None
+
+
+def black_hole_modes_evolution(pdf, data, read):
+    """
+        Get information about different black hole modes from log files.
+        :param pdf:
+        :param data:
+        :param read: boolean.
+        :return:
+        """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'bhme/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    i = 0
+    
+    #  Create empty dictionaries to store desired words and lines that contain these words #
+    redshift_words_dictionary, blackhole_words_dictionary, em_words_dictionary, mechanical_words_dictionary, thermal_words_dictionary = dict(), \
+                                                                                                                                        dict(), \
+                                                                                                                                        dict(), \
+                                                                                                                                        dict(), dict()
+    all_redshift_lines, all_blackhole_lines, all_mechanical_lines, all_thermal_lines, all_em_lines = [], [], [], [], []
+    
+    # Read the data #
+    if read is True:
+        with open('/u/di43/Auriga/' + 'job.764102.txt') as file:
+            for line in file:
+                # Convert the characters in line to lowercase and split the line into words #
+                line = line.lower()
+                line = line.strip()  # Remove '\n' at end of line.
+                words = line.split(" ")
+                
+                if 'black_holes:' and 'thermal' and 'mechanical' in line:
+                    print(line)
+                
+                # Iterate over each word in line and search for specific words #
+                for word in words:
+                    if 'redshift' in word:
+                        # Increment count of word by 1 if they already exist, else add the new word with count 1 #
+                        if word in redshift_words_dictionary:
+                            redshift_words_dictionary[word] = redshift_words_dictionary[word] + 1
+                            all_redshift_lines.append(line)
+                        
+                        else:
+                            redshift_words_dictionary[word] = 1
+                    
+                    if 'black_holes:' in word:
+                        if word in blackhole_words_dictionary:
+                            blackhole_words_dictionary[word] = blackhole_words_dictionary[word] + 1
+                            all_blackhole_lines.append(line)
+                        else:
+                            blackhole_words_dictionary[word] = 1
+                    
+                    if 'thermal' in word:
+                        if word in thermal_words_dictionary:
+                            thermal_words_dictionary[word] = thermal_words_dictionary[word] + 1
+                            all_thermal_lines.append(line)
+                        else:
+                            thermal_words_dictionary[word] = 1
+                    
+                    if 'mechanical' in word:
+                        if word in mechanical_words_dictionary:
+                            mechanical_words_dictionary[word] = mechanical_words_dictionary[word] + 1
+                            all_mechanical_lines.append(line)
+                        else:
+                            mechanical_words_dictionary[word] = 1
+                    
+                    if 'electro-magnetic' in word:
+                        if word in em_words_dictionary:
+                            em_words_dictionary[word] = em_words_dictionary[word] + 1
+                            all_em_lines.append(line)
+                        else:
+                            em_words_dictionary[word] = 1
+        
+        # Print the content of the dictionaries #
+        for key in list(redshift_words_dictionary.keys()):
+            print(key, ':', redshift_words_dictionary[key])
+        for key in list(blackhole_words_dictionary.keys()):
+            print(key, ':', blackhole_words_dictionary[key])
+        for key in list(thermal_words_dictionary.keys()):
+            print(key, ':', thermal_words_dictionary[key])
+        for key in list(mechanical_words_dictionary.keys()):
+            print(key, ':', mechanical_words_dictionary[key])
+        for key in list(em_words_dictionary.keys()):
+            print(key, ':', em_words_dictionary[key])
+        
+        np.save(path + 'all_redshift_lines.npy', all_redshift_lines)
+        np.save(path + 'redshift_words_dictionary.npy', redshift_words_dictionary)
+        
+        np.save(path + 'all_blackhole_lines.npy', all_blackhole_lines)
+        np.save(path + 'blackhole_words_dictionary.npy', blackhole_words_dictionary)
+        
+        np.save(path + 'all_em_lines.npy', all_em_lines)
+        np.save(path + 'em_words_dictionary.npy', em_words_dictionary)
+        np.save(path + 'all_mechanical_lines.npy', all_mechanical_lines)
+        np.save(path + 'mechanical_words_dictionary.npy', mechanical_words_dictionary)
+        np.save(path + 'all_thermal_lines.npy', all_thermal_lines)
+        np.save(path + 'thermal_words_dictionary.npy', thermal_words_dictionary)
+        
+        file.close()  # Close the opened file.
+    data1 = np.load(path + 'redshift_words_dictionary.npy', allow_pickle=True)
+    data2 = np.load(path + 'blackhole_words_dictionary.npy', allow_pickle=True)
+    data4 = np.load(path + 'all_blackhole_lines.npy')
+    data5 = np.load(path + 'all_thermal_lines.npy')
+    data6 = np.load(path + 'all_mechanical_lines.npy')
+    data7 = np.load(path + 'all_em_lines.npy')
+    
+    # print(data1)
+    print(data4)
+    print(data5)
+    print(data6)
+    print(data7)
+    
     return None

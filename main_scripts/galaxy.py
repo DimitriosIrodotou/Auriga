@@ -528,7 +528,9 @@ def bar_strength(pdf, data, level):
         a2 = np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])
         
         # Plot bar strength as a function of radius plot r_m versus a2
-        ax.plot(r_m, a2, color=next(colors), label="Au-%s bar strength: %.2f" % (s.haloname, max(a2)))
+        ax.plot(r_m, a2, color=next(colors), label='Au-%s bar strength: %.2f' % (s.haloname, max(a2)))
+        ax.axvline(r_m[np.where(a2 == max(a2))], ymax=max(a2), lw=2, linestyle='dotted',
+                   label='Au-%s bar length= %.2f kpc' % (s.haloname, r_m[np.where(a2 == max(a2))]))
         ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
@@ -588,7 +590,6 @@ def delta_sfr(pdf, data, levels):
         nhalos += data.selected_current_nsnaps
     
     f = plt.figure(FigureClass=sfig, figsize=(10, 10))
-    plt.grid(True)
     gs = gridspec.GridSpec(3, 3)
     gs.update(hspace=0.5, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])
@@ -598,16 +599,18 @@ def delta_sfr(pdf, data, levels):
     ax11 = plt.subplot(gs[1, 1])
     ax12 = plt.subplot(gs[1, 2])
     ax00.set_ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
-    ax10.set_ylabel('$\mathrm{\delta Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
+    ax10.set_ylabel('$\mathrm{(\delta Sfr)_{norm}}$')
     
     for a in [ax01, ax02, ax11, ax12]:
         a.set_yticklabels([])
     
     for a in [ax00, ax01, ax02]:
         a.set_ylim(0, 22)
+        a.grid(True)
     
     for a in [ax10, ax11, ax12]:
         a.set_ylim(-7, 17)
+        a.grid(True)
     
     nbins = 100
     tmin = 0.0
@@ -652,22 +655,22 @@ def delta_sfr(pdf, data, levels):
             ax02.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
             ax02.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=8, transform=ax02.transAxes)
             
-            if i == 0:
-                tmp_counts = np.vstack([counts00, counts01, counts02]).T
+            if i == 0:  # if 'NOAGN' not in s.haloname
+                tmp_counts = np.vstack([counts00, counts01, counts02]).T  # The original halo
                 tmp_bins = np.vstack([bins00, bins01, bins02]).T
             i += 1
         
-        ax10.plot(tmp_bins[:-1, 0], (counts00 - tmp_counts[:, 0]))
+        ax10.plot(tmp_bins[:-1, 0], (np.divide(counts00 - tmp_counts[:, 0], tmp_counts[:, 0])))
         ax2 = ax10.twiny()
         set_axis_evo(s, ax10, ax2)
         ax10.text(0.05, 0.92, "r < 1kpc", color='k', fontsize=8, transform=ax10.transAxes)
         
-        ax11.plot(tmp_bins[:-1, 1], (counts01 - tmp_counts[:, 1]))
+        ax11.plot(tmp_bins[:-1, 1], (np.divide(counts01 - tmp_counts[:, 1], tmp_counts[:, 1])))
         ax2 = ax11.twiny()
         set_axis_evo(s, ax11, ax2)
         ax11.text(0.05, 0.92, "1kpc < r < 5kpc", color='k', fontsize=8, transform=ax11.transAxes)
         
-        ax12.plot(tmp_bins[:-1, 2], (counts02 - tmp_counts[:, 2]))
+        ax12.plot(tmp_bins[:-1, 2], (np.divide(counts02 - tmp_counts[:, 2], tmp_counts[:, 2])))
         ax2 = ax12.twiny()
         set_axis_evo(s, ax12, ax2)
         ax12.text(0.05, 0.92, "5kpc < r < 15kpc", color='k', fontsize=8, transform=ax12.transAxes)
