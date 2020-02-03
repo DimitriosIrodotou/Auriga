@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_18" % self.directory)
+        haloes = glob.glob("%s/halo_18N*" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -286,7 +286,7 @@ class AurigaPdf:
         # projections.gas_density(pdf, self, level, redshift)
         # projections.gas_temperature(pdf, self, level, redshift)
         # projections.gas_metallicity(pdf, self, level, redshift)
-        # projections.gas_slice(pdf, self, level, redshift)
+        projections.gas_slice(pdf, self, level, redshift)
         # Magnetic fields #
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
@@ -302,9 +302,9 @@ class AurigaPdf:
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)
-        # time_evolution.bar_strength_evolution(pdf, self, read=False)  # Only works for one halo (in the output folder) at a time.
-        # time_evolution.gas_temperature_fraction_evolution(pdf, self, read=True)  # Only works for one halo (in the output folder) at a time.
-        # time_evolution.black_hole_modes_evolution(pdf, self, read=True)  # Only works for one halo (in the output folder) at a time.
+        # time_evolution.bar_strength_evolution(pdf, self, read=False)
+        # time_evolution.gas_temperature_fraction_evolution(pdf, self, read=False)
+        # time_evolution.black_hole_modes_evolution(pdf, self, read=True)
         # main.time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, [level])
         
@@ -319,7 +319,7 @@ class AurigaPdf:
         # galaxy.stellar_vs_total(pdf, self, [level])
         # galaxy.gas_fraction(pdf, self, [level])
         # main.galaxy.central_bfld(pdf, self, [level])
-        galaxy.bar_strength(pdf, self, level)
+        # galaxy.bar_strength(pdf, self, read=True)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
         

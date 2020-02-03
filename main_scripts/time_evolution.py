@@ -345,27 +345,27 @@ def bar_strength_evolution(pdf, data, read):
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
                 np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
-    # Generate the figure #
-    f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.xlim(0, 2)
-    plt.ylim(0, 1)
-    plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
-    plt.xlabel(r'Redshift', size=16)
-    plt.grid(True)
-    
-    # Load and plot the data #
+    # Load and plot the bar strength as a function of redshift #
     names = glob.glob(path + '/name_*')
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
+    
     for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        plt.grid(True)
+        plt.xlim(0, 2)
+        plt.ylim(0, 1)
+        plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
+        plt.xlabel(r'Redshift', size=16)
+        
         A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        # Plot bar strength as a function of radius #
         plt.plot(redshifts, A2, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
-    ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
-    
-    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
-    plt.close()
+        ax.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
+        
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        plt.close()
     return None
 
 
@@ -430,9 +430,8 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
         np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
-    # # Generate the figure #
+    # # Generate the figure and define its parameters #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
     plt.ylim(-0.2, 1.2)
     plt.xlim(0, 5)
     plt.grid(True)
@@ -440,7 +439,7 @@ def gas_temperature_fraction_evolution(pdf, data, read):
     plt.xlabel(r'Redshift', size=16)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18N*')
+    names = glob.glob(path + '/name_17.*')
     names.sort()
     
     for i in range(len(names)):
@@ -448,18 +447,22 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        redshifts = np.insert(redshifts, 0, 5.1)
-        sfg_ratios = np.flip(sfg_ratios)
-        wg_ratios = np.flip(wg_ratios)
-        hg_ratios = np.flip(hg_ratios)
-        redshifts = np.flip(redshifts)
+        # Uncomment the following lines if you want to make a stacked bar plot #
+        # redshifts = np.insert(redshifts, 0, 5.1)
+        # sfg_ratios = np.flip(sfg_ratios)
+        # wg_ratios = np.flip(wg_ratios)
+        # hg_ratios = np.flip(hg_ratios)
+        # redshifts = np.flip(redshifts)
         
-        for j in range(len(redshifts) - 1):
-            b1, = plt.bar(redshifts[j], sfg_ratios[j], width=redshifts[j + 1] - redshifts[j], alpha=0.6, color='blue', align='edge', edgecolor='none')
-            b2, = plt.bar(redshifts[j], wg_ratios[j], bottom=sfg_ratios[j], width=redshifts[j + 1] - redshifts[j], alpha=0.6, color='green',
-                          align='edge', edgecolor='none')
-            b3, = plt.bar(redshifts[j], hg_ratios[j], bottom=np.sum(np.vstack([sfg_ratios[j], wg_ratios[j]]).T),
-                          width=redshifts[j + 1] - redshifts[j], alpha=0.6, align='edge', color='red', edgecolor='none')
+        # for j in range(len(redshifts) - 1):  # b1, = plt.bar(redshifts[j], sfg_ratios[j], width=redshifts[j + 1] - redshifts[j], alpha=0.6,
+        # color='blue', align='edge', edgecolor='none')  # b2, = plt.bar(redshifts[j], wg_ratios[j], bottom=sfg_ratios[j], width=redshifts[j + 1] -
+        # redshifts[j], alpha=0.6, color='green',  #               align='edge', edgecolor='none')  # b3, = plt.bar(redshifts[j], hg_ratios[j],
+        # bottom=np.sum(np.vstack([sfg_ratios[j], wg_ratios[j]]).T),  #               width=redshifts[j + 1] - redshifts[j], alpha=0.6,
+        # align='edge', color='red', edgecolor='none')
+        
+        b1, = plt.plot(redshifts, sfg_ratios, color='blue')
+        b2, = plt.plot(redshifts, wg_ratios, color='green')
+        b3, = plt.plot(redshifts, hg_ratios, color='red')
     
     plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
     ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)

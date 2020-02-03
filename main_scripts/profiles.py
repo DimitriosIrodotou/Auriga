@@ -73,7 +73,7 @@ def radial_profiles(pdf, data, level, redshift):
     data.select_haloes(level, redshift, loadonlytype=[0, 4], loadonlyhalo=0)
     nhalos = data.selected_current_nsnaps
     
-    # Generate the figure #
+    # Generate the figure and define its parameters#
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * nhalos + 0.7))
     
@@ -199,7 +199,7 @@ def vertical_profiles(pdf, data, level, redshift):
     data.select_haloes(level, redshift, loadonlytype=[0, 4], loadonlyhalo=0)
     nhalos = data.selected_current_nsnaps
     
-    # Generate the figure #
+    # Generate the figure and define its parameters#
     plt.close()
     f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * nhalos + 0.7))
     
@@ -324,7 +324,7 @@ def stellar_profiles(pdf, data, level, redshift):
     # Read specific particle type(s) for Auriga haloes #
     data.select_haloes(level, redshift, loadonlytype=[4], loadonlyhalo=0)
     
-    # Generate the figure #
+    # Generate the figure and define its parameters#
     gs = gridspec.GridSpec(2, 2)
     gs.update(hspace=0.05, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])

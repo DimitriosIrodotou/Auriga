@@ -12,10 +12,12 @@ import matplotlib.pyplot as plt
 
 from const import *
 from sfigure import *
+from loadmodules import *
 from matplotlib import gridspec
 
 res = 512
 boxsize = 0.06
+element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
 
 
 def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False):
@@ -246,7 +248,7 @@ def stellar_light(pdf, data, level, redshift):
     
     # Loop over all haloes #
     for s in data:
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize)
         for a in [ax00, ax10]:
@@ -340,7 +342,7 @@ def stellar_density(pdf, data, redshift, read):
     names.sort()
     
     for i in range(len(names)):
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 7.5), dpi=300)
         ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
         for a in [ax00, ax01, ax02, ax10, ax11, ax12]:
@@ -396,7 +398,7 @@ def gas_density(pdf, data, level, redshift):
     
     # Loop over all haloes #
     for s in data:
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -435,7 +437,7 @@ def gas_temperature(pdf, data, level, redshift):
     
     # Loop over all haloes #
     for s in data:
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -480,7 +482,7 @@ def gas_metallicity(pdf, data, level, redshift):
     
     # Loop over all haloes #
     for s in data:
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -514,87 +516,175 @@ def gas_slice(pdf, data, level, redshift):
     """
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
-    attributes = ['mass', 'ne', 'pos', 'rho', 'u']
+    attributes = ['pos', 'vel', 'mass', 'sfr', 'u', 'ne', 'gz', 'gmet', 'rho', 'age', 'id', 'hsml', 'vol', 'area']
     data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
-        ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        # ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
+        # f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        s.select_halo(s.subfind, remove_bulk_vel=True, use_principal_axis=False, euler_rotation=True, rotate_disk=True, do_rotation=True)
         
         dist = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-        igas, = np.where((s.type == 0))
+        igas, = np.where((s.type == 0) & (dist < 0.5 * boxsize))
+        ngas = np.size(igas)
         
-        pos = s.pos[igas]
-        vel = s.vel[igas]
+        indy = [[1, 2, 0], [1, 0, 2]]
+        ascale = [4000., 4000.]
         
-        # Plot the projections #
-        # meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-        # temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
-        # s.data['temprho'] = s.rho * temperature
-        #
-        # face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-        # rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-        # ratio = (face_on / rho).T
-        # ratio = np.where(ratio > 5e5, ratio, np.nan)
-        # pcm = ax00.pcolormesh(x, y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e5, vmax=1e7), cmap='Reds', rasterized=True)
-        # create_colorbar(ax01, pcm, "$T\,\mathrm{[K]}$")
-        # edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
-        # rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
-        # ratio = (edge_on / rho).T
-        # ratio = np.where(ratio > 5e5, ratio, np.nan)
-        # ax10.pcolormesh(x, 0.5 * y, ratio, norm=matplotlib.colors.LogNorm(vmin=1e5, vmax=1e7), cmap='Reds', rasterized=True)
-        
-        set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
-        
-        # Arrows for velocity field
-        d1, d2 = 2, 1
-        h, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, range=[[-30, 30], [-30, 30]])
-        vxgrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d1], range=[[-30, 30], [-30, 30]])
-        vygrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d2], range=[[-30, 30], [-30, 30]])
-        
-        vxgrid /= h
-        vygrid /= h
-        xbin = np.zeros(len(xedges) - 1)
-        ybin = np.zeros(len(yedges) - 1)
-        xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
-        ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
-        xc, yc = np.meshgrid(xbin, ybin)
-        vygrid *= -1
-        
-        p = ax00.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=6000.0, pivot='middle', color='black', alpha=0.8, width=0.001)
-        
-        count, xedges, yedges = np.histogram2d(pos[:, 2] * 1e3, pos[:, 1] * 1e3, bins=70, range=[[-30, 30], [-30, 30]])
-        extent = [-30, 30, -30, 30]
-        countlog = np.ma.log10(count)
-        ax00.imshow(countlog.T, extent=extent, origin='lower', cmap='magma', interpolation='bicubic')
-        
-        d1, d2 = 2, 0
-        h, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, range=[[-30, 30], [-15, 15]])
-        vxgrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d1], range=[[-30, 30], [-15, 15]])
-        vygrid, xedges, yedges = np.histogram2d(pos[:, d1] * 1e3, pos[:, d2] * 1e3, bins=30, weights=vel[:, d2], range=[[-30, 30], [-15, 15]])
-        vxgrid /= h
-        vygrid /= h
-        
-        xbin = np.zeros(len(xedges) - 1)
-        ybin = np.zeros(len(yedges) - 1)
-        xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
-        ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
-        xc, yc = np.meshgrid(xbin, ybin)
-        vygrid *= -1
-        
-        p = ax10.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=6000.0, pivot='middle', color='black', width=0.001)
-        
-        count, xedges, yedges = np.histogram2d(pos[:, 2] * 1e3, pos[:, 0] * 1e3, bins=70, range=[[-30, 30], [-15, 15]])
-        extent = [-30, 30, -15, 15]
-        countlog = np.ma.log10(count)
-        ax10.imshow(countlog.T, extent=extent, origin='lower', cmap='magma', interpolation='bicubic')
+        for j in range(2):
+            
+            plt.subplot(2, 1, j + 1)
+            
+            temp_pos = s.pos[igas, :].astype('float64')
+            pos = np.zeros((np.size(igas), 3))
+            pos[:, 0] = temp_pos[:, indy[j][0]]  # 0:1
+            pos[:, 1] = temp_pos[:, indy[j][1]]  # 1:2
+            pos[:, 2] = temp_pos[:, indy[j][2]]  # 2:0
+            
+            temp_vel = s.vel[igas, :].astype('float64')
+            vel = np.zeros((np.size(igas), 3))
+            vel[:, 0] = temp_vel[:, indy[j][0]]
+            vel[:, 1] = temp_vel[:, indy[j][1]]
+            vel[:, 2] = temp_vel[:, indy[j][2]]
+            
+            mass = s.data['mass'][igas].astype('float64')
+            
+            u = np.zeros(ngas)
+            
+            ne = s.data['ne'][igas].astype('float64')
+            metallicity = s.data['gz'][igas].astype('float64')
+            XH = s.data['gmet'][igas, element['H']].astype('float64')
+            yhelium = (1 - XH - metallicity) / (4. * XH)
+            mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+            u[:] = GAMMA_MINUS1 * s.data['u'][igas].astype('float64') * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            
+            rho = np.zeros(ngas)
+            rho[:] = s.data['rho'][igas].astype('float64')
+            vol = np.zeros(ngas)
+            vol[:] = s.data['vol'][igas].astype('float64') * 1e9
+            
+            z = np.zeros(ngas)
+            z[:] = pos[:, 2]
+            gradius = np.zeros(ngas)
+            gradius[:] = np.sqrt((pos[:, :] ** 2).sum(axis=1))
+            
+            hsml = np.zeros(ngas)
+            hsml[:] = np.array([0.00001] * ngas)
+            
+            bmax, bmin = 0.8, -.5
+            gmax, gmin = 1.2, -1.
+            rmax, rmin = 1., 0.  # 0.7, 0.
+            pfac = 8
+            sfgas = np.where((u < 2e4))
+            hotgas = np.where((u >= 5e5))
+            medgas = np.where((u >= 1e4) & (u < 6e5))
+            
+            frbs = []
+            for i in range(3):
+                if i == 0:
+                    gpos = np.zeros((np.size(hotgas), 3))
+                    gmass = np.zeros((np.size(hotgas)))
+                    grho = np.zeros((np.size(hotgas)))
+                    gpos[:, :] = pos[hotgas, :]
+                    gmass[:] = mass[hotgas]
+                    grho[:] = u[hotgas]
+                if i == 1:
+                    gpos = np.zeros((np.size(medgas), 3))
+                    gmass = np.zeros((np.size(medgas)))
+                    grho = np.zeros((np.size(medgas)))
+                    gpos[:, :] = pos[medgas, :]
+                    gmass[:] = mass[medgas]
+                    grho[:] = rho[medgas]
+                if i == 2:
+                    gpos = np.zeros((np.size(sfgas), 3))
+                    gmass = np.zeros((np.size(sfgas)))
+                    grho = np.zeros((np.size(sfgas)))
+                    gpos[:, :] = pos[sfgas, :]
+                    gmass[:] = mass[sfgas]
+                    grho[:] = rho[sfgas]
+                
+                A = calcGrid.calcASlice(gpos, grho, res, res, boxx=boxsize, boxy=boxsize, centerx=s.center[0], centery=s.center[1],
+                                        centerz=s.center[2], grad=gpos, proj=True, boxz=boxsize / pfac, nz=int(res / pfac), numthreads=8)
+                
+                slic = A["grid"]
+                frbs.append(np.array(slic))
+                
+                rgbArray = np.zeros((res, res, 3), 'uint8')
+            
+            for i in range(3):
+                frbs[i][np.where(frbs[i] == 0)] = 1e-10
+                frbs_flat = frbs[i].flatten()
+                asort = np.argsort(frbs_flat)
+                frbs_flat = frbs_flat[asort]
+                CumSum = np.cumsum(frbs_flat)
+                CumSum /= CumSum[-1]
+                halflight_val = frbs_flat[np.where(CumSum > 0.5)[0][0]]
+                
+                if i == 0:
+                    Max = np.log10(halflight_val) + rmax
+                    Min = np.log10(halflight_val) + rmin
+                elif i == 1:
+                    Max = np.log10(halflight_val) + gmax
+                    Min = np.log10(halflight_val) + gmin
+                elif i == 2:
+                    Max = np.log10(halflight_val) + bmax
+                    Min = np.log10(halflight_val) + bmin
+                
+                Min -= 0.1
+                Max -= 0.5
+                
+                Color = (np.log10(frbs[i]) - Min) / (Max - Min)
+                Color[np.where(Color < 0.)] = 0.
+                Color[np.where(Color > 1.0)] = 1.0
+                
+                if i == 0:
+                    Color[np.where(Color < 0.15)] = 0.
+                
+                A = np.array(Color * 255, dtype=np.uint8)
+                if j == 0:
+                    rgbArray[:, :, i] = A.T
+                elif j == 1:
+                    rgbArray[:, :, i] = A.T
+            
+            plt.imshow(rgbArray, rasterized=True)
+            
+            ax = plt.gca()
+            ax.set_xticks([])
+            ax.set_xticklabels([], fontsize=8)
+            ax.set_yticks([])
+            ax.set_yticklabels([], fontsize=8)
+            
+            # Arrows for velocity field
+            nbin = 30
+            d1, d2 = 0, 1
+            pn, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin),
+                                                range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+            vxgrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), weights=vel[:, d1],
+                                                    range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+            vygrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), weights=vel[:, d2],
+                                                    range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+            vxgrid /= pn
+            vygrid /= pn
+            
+            xbin = np.zeros(len(xedges) - 1)
+            ybin = np.zeros(len(yedges) - 1)
+            xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
+            ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
+            xbin -= xedges[0]
+            xbin *= (10 * res) * (0.1 / boxsize)
+            ybin -= yedges[-1]
+            ybin *= (-10 * res) * (0.1 / boxsize)
+            
+            xc, yc = np.meshgrid(xbin, ybin)
+            
+            vygrid *= (-1.)
+            plt.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), scale=ascale[j], pivot='middle', color='yellow', alpha=0.8)
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
@@ -617,7 +707,7 @@ def bfld(pdf, data, level, redshift):
     
     # Loop over all haloes #
     for s in data:
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
@@ -659,7 +749,7 @@ def dm_mass(pdf, data, level, redshift):
     
     # Loop over all haloes #
     for s in data:
-        # Generate the figure #
+        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
