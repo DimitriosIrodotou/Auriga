@@ -356,8 +356,8 @@ def bar_strength_evolution(pdf, data, read):
         plt.grid(True)
         plt.xlim(0, 2)
         plt.ylim(0, 1)
-        plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
         plt.xlabel(r'Redshift', size=16)
+        plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
         
         A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')

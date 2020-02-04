@@ -325,8 +325,7 @@ def stellar_profiles(pdf, data, level, redshift):
     data.select_haloes(level, redshift, loadonlytype=[4], loadonlyhalo=0)
     
     # Generate the figure and define its parameters#
-    gs = gridspec.GridSpec(2, 2)
-    gs.update(hspace=0.05, wspace=0.05)
+    gs = gridspec.GridSpec(2, 2, hspace=0.05, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])
     ax01 = plt.subplot(gs[0, 1])
     ax10 = plt.subplot(gs[1, 0])

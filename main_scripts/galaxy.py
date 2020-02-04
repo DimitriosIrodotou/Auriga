@@ -616,8 +616,7 @@ def delta_sfr(pdf, data, levels):
         nhalos += data.selected_current_nsnaps
     
     f = plt.figure(FigureClass=sfig, figsize=(10, 10))
-    gs = gridspec.GridSpec(3, 3)
-    gs.update(hspace=0.5, wspace=0.05)
+    gs = gridspec.GridSpec(3, 3, hspace=0.5, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])
     ax01 = plt.subplot(gs[0, 1])
     ax02 = plt.subplot(gs[0, 2])

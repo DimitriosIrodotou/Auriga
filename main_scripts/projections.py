@@ -28,7 +28,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
     :param contour: contour
     :param colorbar: colorbar
     :param velocity_vectors: velocity_vectors
-    :return: ax00, ax10, ax01, x, y, y2, area
+    :return: axes
     """
     
     # Set the axis values #
@@ -40,8 +40,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
     
     # Generate the two panels #
     if contour is True:
-        gs = gridspec.GridSpec(2, 3, height_ratios=[1, 0.5], width_ratios=[1, 1, 0.05])
-        gs.update(hspace=0.05, wspace=0.05)
+        gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 1, 0.05])
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])
         ax02 = plt.subplot(gs[0, 2])
@@ -52,26 +51,22 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area
     
     elif colorbar is True:
-        gs = gridspec.GridSpec(2, 2, height_ratios=[1, 0.5], width_ratios=[1, 0.05])
-        gs.update(hspace=0.05, wspace=0.05)
+        gs = gridspec.GridSpec(2, 2, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 0.05])
         ax00 = plt.subplot(gs[0, 0])
         ax10 = plt.subplot(gs[1, 0])
-        ax01 = plt.subplot(gs[:, 1])
+        axcbar = plt.subplot(gs[:, 1])
         
-        return ax00, ax10, ax01, x, y, y2, area
+        return ax00, ax10, axcbar, x, y, y2, area
     
     elif velocity_vectors is True:
-        gs = gridspec.GridSpec(2, 2, width_ratios=[1, 0.05])
-        gs.update(hspace=0.1, wspace=0.05)
+        gs = gridspec.GridSpec(2, 1, hspace=0.05)
         ax00 = plt.subplot(gs[0, 0])
         ax10 = plt.subplot(gs[1, 0])
-        ax01 = plt.subplot(gs[:, 1])
         
-        return ax00, ax10, ax01, x, y, y2, area
+        return ax00, ax10, x, y, y2, area
     
     else:
-        gs = gridspec.GridSpec(2, 1, height_ratios=[1, 0.5])
-        gs.update(hspace=0.05)
+        gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
         ax00 = plt.subplot(gs[0, 0])
         ax10 = plt.subplot(gs[1, 0])
         
@@ -81,7 +76,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
 def create_colorbar(ax, pcm, label):
     """
     Generate a colorbar.
-    :param ax01: colorbar axis from create_axes
+    :param ax: colorbar axis from create_axes
     :param pcm: pseudocolor plot
     :param label: colorbar label
     :return: None
@@ -271,8 +266,8 @@ def stellar_light(pdf, data, level, redshift):
                                  maxHsml=True)
         edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
                                  maxHsml=True)
-        ax00.imshow(face_on, interpolation='nearest')
-        ax10.imshow(edge_on, interpolation='nearest')
+        ax00.imshow(face_on, interpolation='nearest', aspect='equal')
+        ax10.imshow(edge_on, interpolation='nearest', aspect='equal')
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
@@ -288,7 +283,7 @@ def stellar_density(pdf, data, redshift, read):
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'sd/'
+    path = '/u/di43/Auriga/plots/data/' + 'sd/' + str(redshift) + '/'
     if not os.path.exists(path):
         os.makedirs(path)
     
@@ -400,8 +395,8 @@ def gas_density(pdf, data, level, redshift):
     for s in data:
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
-        ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
@@ -412,7 +407,7 @@ def gas_density(pdf, data, level, redshift):
         edge_on = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] * boxsize * 1e3
         pcm = ax00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         ax10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
-        create_colorbar(ax01, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
+        create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
@@ -439,8 +434,8 @@ def gas_temperature(pdf, data, level, redshift):
     for s in data:
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
-        ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
@@ -457,7 +452,7 @@ def gas_temperature(pdf, data, level, redshift):
         edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
         rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
         ax10.pcolormesh(x, 0.5 * y, (edge_on / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        create_colorbar(ax01, pcm, "$T\,\mathrm{[K]}$")
+        create_colorbar(axcbar, pcm, "$T\,\mathrm{[K]}$")
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
@@ -484,8 +479,8 @@ def gas_metallicity(pdf, data, level, redshift):
     for s in data:
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
-        ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
@@ -496,7 +491,7 @@ def gas_metallicity(pdf, data, level, redshift):
         edge_on = s.get_Aslice("gz", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] / res / 0.0134
         pcm = ax00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap='viridis', rasterized=True)
         ax10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap='viridis', rasterized=True)
-        create_colorbar(ax01, pcm, "$Z/Z_\odot$")
+        create_colorbar(axcbar, pcm, "$Z/Z_\odot$")
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
@@ -505,187 +500,179 @@ def gas_metallicity(pdf, data, level, redshift):
     return None
 
 
-def gas_slice(pdf, data, level, redshift):
+def gas_slice(pdf, data, redshift, read):
     """
     Plot gas temperature projection for different temperature regimes along with velocity arrows Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
     :param redshift: redshift from main.make_pdf
+    :param read: boolean
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-    particle_type = [0, 4]
-    attributes = ['pos', 'vel', 'mass', 'sfr', 'u', 'ne', 'gz', 'gmet', 'rho', 'age', 'id', 'hsml', 'vol', 'area']
-    data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'gs/' + str(redshift) + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
     
-    # Loop over all haloes #
-    for s in data:
-        # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
-        # ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
-        # f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+    boxsize = 0.08  # Increase the boxsize.
+    
+    # Read the data #
+    if read is True:
         
-        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
-        s.calc_sf_indizes(s.subfind)
-        s.select_halo(s.subfind, remove_bulk_vel=True, use_principal_axis=False, euler_rotation=True, rotate_disk=True, do_rotation=True)
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['pos', 'vel', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'id', 'vol']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
-        dist = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-        igas, = np.where((s.type == 0) & (dist < 0.5 * boxsize))
-        ngas = np.size(igas)
-        
-        indy = [[1, 2, 0], [1, 0, 2]]
-        ascale = [4000., 4000.]
-        
-        for j in range(2):
+        # Loop over all haloes #
+        for s in data:
+            # Select the halo and rotate it based on Euler's angles #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, remove_bulk_vel=True, use_principal_axis=False, euler_rotation=True, rotate_disk=True, do_rotation=True)
             
-            plt.subplot(2, 1, j + 1)
+            # Mask the data #
+            dist = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
+            mask, = np.where((s.type == 0) & (dist < 0.5 * boxsize))  # Mask the data: select gas particles inside a 30kpc sphere.
+            ngas = np.size(mask)
             
-            temp_pos = s.pos[igas, :].astype('float64')
-            pos = np.zeros((np.size(igas), 3))
-            pos[:, 0] = temp_pos[:, indy[j][0]]  # 0:1
-            pos[:, 1] = temp_pos[:, indy[j][1]]  # 1:2
-            pos[:, 2] = temp_pos[:, indy[j][2]]  # 2:0
-            
-            temp_vel = s.vel[igas, :].astype('float64')
-            vel = np.zeros((np.size(igas), 3))
-            vel[:, 0] = temp_vel[:, indy[j][0]]
-            vel[:, 1] = temp_vel[:, indy[j][1]]
-            vel[:, 2] = temp_vel[:, indy[j][2]]
-            
-            mass = s.data['mass'][igas].astype('float64')
-            
-            u = np.zeros(ngas)
-            
-            ne = s.data['ne'][igas].astype('float64')
-            metallicity = s.data['gz'][igas].astype('float64')
-            XH = s.data['gmet'][igas, element['H']].astype('float64')
-            yhelium = (1 - XH - metallicity) / (4. * XH)
-            mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            u[:] = GAMMA_MINUS1 * s.data['u'][igas].astype('float64') * 1.0e10 * mu * PROTONMASS / BOLTZMANN
-            
-            rho = np.zeros(ngas)
-            rho[:] = s.data['rho'][igas].astype('float64')
-            vol = np.zeros(ngas)
-            vol[:] = s.data['vol'][igas].astype('float64') * 1e9
-            
-            z = np.zeros(ngas)
-            z[:] = pos[:, 2]
-            gradius = np.zeros(ngas)
-            gradius[:] = np.sqrt((pos[:, :] ** 2).sum(axis=1))
-            
-            hsml = np.zeros(ngas)
-            hsml[:] = np.array([0.00001] * ngas)
-            
-            bmax, bmin = 0.8, -.5
-            gmax, gmin = 1.2, -1.
-            rmax, rmin = 1., 0.  # 0.7, 0.
-            pfac = 8
-            sfgas = np.where((u < 2e4))
-            hotgas = np.where((u >= 5e5))
-            medgas = np.where((u >= 1e4) & (u < 6e5))
-            
-            frbs = []
-            for i in range(3):
-                if i == 0:
-                    gpos = np.zeros((np.size(hotgas), 3))
-                    gmass = np.zeros((np.size(hotgas)))
-                    grho = np.zeros((np.size(hotgas)))
-                    gpos[:, :] = pos[hotgas, :]
-                    gmass[:] = mass[hotgas]
-                    grho[:] = u[hotgas]
-                if i == 1:
-                    gpos = np.zeros((np.size(medgas), 3))
-                    gmass = np.zeros((np.size(medgas)))
-                    grho = np.zeros((np.size(medgas)))
-                    gpos[:, :] = pos[medgas, :]
-                    gmass[:] = mass[medgas]
-                    grho[:] = rho[medgas]
-                if i == 2:
-                    gpos = np.zeros((np.size(sfgas), 3))
-                    gmass = np.zeros((np.size(sfgas)))
-                    grho = np.zeros((np.size(sfgas)))
-                    gpos[:, :] = pos[sfgas, :]
-                    gmass[:] = mass[sfgas]
-                    grho[:] = rho[sfgas]
+            indy = [[1, 2, 0], [1, 0, 2]]  # Swap the position and velocity indices for the face-on and edge-on projections #
+            # Loop over the two projections #
+            for j in range(2):
                 
-                A = calcGrid.calcASlice(gpos, grho, res, res, boxx=boxsize, boxy=boxsize, centerx=s.center[0], centery=s.center[1],
-                                        centerz=s.center[2], grad=gpos, proj=True, boxz=boxsize / pfac, nz=int(res / pfac), numthreads=8)
-                
-                slic = A["grid"]
-                frbs.append(np.array(slic))
-                
+                # Initialise arrays to store the data #
+                frbs = []
+                temp_pos = s.pos[mask, :]
+                temp_vel = s.vel[mask, :]
                 rgbArray = np.zeros((res, res, 3), 'uint8')
-            
-            for i in range(3):
-                frbs[i][np.where(frbs[i] == 0)] = 1e-10
-                frbs_flat = frbs[i].flatten()
-                asort = np.argsort(frbs_flat)
-                frbs_flat = frbs_flat[asort]
-                CumSum = np.cumsum(frbs_flat)
-                CumSum /= CumSum[-1]
-                halflight_val = frbs_flat[np.where(CumSum > 0.5)[0][0]]
+                pos, vel = np.zeros((np.size(mask), 3)), np.zeros((np.size(mask), 3))
+                u, rho, z, vol = np.zeros(ngas), np.zeros(ngas), np.zeros(ngas), np.zeros(ngas)
+                for i in range(3):
+                    pos[:, i] = temp_pos[:, indy[j][i]]
+                    vel[:, i] = temp_vel[:, indy[j][i]]
                 
-                if i == 0:
-                    Max = np.log10(halflight_val) + rmax
-                    Min = np.log10(halflight_val) + rmin
-                elif i == 1:
-                    Max = np.log10(halflight_val) + gmax
-                    Min = np.log10(halflight_val) + gmin
-                elif i == 2:
-                    Max = np.log10(halflight_val) + bmax
-                    Min = np.log10(halflight_val) + bmin
+                # Calculate the temperature of the gas cells #
+                vol[:] = s.data['vol'][mask] * 1e9
+                XH = s.data['gmet'][mask, element['H']]
+                ne, mass, rho[:], metallicity = s.data['ne'][mask], s.data['mass'][mask], s.data['rho'][mask], s.data['gz'][mask]
+                yhelium = (1 - XH - metallicity) / (4. * XH)
+                mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+                u[:] = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
                 
-                Min -= 0.1
-                Max -= 0.5
+                # Define the three temperatures regimes #
+                sfgas = np.where((u < 2e4))
+                medgas = np.where((u >= 1e4) & (u < 6e5))
+                hotgas = np.where((u >= 5e5))
                 
-                Color = (np.log10(frbs[i]) - Min) / (Max - Min)
-                Color[np.where(Color < 0.)] = 0.
-                Color[np.where(Color > 1.0)] = 1.0
+                # Loop over the three temperature regimes and get a gas slice #
+                for i in range(3):
+                    if i == 0:
+                        gpos, gmass, grho = np.zeros((np.size(hotgas), 3)), np.zeros((np.size(hotgas))), np.zeros((np.size(hotgas)))
+                        gpos[:, :], gmass[:], grho[:] = pos[hotgas, :], mass[hotgas], u[hotgas]
+                    if i == 1:
+                        gpos, gmass, grho = np.zeros((np.size(medgas), 3)), np.zeros((np.size(medgas))), np.zeros((np.size(medgas)))
+                        gpos[:, :], gmass[:], grho[:] = pos[medgas, :], mass[medgas], rho[medgas]
+                    if i == 2:
+                        gpos, gmass, grho = np.zeros((np.size(sfgas), 3)), np.zeros((np.size(sfgas))), np.zeros((np.size(sfgas)))
+                        gpos[:, :], gmass[:], grho[:] = pos[sfgas, :], mass[sfgas], rho[sfgas]
+                    
+                    A = calcGrid.calcASlice(gpos, grho, res, res, boxx=boxsize, boxy=boxsize, centerx=s.center[0], centery=s.center[1],
+                                            centerz=s.center[2], grad=gpos, proj=True, boxz=boxsize / 8, nz=int(res / 8), numthreads=8)
+                    frbs.append(np.array(A["grid"]))
                 
-                if i == 0:
-                    Color[np.where(Color < 0.15)] = 0.
+                # Create a coloured image from the gas slice #
+                for i in range(3):
+                    frbs[i][np.where(frbs[i] == 0)] = 1e-10
+                    frbs_flat = frbs[i].flatten()
+                    asort = np.argsort(frbs_flat)
+                    frbs_flat = frbs_flat[asort]
+                    CumSum = np.cumsum(frbs_flat)
+                    CumSum /= CumSum[-1]
+                    halflight_val = frbs_flat[np.where(CumSum > 0.5)[0][0]]
+                    
+                    # Define the maximum and minimum r, g, b magnitudes #
+                    rmax, rmin, gmax, gmin, bmax, bmin = 1.0, 0.0, 1.2, -1.0, 0.8, -0.5
+                    if i == 0:
+                        Max = np.log10(halflight_val) + rmax
+                        Min = np.log10(halflight_val) + rmin
+                    elif i == 1:
+                        Max = np.log10(halflight_val) + gmax
+                        Min = np.log10(halflight_val) + gmin
+                    elif i == 2:
+                        Max = np.log10(halflight_val) + bmax
+                        Min = np.log10(halflight_val) + bmin
+                    
+                    Max -= 0.5
+                    Min -= 0.1
+                    
+                    Color = (np.log10(frbs[i]) - Min) / (Max - Min)
+                    Color[np.where(Color < 0.)] = 0.
+                    Color[np.where(Color > 1.0)] = 1.0
+                    
+                    if i == 0:
+                        Color[np.where(Color < 0.15)] = 0.
+                    
+                    A = np.array(Color * 255, dtype=np.uint8)
+                    if j == 0:
+                        rgbArray[:, :, i] = A.T
+                    elif j == 1:
+                        rgbArray[:, :, i] = A.T
                 
-                A = np.array(Color * 255, dtype=np.uint8)
-                if j == 0:
-                    rgbArray[:, :, i] = A.T
-                elif j == 1:
-                    rgbArray[:, :, i] = A.T
-            
-            plt.imshow(rgbArray, rasterized=True)
-            
-            ax = plt.gca()
-            ax.set_xticks([])
-            ax.set_xticklabels([], fontsize=8)
-            ax.set_yticks([])
-            ax.set_yticklabels([], fontsize=8)
-            
-            # Arrows for velocity field
-            nbin = 30
-            d1, d2 = 0, 1
-            pn, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin),
-                                                range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
-            vxgrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), weights=vel[:, d1],
+                # Calculate and plot the arrows of the velocity field #
+                pn, xedges, yedges = np.histogram2d(pos[:, 0], pos[:, 1], bins=30,
                                                     range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
-            vygrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), weights=vel[:, d2],
-                                                    range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
-            vxgrid /= pn
-            vygrid /= pn
-            
-            xbin = np.zeros(len(xedges) - 1)
-            ybin = np.zeros(len(yedges) - 1)
-            xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
-            ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
-            xbin -= xedges[0]
-            xbin *= (10 * res) * (0.1 / boxsize)
-            ybin -= yedges[-1]
-            ybin *= (-10 * res) * (0.1 / boxsize)
-            
-            xc, yc = np.meshgrid(xbin, ybin)
-            
-            vygrid *= (-1.)
-            plt.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), scale=ascale[j], pivot='middle', color='yellow', alpha=0.8)
+                vxgrid, xedges, yedges = np.histogram2d(pos[:, 0], pos[:, 1], bins=30, weights=vel[:, 0],
+                                                        range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+                vygrid, xedges, yedges = np.histogram2d(pos[:, 0], pos[:, 1], bins=30, weights=vel[:, 1],
+                                                        range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+                vxgrid /= pn
+                vygrid /= pn
+                vygrid *= (-1)
+                
+                # Sample a velocity field grid #
+                xbin, ybin = np.zeros(len(xedges) - 1), np.zeros(len(yedges) - 1)
+                xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
+                ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
+                xbin -= xedges[0]
+                xbin *= (10 * res) * (0.1 / boxsize)
+                ybin -= yedges[-1]
+                ybin *= (-10 * res) * (0.1 / boxsize)
+                xc, yc = np.meshgrid(xbin, ybin)
+                
+                # Save data for each halo in numpy arrays #
+                np.save(path + 'name_' + str(s.haloname), s.haloname)
+                np.save(path + 'xc_' + str(j) + '_' + str(s.haloname), xc)
+                np.save(path + 'yc_' + str(j) + '_' + str(s.haloname), yc)
+                np.save(path + 'vxgrid_' + str(j) + '_' + str(s.haloname), vxgrid)
+                np.save(path + 'vygrid_' + str(j) + '_' + str(s.haloname), vygrid)
+                np.save(path + 'rgbArray_' + str(j) + '_' + str(s.haloname), rgbArray)
+    
+    # Load and plot the image and over-plot the velocity field #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f = plt.figure(figsize=(10, 15), dpi=300)
+        ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', str(names[i]))[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+               transform=ax00.transAxes)
+        for a in [ax00, ax10]:
+            a.set_xticks([])
+            a.set_yticks([])
+            a.set_xticklabels([])
+            a.set_yticklabels([])
         
+        j = 0
+        for a in [ax00, ax10]:
+            xc = np.load(path + 'xc_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
+            yc = np.load(path + 'yc_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
+            vxgrid = np.load(path + 'vxgrid_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
+            vygrid = np.load(path + 'vygrid_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
+            rgbArray = np.load(path + 'rgbArray_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
+            
+            a.imshow(rgbArray, rasterized=True, aspect='equal')
+            a.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), scale=4000.0, pivot='middle', color='yellow', alpha=0.8)
+            j += 1
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
     return None
@@ -709,8 +696,8 @@ def bfld(pdf, data, level, redshift):
     for s in data:
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
-        ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
@@ -722,7 +709,7 @@ def bfld(pdf, data, level, redshift):
         edge_on = np.sqrt(s.get_Aslice("b2", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
         pcm = ax00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap='CMRmap', rasterized=True)
         ax10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=5e1), cmap='CMRmap', rasterized=True)
-        create_colorbar(ax01, pcm, "$B\,\mathrm{[\mu G]}$")
+        create_colorbar(axcbar, pcm, "$B\,\mathrm{[\mu G]}$")
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         
@@ -740,7 +727,7 @@ def dm_mass(pdf, data, level, redshift):
     :param redshift: redshift from main.make_pdf
     :return: None
     """
-    boxsize = 0.4  # Increase the boxsize
+    boxsize = 0.4  # Increase the boxsize.
     
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [1, 4]
@@ -751,8 +738,8 @@ def dm_mass(pdf, data, level, redshift):
     for s in data:
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
-        ax00, ax10, ax01, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        f.text(0.0, 1.01, 'Au' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
         s.calc_sf_indizes(s.subfind)
@@ -766,7 +753,7 @@ def dm_mass(pdf, data, level, redshift):
             0.5 * area) * 1e10
         pcm = ax00.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         ax10.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
-        create_colorbar(ax01, pcm, "$\Sigma_\mathrm{DM}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
+        create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{DM}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         
         set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
         

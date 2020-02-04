@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_18N*" % self.directory)
+        haloes = glob.glob("%s/halo_*" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -277,16 +277,16 @@ class AurigaPdf:
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
-        # TODO remove set_axes and level from projections and add read
+        # TODO remove set_axes and level from projections and astype and add read
         # Projections #
         # Stars #
-        # projections.stellar_light(pdf, self, level, redshift)
+        projections.stellar_light(pdf, self, level, redshift)
         # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
         # projections.gas_density(pdf, self, level, redshift)
         # projections.gas_temperature(pdf, self, level, redshift)
         # projections.gas_metallicity(pdf, self, level, redshift)
-        projections.gas_slice(pdf, self, level, redshift)
+        # projections.gas_slice(pdf, self, redshift, read=True)
         # Magnetic fields #
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
