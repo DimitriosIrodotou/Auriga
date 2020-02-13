@@ -521,10 +521,11 @@ def black_hole_modes_evolution(read):
     # Generate the figure and define its parameters #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True)
-    plt.xscale('log')
+    # plt.xscale('log')
+    plt.xlim(0,5)
     plt.xlabel(r'Redshift', size=16)
     plt.ylabel(r'AGN feedback energy [ergs]', size=16)
-    ax.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
+    ax.text(1.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
     
     # Load and plot the data #
     thermals = np.load(path + 'thermals.npy')

@@ -43,12 +43,11 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 1, 0.05])
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])
-        ax02 = plt.subplot(gs[0, 2])
         ax10 = plt.subplot(gs[1, 0])
         ax11 = plt.subplot(gs[1, 1])
-        ax12 = plt.subplot(gs[1, 2])
+        axcbar = plt.subplot(gs[:, 2])
         
-        return ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area
+        return ax00, ax01, ax10, ax11, axcbar, x, y, y2, area
     
     elif colorbar is True:
         gs = gridspec.GridSpec(2, 2, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 0.05])
@@ -280,6 +279,7 @@ def stellar_density(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
+    :param read: boolean
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #
@@ -299,11 +299,11 @@ def stellar_density(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
+            # if str(s.haloname) in names:
+            #     continue
             
             # Generate the axes #
-            ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
+            ax00, ax01, ax10, ax11, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -339,8 +339,8 @@ def stellar_density(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 7.5), dpi=300)
-        ax00, ax01, ax02, ax10, ax11, ax12, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
-        for a in [ax00, ax01, ax02, ax10, ax11, ax12]:
+        ax00, ax01, ax10, ax11, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
+        for a in [ax00, ax01, ax10, ax11]:
             a.set_xlim(-30, 30)
             a.set_ylim(-30, 30)
             a.tick_params(direction='out', which='both', top='on', right='on')
@@ -362,8 +362,7 @@ def stellar_density(pdf, data, redshift, read):
         # Plot the projections #
         pcm = ax01.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='twilight', rasterized=True)
         ax11.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='twilight', rasterized=True)
-        create_colorbar(ax02, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
-        create_colorbar(ax12, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
+        create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{stars}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
         
         # Plot the contour lines #
         ax00.contour(np.log10(face_on_count).T, colors="k", extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
@@ -404,7 +403,7 @@ def gas_density(pdf, data, level, redshift):
         
         # Plot the projections #
         face_on = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
-        edge_on = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+        edge_on = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.0], proj=True, numthreads=8)["grid"] * boxsize * 1e3
         pcm = ax00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         ax10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$")
@@ -416,46 +415,86 @@ def gas_density(pdf, data, level, redshift):
     return None
 
 
-def gas_temperature(pdf, data, level, redshift):
+def gas_temperature(pdf, data, redshift, read):
     """
     Plot gas temperature projection for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
     :param redshift: redshift from main.make_pdf
+    :param read: boolean
     :return: None
     """
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-    particle_type = [0, 4]
-    attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-    data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'gt/' + str(redshift) + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['mass', 'ne', 'pos', 'rho', 'u']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            # Plot the projections #
+            meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+            temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
+            s.data['temprho'] = s.rho * temperature
+            
+            face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+            face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+            edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.0], proj=True, numthreads=8)["grid"]
+            edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.0], proj=True, numthreads=8)["grid"]
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'face_on_' + str(s.haloname), face_on)
+            np.save(path + 'edge_on_' + str(s.haloname), edge_on)
+            np.save(path + 'face_on_rho_' + str(s.haloname), face_on_rho)
+            np.save(path + 'edge_on_rho_' + str(s.haloname), edge_on_rho)
     
-    # Loop over all haloes #
-    for s in data:
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    for i in range(len(names)):
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        for a in [ax00, ax10]:
+            a.set_xlim(-30, 30)
+            a.tick_params(direction='out', which='both', top='on', right='on')
+        ax00.set_ylim(-30, 30)
+        ax10.set_ylim(-15, 15)
+        ax00.set_xticklabels([])
+        ax10.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+        ax00.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=16)
+        ax10.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
         
-        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
-        s.calc_sf_indizes(s.subfind)
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        # Load and plot the data #
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on_rho = np.load(path + 'face_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on_rho = np.load(path + 'edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Plot the projections #
-        meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-        temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
-        s.data['temprho'] = s.rho * temperature
-        
-        face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-        rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-        pcm = ax00.pcolormesh(x, y, (face_on / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
-        rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"]
-        ax10.pcolormesh(x, 0.5 * y, (edge_on / rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        pcm = ax00.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        ax10.pcolormesh(x, 0.5 * y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
         create_colorbar(axcbar, pcm, "$T\,\mathrm{[K]}$")
         
-        set_axes(ax00, ax10, xlabel='$x\,\mathrm{[kpc]}$', ylabel='$y\,\mathrm{[kpc]}$', y2label='$z\,\mathrm{[kpc]}$', ticks=True)
-        
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+               transform=ax00.transAxes)
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
     return None
@@ -488,7 +527,7 @@ def gas_metallicity(pdf, data, level, redshift):
         
         # Plot the projections #
         face_on = s.get_Aslice("gz", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res / 0.0134
-        edge_on = s.get_Aslice("gz", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.], proj=True, numthreads=8)["grid"] / res / 0.0134
+        edge_on = s.get_Aslice("gz", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.0], proj=True, numthreads=8)["grid"] / res / 0.0134
         pcm = ax00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap='viridis', rasterized=True)
         ax10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), cmap='viridis', rasterized=True)
         create_colorbar(axcbar, pcm, "$Z/Z_\odot$")
@@ -526,6 +565,12 @@ def gas_slice(pdf, data, redshift, read):
         
         # Loop over all haloes #
         for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
             # Select the halo and rotate it based on Euler's angles #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, remove_bulk_vel=True, use_principal_axis=False, euler_rotation=True, rotate_disk=True, do_rotation=True)
