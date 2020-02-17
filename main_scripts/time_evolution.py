@@ -4,6 +4,7 @@ import os
 import re
 import glob
 import pickle
+import calcGrid
 import projections
 
 import numpy as np
@@ -13,6 +14,7 @@ import matplotlib.pyplot as plt
 from const import *
 from sfigure import *
 from loadmodules import *
+from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
 
 element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
@@ -488,7 +490,7 @@ def black_hole_modes_evolution(read):
     
     # Read the data #
     if read is True:
-        with open('/u/di43/Auriga/' + 'job.764102.txt') as file:
+        with open('/u/di43/Auriga/' + 'Au-06.txt') as file:
             # Iterate over each line #
             for line in file:
                 # Convert the characters in the line to lowercase and split the line into words #
@@ -520,19 +522,21 @@ def black_hole_modes_evolution(read):
     
     # Generate the figure and define its parameters #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
-    # plt.xscale('log')
-    plt.xlim(0,5)
-    plt.xlabel(r'Redshift', size=16)
-    plt.ylabel(r'AGN feedback energy [ergs]', size=16)
-    ax.text(1.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
+    gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
+    ax00 = plt.subplot(gs[0, 0])
+    axcbar = plt.subplot(gs[:, 1])
+    ax00.grid(True)
+    ax00.set_xlim(0.0, 3.5)
+    # ax00.set_ylim(-0.2, 1.2)
+    ax00.set_xlabel(r'Redshift', size=16)
+    ax00.set_ylabel(r'Mechanical / total AGN feedback energy', size=16)
+    ax.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
     
     # Load and plot the data #
     thermals = np.load(path + 'thermals.npy')
     redshifts = np.load(path + 'redshifts.npy')
     mechanicals = np.load(path + 'mechanicals.npy')
     
-    redshifts = np.delete(redshifts, -1)  # Remove the last redshift because the log file continues to a different file.
     redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
     
     # Transform the arrays to comma separated strings and convert each element to float #
@@ -543,8 +547,31 @@ def black_hole_modes_evolution(read):
     redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
     mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
     
-    # plt.scatter(redshifts, thermals, label='$Thermal feedback channel$', s=1, c='blue')
-    plt.scatter(redshifts, mechanicals, label='$Mechanical feedback channel$', s=1, c='red')
+    AGN = thermals
+    pcm = ax00.hexbin(redshifts, AGN, bins='log', gridsize=100)
+    cb = plt.colorbar(pcm, cax=axcbar)
+    cb.set_label(r'Number of counts per hexbin', size=16)
+    
+    # Calculate median and 1-sigma #
+    nbin = int((max(redshifts) - min(redshifts)) / 0.02)
+    x_value = np.empty(nbin)
+    median = np.empty(nbin)
+    slow = np.empty(nbin)
+    shigh = np.empty(nbin)
+    x_low = min(redshifts)
+    for i in range(nbin):
+        index = np.where((redshifts >= x_low) & (redshifts < x_low + 0.02))[0]
+        x_value[i] = np.mean(np.absolute(redshifts)[index])
+        if len(index) > 0:
+            median[i] = np.nanmedian(AGN[index])
+            slow[i] = np.nanpercentile(AGN[index], 15.87)
+            shigh[i] = np.nanpercentile(AGN[index], 84.13)
+        x_low += 0.02
+    
+    # Plot median and 1-sigma lines #
+    median_IT20, = ax00.plot(x_value, median, color='black', zorder=5)
+    ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.5', zorder=5)
+    fill_IT20, = plt.fill(np.NaN, np.NaN, color='black', alpha=0.5, zorder=5)
     
     plt.savefig('/u/di43/Auriga/plots/' + 'Test.png', bbox_inches='tight')  # Save the figure.
     plt.close()
