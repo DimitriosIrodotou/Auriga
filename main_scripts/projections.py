@@ -854,3 +854,83 @@ def rotate_bar(z, y, x):
     y_pos = np.cos(-phase_in) * (y[:]) + np.sin(-phase_in) * (x[:])
     x_pos = np.cos(-phase_in) * (x[:]) - np.sin(-phase_in) * (y[:])
     return z_pos / 1e3, y_pos / 1e3, x_pos / 1e3  # Distances are in kpc.
+
+
+def gas_temperature_edge_on(pdf, data, redshift, read):
+    """
+    Plot gas temperature projection for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean
+    :return: None
+    """
+    boxsize = 0.2  # Increase the boxsize.
+    
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'gteo/' + str(redshift) + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['mass', 'ne', 'pos', 'rho', 'u']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            # names = glob.glob(path + '/name_*')
+            # names = [re.split('_|.npy', name)[1] for name in names]
+            # if str(s.haloname) in names:
+            #     continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            # Plot the projections #
+            meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+            temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
+            s.data['temprho'] = s.rho * temperature
+            
+            edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=0.01, proj=True, numthreads=8)["grid"]
+            edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=0.01, proj=True, numthreads=8)["grid"]
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'edge_on_' + str(s.haloname), edge_on)
+            np.save(path + 'edge_on_rho_' + str(s.haloname), edge_on_rho)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f = plt.figure(figsize=(10, 10), dpi=300)
+        gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
+        ax00 = plt.subplot(gs[0, 0])
+        axcbar = plt.subplot(gs[:, 1])
+        ax00.set_xlim(-0.1, 0.1)
+        ax00.tick_params(direction='out', which='both', top='on', right='on')
+        ax00.set_ylim(-0.1, 0.1)
+        ax00.set_xlabel(r'$x\,\mathrm{[Mpc]}$', size=16)
+        ax00.set_ylabel(r'$z\,\mathrm{[Mpc]}$', size=16)
+        x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
+        y = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
+        
+        # Load and plot the data #
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on_rho = np.load(path + 'edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the projections #
+        pcm = ax00.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='Spectral_r', rasterized=True)
+        create_colorbar(axcbar, pcm, "$T\,\mathrm{[K]}$")
+        
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+               transform=ax00.transAxes)
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        plt.close()
+    return None

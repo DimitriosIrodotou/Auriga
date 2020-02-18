@@ -527,7 +527,7 @@ def black_hole_modes_evolution(read):
     axcbar = plt.subplot(gs[:, 1])
     ax00.grid(True)
     ax00.set_xlim(0.0, 3.5)
-    # ax00.set_ylim(-0.2, 1.2)
+    ax00.set_ylim(-0.2, 1.2)
     ax00.set_xlabel(r'Redshift', size=16)
     ax00.set_ylabel(r'Mechanical / total AGN feedback energy', size=16)
     ax.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
@@ -547,7 +547,7 @@ def black_hole_modes_evolution(read):
     redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
     mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
     
-    AGN = thermals
+    AGN = mechanicals / (thermals + mechanicals)
     pcm = ax00.hexbin(redshifts, AGN, bins='log', gridsize=100)
     cb = plt.colorbar(pcm, cax=axcbar)
     cb.set_label(r'Number of counts per hexbin', size=16)
