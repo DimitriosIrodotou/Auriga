@@ -895,8 +895,8 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
             s.data['temprho'] = s.rho * temperature
             
-            edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=0.01, proj=True, numthreads=8)["grid"]
-            edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=0.01, proj=True, numthreads=8)["grid"]
+            edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)["grid"]
+            edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)["grid"]
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -913,20 +913,19 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
         ax00 = plt.subplot(gs[0, 0])
         axcbar = plt.subplot(gs[:, 1])
-        ax00.set_xlim(-0.1, 0.1)
+        ax00.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+        ax00.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
         ax00.tick_params(direction='out', which='both', top='on', right='on')
-        ax00.set_ylim(-0.1, 0.1)
-        ax00.set_xlabel(r'$x\,\mathrm{[Mpc]}$', size=16)
-        ax00.set_ylabel(r'$z\,\mathrm{[Mpc]}$', size=16)
         x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
-        y = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
+        z = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
         
         # Load and plot the data #
         edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         edge_on_rho = np.load(path + 'edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Plot the projections #
-        pcm = ax00.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='Spectral_r', rasterized=True)
+        pcm = ax00.pcolormesh(x * 1e3, z * 1e3, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=2e7), cmap='Spectral_r',
+                              rasterized=True)
         create_colorbar(axcbar, pcm, "$T\,\mathrm{[K]}$")
         
         f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,

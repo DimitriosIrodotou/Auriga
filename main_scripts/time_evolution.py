@@ -473,7 +473,7 @@ def gas_temperature_fraction_evolution(pdf, data, read):
     return None
 
 
-def black_hole_modes_evolution(read):
+def black_hole_modes_evolution(date, read):
     """
         Get information about different black hole modes from log files.
         :param read: boolean.
@@ -486,8 +486,8 @@ def black_hole_modes_evolution(read):
     i = 0
     
     # Declare arrays to store the desired words and lines that contain these words #
-    redshift_lines, redshifts, thermal_lines, thermals, mechanical_lines, mechanicals = [], [], [], [], [], []
-    
+    redshift_lines, redshifts, feedback_lines, thermals, mechanicals, active_lines, inactive_lines, actives = [], [], [], [], [], [], [], []
+    ratioM, ratioT = [], []
     # Read the data #
     if read is True:
         with open('/u/di43/Auriga/' + 'Au-06.txt') as file:
@@ -498,25 +498,42 @@ def black_hole_modes_evolution(read):
                 line = line.strip()  # Remove '\n' at end of line.
                 words = line.split(" ")
                 
-                # Search for the word 'redshift:' and get the next word which is the value #
+                # Search for the word 'redshift:' and get the next word which is the redshift value #
                 if 'redshift:' in words:
                     redshift_lines.append(line)
                     redshifts.append(words[words.index('redshift:') + 1])
                 
-                # Search for the word 'thermal' and 'mechanical' and get the word after next which is the value #
-                if 'black_holes:' in words and '(step)' in words and 'is' in words:
-                    if 'thermal' in words or 'mechanical' in words:
-                        thermal_lines.append(line)
-                        thermals.append(words[words.index('thermal') + 2])
-                        mechanical_lines.append(line)
-                        mechanicals.append(words[words.index('mechanical') + 2])
-        
-        np.save(path + 'thermals.npy', thermals)
-        np.save(path + 'redshifts.npy', redshifts)
-        np.save(path + 'mechanicals.npy', mechanicals)
-        np.save(path + 'thermal_lines.npy', thermal_lines)
-        np.save(path + 'redshift_lines.npy', redshift_lines)
-        np.save(path + 'mechanical_lines.npy', mechanical_lines)
+                # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
+                if 'black_holes:' in words and '(cumulative)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
+                    feedback_lines.append(line)
+                    thermals.append(words[words.index('thermal') + 2])
+                    mechanicals.append(words[words.index('mechanical') + 2])
+                
+                # Search for the words 'step' and 'ratio' and get the word after next which is the energy value in ergs #
+                if 'black_holes:' in words and '(cumulative)' in words and 'ratio' in words:
+                    ratioT.append(words[words.index('thermal') + 2])
+                    ratioM.append(words[words.index('mechanical') + 2])
+                
+                # Search for the word 'is:' and get the next word which is the number of active black holes #
+                if 'bh_nf_radio:' in words and 'total' in words and 'number' in words and 'active' in words and 'bhs' in words:
+                    active_lines.append(line)
+                    actives.append(words[words.index('is:') + 1])
+                
+                # Search for the words 'no' and 'active' and get the lines which represent the number of inactive black holes #
+                if 'black_holes:' in words and 'no' in words and 'active' in words and 'bhs' in words:
+                    inactive_lines.append(line)
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'ratioT.npy', ratioT)
+            np.save(path + 'ratioM.npy', ratioM)
+            np.save(path + 'actives.npy', actives)
+            np.save(path + 'thermals.npy', thermals)
+            np.save(path + 'redshifts.npy', redshifts)
+            np.save(path + 'mechanicals.npy', mechanicals)
+            np.save(path + 'active_lines.npy', active_lines)
+            np.save(path + 'redshift_lines.npy', redshift_lines)
+            np.save(path + 'inactive_lines.npy', inactive_lines)
+            np.save(path + 'mechanical_lines.npy', feedback_lines)
         
         file.close()  # Close the opened file.
     
@@ -525,55 +542,74 @@ def black_hole_modes_evolution(read):
     gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
     ax00 = plt.subplot(gs[0, 0])
     axcbar = plt.subplot(gs[:, 1])
+    
     ax00.grid(True)
-    ax00.set_xlim(0.0, 3.5)
-    ax00.set_ylim(-0.2, 1.2)
+    # ax00.set_xlim(0.0, 3.5)
+    # ax00.set_ylim(-0.2, 1.2)
     ax00.set_xlabel(r'Redshift', size=16)
     ax00.set_ylabel(r'Mechanical / total AGN feedback energy', size=16)
     ax.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
     
     # Load and plot the data #
+    ratioT = np.load(path + 'ratioT.npy')
+    ratioM = np.load(path + 'ratioM.npy')
+    actives = np.load(path + 'actives.npy')
     thermals = np.load(path + 'thermals.npy')
     redshifts = np.load(path + 'redshifts.npy')
     mechanicals = np.load(path + 'mechanicals.npy')
-    
-    redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
+    inactive_lines = np.load(path + 'inactive_lines.npy')
     
     # Transform the arrays to comma separated strings and convert each element to float #
+    redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
+    ratioM = ','.join(ratioM)
+    ratioT = ','.join(ratioT)
+    actives = ','.join(actives)
     thermals = ','.join(thermals)
     redshifts = ','.join(redshifts)
     mechanicals = ','.join(mechanicals)
+    ratioM = np.fromstring(ratioM, dtype=np.float, sep=',')
+    ratioT = np.fromstring(ratioT, dtype=np.float, sep=',')
+    actives = np.fromstring(actives, dtype=np.float, sep=',')
     thermals = np.fromstring(thermals, dtype=np.float, sep=',')
     redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
     mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
     
-    AGN = mechanicals / (thermals + mechanicals)
-    pcm = ax00.hexbin(redshifts, AGN, bins='log', gridsize=100)
+    # AGN = np.divide(mechanicals, (thermals + mechanicals))
+    # filler = np.full(shape=len(inactive_lines), fill_value=9999, dtype=np.float)
+    # actives = np.insert(actives, 0, filler)
+    # mask, = np.where(mechanicals == 0)
+    # mask, = np.where(actives == 0)
+    # thermals = [x-y for x, y in zip(thermals[1:], thermals)]
+    # mechanicals = [x-y for x, y in zip(mechanicals[1:], mechanicals)]
+    ax00.plot([0, 1e60], [0, 1e60])
+    pcm = ax00.scatter(thermals, mechanicals, edgecolor='None', s=50, c=np.log10(redshifts), cmap='jet')
+    
+    # pcm = ax00.hexbin(redshifts[mask], AGN[mask], bins='log', gridsize=100)
     cb = plt.colorbar(pcm, cax=axcbar)
-    cb.set_label(r'Number of counts per hexbin', size=16)
+    # cb.set_label(r'Number of counts per hexbin', size=16)
+    #
+    # # Calculate median and 1-sigma #
+    # nbin = int((max(redshifts) - min(redshifts)) / 0.02)
+    # x_value = np.empty(nbin)
+    # median = np.empty(nbin)
+    # slow = np.empty(nbin)
+    # shigh = np.empty(nbin)
+    # x_low = min(redshifts)
+    # for i in range(nbin):
+    #     index = np.where((redshifts >= x_low) & (redshifts < x_low + 0.02))[0]
+    #     x_value[i] = np.mean(np.absolute(redshifts)[index])
+    #     if len(index) > 0:
+    #         median[i] = np.nanmedian(AGN[index])
+    #         slow[i] = np.nanpercentile(AGN[index], 15.87)
+    #         shigh[i] = np.nanpercentile(AGN[index], 84.13)
+    #     x_low += 0.02
+    #
+    # # Plot median and 1-sigma lines #
+    # median_IT20, = ax00.plot(x_value, median, color='black', zorder=5)
+    # ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.5', zorder=5)
+    # fill_IT20, = plt.fill(np.NaN, np.NaN, color='black', alpha=0.5, zorder=5)
     
-    # Calculate median and 1-sigma #
-    nbin = int((max(redshifts) - min(redshifts)) / 0.02)
-    x_value = np.empty(nbin)
-    median = np.empty(nbin)
-    slow = np.empty(nbin)
-    shigh = np.empty(nbin)
-    x_low = min(redshifts)
-    for i in range(nbin):
-        index = np.where((redshifts >= x_low) & (redshifts < x_low + 0.02))[0]
-        x_value[i] = np.mean(np.absolute(redshifts)[index])
-        if len(index) > 0:
-            median[i] = np.nanmedian(AGN[index])
-            slow[i] = np.nanpercentile(AGN[index], 15.87)
-            shigh[i] = np.nanpercentile(AGN[index], 84.13)
-        x_low += 0.02
-    
-    # Plot median and 1-sigma lines #
-    median_IT20, = ax00.plot(x_value, median, color='black', zorder=5)
-    ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.5', zorder=5)
-    fill_IT20, = plt.fill(np.NaN, np.NaN, color='black', alpha=0.5, zorder=5)
-    
-    plt.savefig('/u/di43/Auriga/plots/' + 'Test.png', bbox_inches='tight')  # Save the figure.
+    plt.savefig('/u/di43/Auriga/plots/' + 'Test-' + date + '.png', bbox_inches='tight')  # Save the figure.
     plt.close()
     
     return None
