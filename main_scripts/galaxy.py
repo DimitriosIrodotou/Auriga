@@ -771,6 +771,7 @@ def gas_temperature_fraction(pdf, data, level, read):
     # Load and plot the data #
     names = glob.glob(path + '/name_*')
     names.sort()
+    
     for i in range(len(names)):
         sfg_ratio = np.load(path + 'sfg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         wg_ratio = np.load(path + 'wg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')

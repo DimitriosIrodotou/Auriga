@@ -504,17 +504,17 @@ def black_hole_modes_evolution(date, read):
                     redshifts.append(words[words.index('redshift:') + 1])
                 
                 # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
-                if 'black_holes:' in words and '(cumulative)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
+                if 'black_holes:' in words and '(step)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
                     feedback_lines.append(line)
                     thermals.append(words[words.index('thermal') + 2])
                     mechanicals.append(words[words.index('mechanical') + 2])
                 
                 # Search for the words 'step' and 'ratio' and get the word after next which is the energy value in ergs #
-                if 'black_holes:' in words and '(cumulative)' in words and 'ratio' in words:
+                if 'black_holes:' in words and '(step)' in words and 'ratio' in words:
                     ratioT.append(words[words.index('thermal') + 2])
                     ratioM.append(words[words.index('mechanical') + 2])
                 
-                # Search for the word 'is:' and get the next word which is the number of active black holes #
+                # Search for the words 'active' and 'is:' and get the next word which is the number of active black holes #
                 if 'bh_nf_radio:' in words and 'total' in words and 'number' in words and 'active' in words and 'bhs' in words:
                     active_lines.append(line)
                     actives.append(words[words.index('is:') + 1])
@@ -544,10 +544,12 @@ def black_hole_modes_evolution(date, read):
     axcbar = plt.subplot(gs[:, 1])
     
     ax00.grid(True)
-    # ax00.set_xlim(0.0, 3.5)
-    # ax00.set_ylim(-0.2, 1.2)
-    ax00.set_xlabel(r'Redshift', size=16)
-    ax00.set_ylabel(r'Mechanical / total AGN feedback energy', size=16)
+    # ax00.set_xscale('log')
+    # ax00.set_yscale('log')
+    # ax00.set_xlim(1e54, 1e61)
+    # ax00.set_ylim(1e54, 1e61)
+    ax00.set_xlabel(r'Step thermal/ratio feedback energy [ergs]', size=16)
+    ax00.set_ylabel(r'Cumulative ratio mechanical', size=16)
     ax.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
     
     # Load and plot the data #
@@ -577,16 +579,15 @@ def black_hole_modes_evolution(date, read):
     # AGN = np.divide(mechanicals, (thermals + mechanicals))
     # filler = np.full(shape=len(inactive_lines), fill_value=9999, dtype=np.float)
     # actives = np.insert(actives, 0, filler)
-    # mask, = np.where(mechanicals == 0)
-    # mask, = np.where(actives == 0)
+    # mask, = np.where((mechanicals != 0) & (thermals != 0))
     # thermals = [x-y for x, y in zip(thermals[1:], thermals)]
     # mechanicals = [x-y for x, y in zip(mechanicals[1:], mechanicals)]
-    ax00.plot([0, 1e60], [0, 1e60])
-    pcm = ax00.scatter(thermals, mechanicals, edgecolor='None', s=50, c=np.log10(redshifts), cmap='jet')
+    # ax00.plot([1e40, 1e60], [1e40, 1e60])
+    pcm = ax00.scatter(thermals/ratioT, mechanicals/ratioM, edgecolor='None', s=50)#, c=redshifts, cmap='jet')
     
     # pcm = ax00.hexbin(redshifts[mask], AGN[mask], bins='log', gridsize=100)
-    cb = plt.colorbar(pcm, cax=axcbar)
-    # cb.set_label(r'Number of counts per hexbin', size=16)
+    # cb = plt.colorbar(pcm, cax=axcbar)
+    # cb.set_label(r'Redshift', size=16)
     #
     # # Calculate median and 1-sigma #
     # nbin = int((max(redshifts) - min(redshifts)) / 0.02)
