@@ -4,7 +4,6 @@ import os
 import re
 import glob
 import pickle
-import calcGrid
 import projections
 
 import numpy as np
@@ -14,8 +13,8 @@ import matplotlib.pyplot as plt
 from const import *
 from sfigure import *
 from loadmodules import *
-from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
+from scripts.gigagalaxy.util import satellite_utilities
 
 element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
 
@@ -86,6 +85,42 @@ def set_axis(s, ax, ax2, ylabel, ylim=None, ncol=5):
     
     if ylim is not None:
         ax.set_ylim(ylim)
+    
+    return None
+
+
+def set_axis_evo(ax, ax2,ax3):
+    z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
+    a = 1. / (1 + z)
+    
+    times = np.zeros(len(a))
+    for i in range(len(a)):
+        times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # in Gyr
+    
+    lb = []
+    for v in z:
+        if v >= 1.0:
+            lb += ["%.0f" % v]
+        else:
+            if v != 0:
+                lb += ["%.1f" % v]
+            else:
+                lb += ["%.0f" % v]
+    
+    ax.set_xlim(0, 13)
+    ax.invert_xaxis()
+    ax2.set_xlim(ax.get_xlim())
+    ax3.set_ylim(ax.get_ylim())
+    
+    ax2.set_xticks(times)
+    ax2.set_xticklabels(lb)
+    ax.set_ylabel(r'AGN feedback energy [ergs]', size=16)
+    ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=12)
+    ax2.set_xlabel('$z$', size=12)
+    ax2.set_ylabel('$AGN feedback energy over time  [ergs/Gyr]$', size=12)
+    
+    ax.tick_params(direction='out', which='both', right='on')
+    ax2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
 
@@ -539,77 +574,37 @@ def black_hole_modes_evolution(date, read):
     
     # Generate the figure and define its parameters #
     f, ax = plt.subplots(1, figsize=(10, 7.5))
-    gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
-    ax00 = plt.subplot(gs[0, 0])
-    axcbar = plt.subplot(gs[:, 1])
-    
-    ax00.grid(True)
-    # ax00.set_xscale('log')
-    # ax00.set_yscale('log')
-    # ax00.set_xlim(1e54, 1e61)
-    # ax00.set_ylim(1e54, 1e61)
-    ax00.set_xlabel(r'Step thermal/ratio feedback energy [ergs]', size=16)
-    ax00.set_ylabel(r'Cumulative ratio mechanical', size=16)
+    ax.grid(True)
+    ax.set_yscale('log')
+    ax2 = ax.twiny()
+    ax3 = ax.twinx()
+    set_axis_evo(ax, ax2, ax3)
     ax.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
     
     # Load and plot the data #
-    ratioT = np.load(path + 'ratioT.npy')
-    ratioM = np.load(path + 'ratioM.npy')
-    actives = np.load(path + 'actives.npy')
     thermals = np.load(path + 'thermals.npy')
     redshifts = np.load(path + 'redshifts.npy')
     mechanicals = np.load(path + 'mechanicals.npy')
-    inactive_lines = np.load(path + 'inactive_lines.npy')
     
     # Transform the arrays to comma separated strings and convert each element to float #
     redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
-    ratioM = ','.join(ratioM)
-    ratioT = ','.join(ratioT)
-    actives = ','.join(actives)
     thermals = ','.join(thermals)
     redshifts = ','.join(redshifts)
     mechanicals = ','.join(mechanicals)
-    ratioM = np.fromstring(ratioM, dtype=np.float, sep=',')
-    ratioT = np.fromstring(ratioT, dtype=np.float, sep=',')
-    actives = np.fromstring(actives, dtype=np.float, sep=',')
     thermals = np.fromstring(thermals, dtype=np.float, sep=',')
     redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
     mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
     
-    # AGN = np.divide(mechanicals, (thermals + mechanicals))
-    # filler = np.full(shape=len(inactive_lines), fill_value=9999, dtype=np.float)
-    # actives = np.insert(actives, 0, filler)
-    # mask, = np.where((mechanicals != 0) & (thermals != 0))
-    # thermals = [x-y for x, y in zip(thermals[1:], thermals)]
-    # mechanicals = [x-y for x, y in zip(mechanicals[1:], mechanicals)]
-    # ax00.plot([1e40, 1e60], [1e40, 1e60])
-    pcm = ax00.scatter(thermals/ratioT, mechanicals/ratioM, edgecolor='None', s=50)#, c=redshifts, cmap='jet')
+    # Convert redshifts to lookback times, split them into bins, loop over them and plot #
+    lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # in Gyr
     
-    # pcm = ax00.hexbin(redshifts[mask], AGN[mask], bins='log', gridsize=100)
-    # cb = plt.colorbar(pcm, cax=axcbar)
-    # cb.set_label(r'Redshift', size=16)
-    #
-    # # Calculate median and 1-sigma #
-    # nbin = int((max(redshifts) - min(redshifts)) / 0.02)
-    # x_value = np.empty(nbin)
-    # median = np.empty(nbin)
-    # slow = np.empty(nbin)
-    # shigh = np.empty(nbin)
-    # x_low = min(redshifts)
-    # for i in range(nbin):
-    #     index = np.where((redshifts >= x_low) & (redshifts < x_low + 0.02))[0]
-    #     x_value[i] = np.mean(np.absolute(redshifts)[index])
-    #     if len(index) > 0:
-    #         median[i] = np.nanmedian(AGN[index])
-    #         slow[i] = np.nanpercentile(AGN[index], 15.87)
-    #         shigh[i] = np.nanpercentile(AGN[index], 84.13)
-    #     x_low += 0.02
-    #
-    # # Plot median and 1-sigma lines #
-    # median_IT20, = ax00.plot(x_value, median, color='black', zorder=5)
-    # ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.5', zorder=5)
-    # fill_IT20, = plt.fill(np.NaN, np.NaN, color='black', alpha=0.5, zorder=5)
+    ax.hist(lookback_times, weights=thermals, histtype='step', color='black', bins=100, label=r'Thermal')
+    ax.hist(lookback_times, weights=mechanicals, histtype='step', color='black', linestyle='dotted', bins=100, label=r'Mechanical')
+    ax.hist(lookback_times, weights=thermals / lookback_times, histtype='step', color='red', bins=100, label=r'Thermal / timebin')
+    ax.hist(lookback_times, weights=mechanicals / lookback_times, histtype='step', linestyle='dotted', color='red', bins=100,
+            label=r'Mechanical / timebin')
     
+    ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
     plt.savefig('/u/di43/Auriga/plots/' + 'Test-' + date + '.png', bbox_inches='tight')  # Save the figure.
     plt.close()
     

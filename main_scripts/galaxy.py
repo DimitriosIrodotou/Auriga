@@ -16,8 +16,8 @@ from loadmodules import *
 from matplotlib import gridspec
 from scipy.special import gamma
 from scipy.optimize import curve_fit
-from parse_particledata import parse_particledata
 from scripts.gigagalaxy.util import plot_helper
+from parse_particledata import parse_particledata
 
 element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
 
