@@ -4,6 +4,7 @@ import os
 import re
 import glob
 import pickle
+import matplotlib
 import projections
 
 import numpy as np
@@ -13,6 +14,7 @@ import matplotlib.pyplot as plt
 from const import *
 from sfigure import *
 from loadmodules import *
+from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
 from scripts.gigagalaxy.util import satellite_utilities
 
@@ -89,7 +91,7 @@ def set_axis(s, ax, ax2, ylabel, ylim=None, ncol=5):
     return None
 
 
-def set_axis_evo(ax, ax2,ax3):
+def set_axis_evo(ax, ax2):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
     a = 1. / (1 + z)
     
@@ -109,17 +111,14 @@ def set_axis_evo(ax, ax2,ax3):
     
     ax.set_xlim(0, 13)
     ax.invert_xaxis()
-    ax2.set_xlim(ax.get_xlim())
-    ax3.set_ylim(ax.get_ylim())
+    ax.set_ylabel(r'AGN feedback energy [ergs]', size=16)
+    ax.set_xlabel(r'$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=16)
+    ax.tick_params(direction='out', which='both', right='on')
     
     ax2.set_xticks(times)
     ax2.set_xticklabels(lb)
-    ax.set_ylabel(r'AGN feedback energy [ergs]', size=16)
-    ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=12)
-    ax2.set_xlabel('$z$', size=12)
-    ax2.set_ylabel('$AGN feedback energy over time  [ergs/Gyr]$', size=12)
-    
-    ax.tick_params(direction='out', which='both', right='on')
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xlabel(r'$z$', size=16)
     ax2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
@@ -508,104 +507,372 @@ def gas_temperature_fraction_evolution(pdf, data, read):
     return None
 
 
-def black_hole_modes_evolution(date, read):
+def AGN_modes_cumulative(date, data, read):
     """
-        Get information about different black hole modes from log files.
+        Get information about different black hole modes from log files and plot the evolution of the cumulative feedback.
+        :param date: .
+        :param data: .
         :param read: boolean.
-        :return:
+        :return: None
         """
     # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'bhme/'
+    path = '/u/di43/Auriga/plots/data/' + 'AGNmc/'
     if not os.path.exists(path):
         os.makedirs(path)
-    i = 0
     
-    # Declare arrays to store the desired words and lines that contain these words #
-    redshift_lines, redshifts, feedback_lines, thermals, mechanicals, active_lines, inactive_lines, actives = [], [], [], [], [], [], [], []
-    ratioM, ratioT = [], []
-    # Read the data #
-    if read is True:
-        with open('/u/di43/Auriga/' + 'Au-06.txt') as file:
-            # Iterate over each line #
-            for line in file:
-                # Convert the characters in the line to lowercase and split the line into words #
-                line = line.lower()
-                line = line.strip()  # Remove '\n' at end of line.
-                words = line.split(" ")
-                
-                # Search for the word 'redshift:' and get the next word which is the redshift value #
-                if 'redshift:' in words:
-                    redshift_lines.append(line)
-                    redshifts.append(words[words.index('redshift:') + 1])
-                
-                # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
-                if 'black_holes:' in words and '(step)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
-                    feedback_lines.append(line)
-                    thermals.append(words[words.index('thermal') + 2])
-                    mechanicals.append(words[words.index('mechanical') + 2])
-                
-                # Search for the words 'step' and 'ratio' and get the word after next which is the energy value in ergs #
-                if 'black_holes:' in words and '(step)' in words and 'ratio' in words:
-                    ratioT.append(words[words.index('thermal') + 2])
-                    ratioM.append(words[words.index('mechanical') + 2])
-                
-                # Search for the words 'active' and 'is:' and get the next word which is the number of active black holes #
-                if 'bh_nf_radio:' in words and 'total' in words and 'number' in words and 'active' in words and 'bhs' in words:
-                    active_lines.append(line)
-                    actives.append(words[words.index('is:') + 1])
-                
-                # Search for the words 'no' and 'active' and get the lines which represent the number of inactive black holes #
-                if 'black_holes:' in words and 'no' in words and 'active' in words and 'bhs' in words:
-                    inactive_lines.append(line)
+    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+    
+    # Loop over all haloes #
+    for s in data:
+        # Declare arrays to store the desired words and lines that contain these words #
+        redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
+        # Read the data #
+        if read is True:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+                # Iterate over each line #
+                for line in file:
+                    # Convert the characters in the line to lowercase and split the line into words #
+                    line = line.lower()
+                    line = line.strip()  # Remove '\n' at end of line.
+                    words = line.split(" ")
+                    
+                    # Search for the word 'redshift:' and get the next word which is the redshift value #
+                    if 'redshift:' in words:
+                        redshift_lines.append(line)
+                        redshifts.append(words[words.index('redshift:') + 1])
+                    
+                    # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
+                    if 'black_holes:' in words and '(cumulative)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
+                        feedback_lines.append(line)
+                        thermals.append(words[words.index('thermal') + 2])
+                        mechanicals.append(words[words.index('mechanical') + 2])
+            
+            file.close()  # Close the opened file.
             
             # Save data for each halo in numpy arrays #
-            np.save(path + 'ratioT.npy', ratioT)
-            np.save(path + 'ratioM.npy', ratioM)
-            np.save(path + 'actives.npy', actives)
-            np.save(path + 'thermals.npy', thermals)
-            np.save(path + 'redshifts.npy', redshifts)
-            np.save(path + 'mechanicals.npy', mechanicals)
-            np.save(path + 'active_lines.npy', active_lines)
-            np.save(path + 'redshift_lines.npy', redshift_lines)
-            np.save(path + 'inactive_lines.npy', inactive_lines)
-            np.save(path + 'mechanical_lines.npy', feedback_lines)
-        
-        file.close()  # Close the opened file.
-    
-    # Generate the figure and define its parameters #
-    f, ax = plt.subplots(1, figsize=(10, 7.5))
-    ax.grid(True)
-    ax.set_yscale('log')
-    ax2 = ax.twiny()
-    ax3 = ax.twinx()
-    set_axis_evo(ax, ax2, ax3)
-    ax.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'thermals_' + str(s.haloname), thermals)
+            np.save(path + 'redshifts_' + str(s.haloname), redshifts)
+            np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    thermals = np.load(path + 'thermals.npy')
-    redshifts = np.load(path + 'redshifts.npy')
-    mechanicals = np.load(path + 'mechanicals.npy')
+    names = glob.glob(path + '/name_*')
+    names.sort()
     
-    # Transform the arrays to comma separated strings and convert each element to float #
-    redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
-    thermals = ','.join(thermals)
-    redshifts = ','.join(redshifts)
-    mechanicals = ','.join(mechanicals)
-    thermals = np.fromstring(thermals, dtype=np.float, sep=',')
-    redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
-    mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+    # Load and plot the data #
+    for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f = plt.figure(figsize=(10, 10))
+        gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
+        ax00 = plt.subplot(gs[0, 0])
+        axcbar = plt.subplot(gs[:, 1])
+        
+        ax00.grid(True)
+        ax00.set_xscale('log')
+        ax00.set_yscale('log')
+        ax00.set_xlim(1e54, 1e61)
+        ax00.set_ylim(1e54, 1e61)
+        ax00.set_xlabel(r'Cumulative thermal feedback energy [ergs]', size=16)
+        ax00.set_ylabel(r'Cumulative mechanical feedback energy [ergs]', size=16)
+        f.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax00.transAxes)
+        
+        thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Transform the arrays to comma separated strings and convert each element to float #
+        redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
+        thermals = ','.join(thermals)
+        redshifts = ','.join(redshifts)
+        mechanicals = ','.join(mechanicals)
+        thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+        redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
+        mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+        
+        # Mask the data and plot the scatter #
+        ax00.plot([1e54, 1e61], [1e54 / 10, 1e61 / 10], label='1:10')
+        ax00.plot([1e54, 1e61], [1e54 / 50, 1e61 / 50], label='1:50')
+        
+        mask, = np.where((mechanicals != 0) | (thermals != 0))
+        sc = ax00.scatter(thermals[mask], mechanicals[mask], edgecolor='None', s=50, c=redshifts[mask], vmin=0, vmax=4, cmap='jet')
+        cb = plt.colorbar(sc, cax=axcbar)
+        cb.set_label(r'Redshift', size=16)
+        ax00.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+        
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmc-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.close()
+    return None
+
+
+def AGN_modes_histogram(date, data, read):
+    """
+        Get information about different black hole modes from log files and plot a histogram of the evolution of the step feedback.
+        :param date: .
+        :param data: .
+        :param read: boolean.
+        :return: None
+        """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'AGNmh/'
+    if not os.path.exists(path):
+        os.makedirs(path)
     
-    # Convert redshifts to lookback times, split them into bins, loop over them and plot #
-    lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # in Gyr
+    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
     
-    ax.hist(lookback_times, weights=thermals, histtype='step', color='black', bins=100, label=r'Thermal')
-    ax.hist(lookback_times, weights=mechanicals, histtype='step', color='black', linestyle='dotted', bins=100, label=r'Mechanical')
-    ax.hist(lookback_times, weights=thermals / lookback_times, histtype='step', color='red', bins=100, label=r'Thermal / timebin')
-    ax.hist(lookback_times, weights=mechanicals / lookback_times, histtype='step', linestyle='dotted', color='red', bins=100,
-            label=r'Mechanical / timebin')
+    # Loop over all haloes #
+    for s in data:
+        # Declare arrays to store the desired words and lines that contain these words #
+        redshift_lines, redshifts, feedback_lines, thermals, mechanicals, active_lines, inactive_lines, actives = [], [], [], [], [], [], [], []
+        ratioM, ratioT = [], []
+        # Read the data #
+        if read is True:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+                # Iterate over each line #
+                for line in file:
+                    # Convert the characters in the line to lowercase and split the line into words #
+                    line = line.lower()
+                    line = line.strip()  # Remove '\n' at end of line.
+                    words = line.split(" ")
+                    
+                    # Search for the word 'redshift:' and get the next word which is the redshift value #
+                    if 'redshift:' in words:
+                        redshift_lines.append(line)
+                        redshifts.append(words[words.index('redshift:') + 1])
+                    
+                    # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
+                    if 'black_holes:' in words and '(step)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
+                        feedback_lines.append(line)
+                        thermals.append(words[words.index('thermal') + 2])
+                        mechanicals.append(words[words.index('mechanical') + 2])
+                    
+                    # Search for the words 'step' and 'ratio' and get the word after next which is the energy value in ergs #
+                    if 'black_holes:' in words and '(step)' in words and 'ratio' in words:
+                        ratioT.append(words[words.index('thermal') + 2])
+                        ratioM.append(words[words.index('mechanical') + 2])
+                    
+                    # Search for the words 'active' and 'is:' and get the next word which is the number of active black holes #
+                    if 'bh_nf_radio:' in words and 'total' in words and 'number' in words and 'active' in words and 'bhs' in words:
+                        active_lines.append(line)
+                        actives.append(words[words.index('is:') + 1])
+                    
+                    # Search for the words 'no' and 'active' and get the lines which represent the number of inactive black holes #
+                    if 'black_holes:' in words and 'no' in words and 'active' in words and 'bhs' in words:
+                        inactive_lines.append(line)
+            
+            file.close()  # Close the opened file.
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'thermals_' + str(s.haloname), thermals)
+            np.save(path + 'redshifts_' + str(s.haloname), redshifts)
+            np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
-    ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-    plt.savefig('/u/di43/Auriga/plots/' + 'Test-' + date + '.png', bbox_inches='tight')  # Save the figure.
-    plt.close()
+    # Load and plot the data #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Load and plot the data #
+    for i in range(len(names)):
+        
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        ax.grid(True)
+        ax2 = ax.twiny()
+        ax.set_yscale('log')
+        set_axis_evo(ax, ax2)
+        ax.text(0.01, 0.95, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
+        
+        # Load and plot the data #
+        thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Transform the arrays to comma separated strings and convert each element to float #
+        redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
+        thermals = ','.join(thermals)
+        redshifts = ','.join(redshifts)
+        mechanicals = ','.join(mechanicals)
+        thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+        redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
+        mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+        
+        # Convert redshifts to lookback times, split them into bins, loop over them and plot #
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # in Gyr
+        ax.hist(lookback_times, weights=thermals, histtype='step', bins=100, label=r'Thermal')
+        ax.hist(lookback_times, weights=mechanicals, histtype='step', bins=100, label=r'Mechanical')
+        
+        ax.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmh-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.close()
+    
+    return None
+
+
+def AGN_modes_distribution(date, data, read):
+    """
+        Get information about different black hole modes from log files and plot the evolution of the step feedback.
+        :param date: .
+        :param data: .
+        :param read: boolean.
+        :return: None
+        """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+    
+    # Loop over all haloes #
+    for s in data:
+        # Declare arrays to store the desired words and lines that contain these words #
+        redshift_lines, redshifts, feedback_lines, thermals, mechanicals, active_lines, inactive_lines, actives = [], [], [], [], [], [], [], []
+        ratioM, ratioT = [], []
+        # Read the data #
+        if read is True:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+                # Iterate over each line #
+                for line in file:
+                    # Convert the characters in the line to lowercase and split the line into words #
+                    line = line.lower()
+                    line = line.strip()  # Remove '\n' at end of line.
+                    words = line.split(" ")
+                    
+                    # Search for the word 'redshift:' and get the next word which is the redshift value #
+                    if 'redshift:' in words:
+                        redshift_lines.append(line)
+                        redshifts.append(words[words.index('redshift:') + 1])
+                    
+                    # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
+                    if 'black_holes:' in words and '(step)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
+                        feedback_lines.append(line)
+                        thermals.append(words[words.index('thermal') + 2])
+                        mechanicals.append(words[words.index('mechanical') + 2])
+                    
+                    # Search for the words 'step' and 'ratio' and get the word after next which is the energy value in ergs #
+                    if 'black_holes:' in words and '(step)' in words and 'ratio' in words:
+                        ratioT.append(words[words.index('thermal') + 2])
+                        ratioM.append(words[words.index('mechanical') + 2])
+                    
+                    # Search for the words 'active' and 'is:' and get the next word which is the number of active black holes #
+                    if 'bh_nf_radio:' in words and 'total' in words and 'number' in words and 'active' in words and 'bhs' in words:
+                        active_lines.append(line)
+                        actives.append(words[words.index('is:') + 1])
+                    
+                    # Search for the words 'no' and 'active' and get the lines which represent the number of inactive black holes #
+                    if 'black_holes:' in words and 'no' in words and 'active' in words and 'bhs' in words:
+                        inactive_lines.append(line)
+            
+            file.close()  # Close the opened file.
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'thermals_' + str(s.haloname), thermals)
+            np.save(path + 'redshifts_' + str(s.haloname), redshifts)
+            np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
+    
+    # Load and plot the data #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Load and plot the data #
+    for i in range(len(names)):
+        
+        # Generate the figure and define its parameters #
+        # Generate the figure and define its parameters #
+        f = plt.figure(figsize=(10, 7.5))
+        gs = gridspec.GridSpec(2, 2, wspace=0.05, hspace=0.1, height_ratios=[0.05, 1])
+        ax00 = plt.subplot(gs[1, 0])
+        axcbar = plt.subplot(gs[0, 0])
+        ax02 = plt.subplot(gs[1, 1])
+        axcbar2 = plt.subplot(gs[0, 1])
+        
+        for a in [ax00, ax02]:
+            a.grid(True)
+            a.set_xlim(0, 3.9)
+            a.set_yscale('log')
+            a.set_ylim(1e49, 1e56)
+            a.set_xlabel(r'Redshift', size=16)
+            a.tick_params(direction='out', which='both', right='on')
+        ax02.yaxis.set_label_position("right")
+        ax02.yaxis.tick_right()
+        ax00.set_ylabel(r'Mechanical feedback energy [ergs]', size=16)
+        ax02.set_ylabel(r'Thermal feedback energy [ergs]', size=16)
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
+        
+        # Load and plot the data #
+        thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Transform the arrays to comma separated strings and convert each element to float #
+        redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
+        thermals = ','.join(thermals)
+        redshifts = ','.join(redshifts)
+        mechanicals = ','.join(mechanicals)
+        thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+        redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
+        mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+        
+        # Convert redshifts to lookback times, split them into bins, loop over them and plot #
+        cmap = matplotlib.cm.get_cmap('Spectral_r')
+        ax00.set_facecolor(cmap(0))
+        ax02.set_facecolor(cmap(0))
+        
+        hb = ax00.hexbin(redshifts[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='Spectral_r', gridsize=50)
+        cb = plt.colorbar(hb, cax=axcbar, orientation='horizontal')
+        cb.set_label(r'Counts per hexbin', size=16)
+        
+        hb = ax02.hexbin(redshifts[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='Spectral_r', gridsize=100)
+        cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
+        cb2.set_label(r'Counts per hexbin', size=16)
+        
+        for a in [axcbar, axcbar2]:
+            a.xaxis.tick_top()
+            a.xaxis.set_label_position("top")
+            a.tick_params(direction='out', which='both', right='on')
+        
+        # Calculate median and 1-sigma #
+        nbin = int((max(redshifts[np.where(mechanicals > 0)]) - min(redshifts[np.where(mechanicals > 0)])) / 0.02)
+        x_value = np.empty(nbin)
+        median = np.empty(nbin)
+        slow = np.empty(nbin)
+        shigh = np.empty(nbin)
+        x_low = min(redshifts[np.where(mechanicals > 0)])
+        for j in range(nbin):
+            index = np.where((redshifts[np.where(mechanicals > 0)] >= x_low) & (redshifts[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+            x_value[j] = np.mean(np.absolute(redshifts[np.where(mechanicals > 0)])[index])
+            if len(index) > 0:
+                median[j] = np.nanmedian(mechanicals[np.where(mechanicals > 0)][index])
+                slow[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 15.87)
+                shigh[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 84.13)
+            x_low += 0.05
+        
+        # Plot median and 1-sigma lines #
+        median, = ax00.plot(x_value, median, color='black', zorder=5)
+        ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        
+        # Calculate median and 1-sigma #
+        nbin = int((max(redshifts[np.where(thermals > 0)]) - min(redshifts[np.where(thermals > 0)])) / 0.02)
+        x_value = np.empty(nbin)
+        median = np.empty(nbin)
+        slow = np.empty(nbin)
+        shigh = np.empty(nbin)
+        x_low = min(redshifts[np.where(thermals > 0)])
+        for j in range(nbin):
+            index = np.where((redshifts[np.where(thermals > 0)] >= x_low) & (redshifts[np.where(thermals > 0)] < x_low + 0.05))[0]
+            x_value[j] = np.mean(np.absolute(redshifts[np.where(thermals > 0)])[index])
+            if len(index) > 0:
+                median[j] = np.nanmedian(thermals[np.where(thermals > 0)][index])
+                slow[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 15.87)
+                shigh[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 84.13)
+            x_low += 0.05
+        
+        # Plot median and 1-sigma lines #
+        median, = ax02.plot(x_value, median, color='black', zorder=5)
+        ax02.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.close()
     
     return None

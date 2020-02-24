@@ -335,7 +335,8 @@ def stellar_density(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_06.*')
     names.sort()
-    
+
+    # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 7.5), dpi=300)
@@ -420,7 +421,8 @@ def gas_density(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_06.*')
     names.sort()
-    
+
+    # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
@@ -500,7 +502,8 @@ def gas_temperature(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
     names.sort()
-    
+
+    # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
@@ -727,7 +730,8 @@ def gas_slice(pdf, data, redshift, read):
     # Load and plot the image and over-plot the velocity field #
     names = glob.glob(path + '/name_*')
     names.sort()
-    
+
+    # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 15), dpi=300)
@@ -939,7 +943,8 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
     names.sort()
-    
+
+    # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 10), dpi=300)
