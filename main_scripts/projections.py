@@ -20,7 +20,7 @@ boxsize = 0.06
 element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
 
 
-def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False):
+def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -64,6 +64,20 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         
         return ax00, ax10, x, y, y2, area
     
+    elif multiple is True:
+        gs = gridspec.GridSpec(3, 3, hspace=0.05, wspace=0.05, height_ratios=[0.05, 1, 0.5])
+        axcbar = plt.subplot(gs[0, 0])
+        ax10 = plt.subplot(gs[1, 0])
+        ax20 = plt.subplot(gs[2, 0])
+        axcbar2 = plt.subplot(gs[0, 1])
+        ax11 = plt.subplot(gs[1, 1])
+        ax21 = plt.subplot(gs[2, 1])
+        axcbar3 = plt.subplot(gs[0, 2])
+        ax12 = plt.subplot(gs[1, 2])
+        ax22 = plt.subplot(gs[2, 2])
+        
+        return axcbar, axcbar2, axcbar3, ax10, ax20, ax11, ax21, ax12, ax22, x, y, area
+    
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
         ax00 = plt.subplot(gs[0, 0])
@@ -72,7 +86,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax10, x, y, y2, area
 
 
-def create_colorbar(ax, pcm, label):
+def create_colorbar(ax, pcm, label, orientation='vertical'):
     """
     Generate a colorbar.
     :param ax: colorbar axis from create_axes
@@ -81,7 +95,7 @@ def create_colorbar(ax, pcm, label):
     :return: None
     """
     # Set the colorbar axes #
-    cb = plt.colorbar(pcm, cax=ax)
+    cb = plt.colorbar(pcm, cax=ax, orientation=orientation)
     
     # Set the colorbar parameters #
     cb.set_label(label, size=16)
@@ -335,7 +349,7 @@ def stellar_density(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_06.*')
     names.sort()
-
+    
     # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
@@ -404,7 +418,7 @@ def gas_density(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
-                
+            
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -421,7 +435,7 @@ def gas_density(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_06.*')
     names.sort()
-
+    
     # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
@@ -502,7 +516,7 @@ def gas_temperature(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
     names.sort()
-
+    
     # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
@@ -730,7 +744,7 @@ def gas_slice(pdf, data, redshift, read):
     # Load and plot the image and over-plot the velocity field #
     names = glob.glob(path + '/name_*')
     names.sort()
-
+    
     # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
@@ -943,7 +957,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
     names.sort()
-
+    
     # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
@@ -968,6 +982,96 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         
         f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
                transform=ax00.transAxes)
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        plt.close()
+    return None
+
+
+def multiple(pdf, data, redshift, read):
+    """
+    Plot stellar density projection for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean
+    :return: None
+    """
+    boxsize = 0.01  # Decrease the boxsize.
+    
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'm/' + str(redshift) + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['mass', 'pos', 'rho']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            # Plot the projections #
+            face_on = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            edge_on = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize / 2.0], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'face_on_' + str(s.haloname), face_on)
+            np.save(path + 'edge_on_' + str(s.haloname), edge_on)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_06.*')
+    names.sort()
+    
+    # Load and plot the data #
+    for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f = plt.figure(figsize=(20, 10), dpi=300)
+        axcbar, axcbar2, axcbar3, ax10, ax20, ax11, ax21, ax12, ax22, x, y, area = create_axes(res=res, boxsize=boxsize * 1e3, multiple=True)
+        for a in [ax10, ax11, ax12]:
+            a.set_xlim(-5, 5)
+            a.set_ylim(-5, 5)
+            a.set_xticklabels([])
+            a.tick_params(direction='out', which='both', top='on', right='on')
+        for a in [ax20, ax21, ax22]:
+            a.set_xlim(-5, 5)
+            a.set_ylim(-2.5, 2.5)
+            a.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+            a.tick_params(direction='out', which='both', top='on', right='on')
+        for a in [ax11, ax21, ax12, ax22]:
+            a.set_yticklabels([])
+        
+        ax10.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=16)
+        ax20.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
+        
+        # Load and plot the data #
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the projections #
+        pcm = ax10.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
+        ax20.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
+        create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$", orientation='horizontal')
+        
+        for a in [axcbar, axcbar2, axcbar3]:
+            a.xaxis.tick_top()
+            a.xaxis.set_label_position("top")
+            a.tick_params(direction='out', which='both', right='on')
+        
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
+               transform=axcbar.transAxes)
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
     return None

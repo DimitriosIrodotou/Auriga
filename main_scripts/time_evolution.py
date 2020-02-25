@@ -4,7 +4,6 @@ import os
 import re
 import glob
 import pickle
-import matplotlib
 import projections
 
 import numpy as np
@@ -622,8 +621,7 @@ def AGN_modes_histogram(date, data, read):
     # Loop over all haloes #
     for s in data:
         # Declare arrays to store the desired words and lines that contain these words #
-        redshift_lines, redshifts, feedback_lines, thermals, mechanicals, active_lines, inactive_lines, actives = [], [], [], [], [], [], [], []
-        ratioM, ratioT = [], []
+        redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
         # Read the data #
         if read is True:
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
@@ -644,20 +642,6 @@ def AGN_modes_histogram(date, data, read):
                         feedback_lines.append(line)
                         thermals.append(words[words.index('thermal') + 2])
                         mechanicals.append(words[words.index('mechanical') + 2])
-                    
-                    # Search for the words 'step' and 'ratio' and get the word after next which is the energy value in ergs #
-                    if 'black_holes:' in words and '(step)' in words and 'ratio' in words:
-                        ratioT.append(words[words.index('thermal') + 2])
-                        ratioM.append(words[words.index('mechanical') + 2])
-                    
-                    # Search for the words 'active' and 'is:' and get the next word which is the number of active black holes #
-                    if 'bh_nf_radio:' in words and 'total' in words and 'number' in words and 'active' in words and 'bhs' in words:
-                        active_lines.append(line)
-                        actives.append(words[words.index('is:') + 1])
-                    
-                    # Search for the words 'no' and 'active' and get the lines which represent the number of inactive black holes #
-                    if 'black_holes:' in words and 'no' in words and 'active' in words and 'bhs' in words:
-                        inactive_lines.append(line)
             
             file.close()  # Close the opened file.
             
@@ -696,7 +680,7 @@ def AGN_modes_histogram(date, data, read):
         redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         
-        # Convert redshifts to lookback times, split them into bins, loop over them and plot #
+        # Convert redshifts to lookback times and plot #
         lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # in Gyr
         ax.hist(lookback_times, weights=thermals, histtype='step', bins=100, label=r'Thermal')
         ax.hist(lookback_times, weights=mechanicals, histtype='step', bins=100, label=r'Mechanical')
@@ -726,8 +710,7 @@ def AGN_modes_distribution(date, data, read):
     # Loop over all haloes #
     for s in data:
         # Declare arrays to store the desired words and lines that contain these words #
-        redshift_lines, redshifts, feedback_lines, thermals, mechanicals, active_lines, inactive_lines, actives = [], [], [], [], [], [], [], []
-        ratioM, ratioT = [], []
+        redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
         # Read the data #
         if read is True:
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
@@ -748,20 +731,6 @@ def AGN_modes_distribution(date, data, read):
                         feedback_lines.append(line)
                         thermals.append(words[words.index('thermal') + 2])
                         mechanicals.append(words[words.index('mechanical') + 2])
-                    
-                    # Search for the words 'step' and 'ratio' and get the word after next which is the energy value in ergs #
-                    if 'black_holes:' in words and '(step)' in words and 'ratio' in words:
-                        ratioT.append(words[words.index('thermal') + 2])
-                        ratioM.append(words[words.index('mechanical') + 2])
-                    
-                    # Search for the words 'active' and 'is:' and get the next word which is the number of active black holes #
-                    if 'bh_nf_radio:' in words and 'total' in words and 'number' in words and 'active' in words and 'bhs' in words:
-                        active_lines.append(line)
-                        actives.append(words[words.index('is:') + 1])
-                    
-                    # Search for the words 'no' and 'active' and get the lines which represent the number of inactive black holes #
-                    if 'black_holes:' in words and 'no' in words and 'active' in words and 'bhs' in words:
-                        inactive_lines.append(line)
             
             file.close()  # Close the opened file.
             
@@ -787,15 +756,15 @@ def AGN_modes_distribution(date, data, read):
         ax02 = plt.subplot(gs[1, 1])
         axcbar2 = plt.subplot(gs[0, 1])
         
+        ax02.yaxis.set_label_position("right")
+        ax02.yaxis.tick_right()
         for a in [ax00, ax02]:
             a.grid(True)
-            a.set_xlim(0, 3.9)
+            a.set_xlim(0, 3.4)
             a.set_yscale('log')
             a.set_ylim(1e49, 1e56)
             a.set_xlabel(r'Redshift', size=16)
-            a.tick_params(direction='out', which='both', right='on')
-        ax02.yaxis.set_label_position("right")
-        ax02.yaxis.tick_right()
+            a.tick_params(direction='out', which='both', right='on', left='on')
         ax00.set_ylabel(r'Mechanical feedback energy [ergs]', size=16)
         ax02.set_ylabel(r'Thermal feedback energy [ergs]', size=16)
         f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
@@ -814,16 +783,12 @@ def AGN_modes_distribution(date, data, read):
         redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         
-        # Convert redshifts to lookback times, split them into bins, loop over them and plot #
-        cmap = matplotlib.cm.get_cmap('Spectral_r')
-        ax00.set_facecolor(cmap(0))
-        ax02.set_facecolor(cmap(0))
-        
-        hb = ax00.hexbin(redshifts[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='Spectral_r', gridsize=50)
+        # Plot hexbins #
+        hb = ax00.hexbin(redshifts[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='gist_heat_r', gridsize=100)
         cb = plt.colorbar(hb, cax=axcbar, orientation='horizontal')
         cb.set_label(r'Counts per hexbin', size=16)
         
-        hb = ax02.hexbin(redshifts[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='Spectral_r', gridsize=100)
+        hb = ax02.hexbin(redshifts[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r', gridsize=100)
         cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
         cb2.set_label(r'Counts per hexbin', size=16)
         
@@ -873,6 +838,104 @@ def AGN_modes_distribution(date, data, read):
         ax02.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
         
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.close()
+    
+    return None
+
+
+def AGN_modes_step(date, data, read):
+    """
+        Get information about different black hole modes from log files and plot the step feedbacks.
+        :param date: .
+        :param data: .
+        :param read: boolean.
+        :return: None
+        """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'AGNms/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+    
+    # Loop over all haloes #
+    for s in data:
+        # Declare arrays to store the desired words and lines that contain these words #
+        feedback_lines, thermals, mechanicals = [], [], []
+        # Read the data #
+        if read is True:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+                # Iterate over each line #
+                for line in file:
+                    # Convert the characters in the line to lowercase and split the line into words #
+                    line = line.lower()
+                    line = line.strip()  # Remove '\n' at end of line.
+                    words = line.split(" ")
+                    
+                    # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
+                    if 'black_holes:' in words and '(step)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
+                        feedback_lines.append(line)
+                        thermals.append(words[words.index('thermal') + 2])
+                        mechanicals.append(words[words.index('mechanical') + 2])
+            
+            file.close()  # Close the opened file.
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'thermals_' + str(s.haloname), thermals)
+            np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
+    
+    # Load and plot the data #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Load and plot the data #
+    for i in range(len(names)):
+        
+        # Generate the figure and define its parameters #
+        f = plt.figure(figsize=(10, 7.5))
+        gs = plt.GridSpec(2, 2, hspace=0.07, wspace=0.07, height_ratios=[0.5, 1], width_ratios=[1, 0.5])
+        ax00 = f.add_subplot(gs[0, 0])
+        ax10 = f.add_subplot(gs[1, 0])
+        ax11 = f.add_subplot(gs[1, 1])
+        
+        for a in [ax00, ax10, ax11]:
+            a.grid(True)
+            a.tick_params(direction='out', which='both', right='on', left='on')
+        
+        for a in [ax00, ax11]:
+            a.yaxis.set_ticks_position('left')
+            a.xaxis.set_ticks_position('bottom')
+            a.spines['top'].set_visible(False)
+            a.spines['right'].set_visible(False)
+            
+        ax00.set_xticklabels([])
+        ax11.set_yticklabels([])
+        
+        ax10.set_xlim(0, 4e55)
+        ax10.set_ylim(0, 6e56)
+        ax10.set_ylabel(r'Thermal feedback energy [ergs]', size=16)
+        ax10.set_xlabel(r'Mechanical feedback energy [ergs]', size=16)
+        f.text(1.01, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax10.transAxes)
+        
+        # Load and plot the data #
+        thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Transform the arrays to comma separated strings and convert each element to float #
+        thermals = ','.join(thermals)
+        mechanicals = ','.join(mechanicals)
+        thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+        mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+        
+        # Plot the scatter and the axes histograms #
+        ax10.scatter(mechanicals, thermals, s=50, edgecolor='none', c='k', marker="1")
+        weights = np.ones_like(mechanicals) / float(len(mechanicals))
+        ax00.hist(mechanicals, bins=np.linspace(0, 4e55, 50), histtype='bar', edgecolor='none', weights=weights, orientation='vertical', color='k')
+        weights = np.ones_like(thermals) / float(len(thermals))
+        ax11.hist(thermals, bins=np.linspace(0, 6e56, 50), histtype='bar', edgecolor='none', weights=weights, orientation='horizontal', color='k')
+        
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNms-' + date + '.png', bbox_inches='tight')  # Save the figure.
         plt.close()
     
     return None
