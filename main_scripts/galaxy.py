@@ -765,7 +765,6 @@ def gas_temperature_fraction(pdf, data, level, read):
     plt.grid(True)
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.2)
-    plt.grid(True)
     plt.ylabel(r'Gas fraction', size=16)
     
     # Load and plot the data #
@@ -924,6 +923,85 @@ def circular_velocity_curves(pdf, data, redshift):
         
         pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
+    return None
+
+
+def gas_temperature_histogram(pdf, data, redshift, read):
+    """
+    Mass- and volume-weighted histograms of gas temperature
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param read: boolean.
+    :return:
+    """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'gth/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            mask, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
+            
+            # Calculate the temperature of the gas cells #
+            ne = s.data['ne'][mask]
+            metallicity = s.data['gz'][mask]
+            XH = s.data['gmet'][mask, element['H']]
+            yhelium = (1 - XH - metallicity) / (4. * XH)
+            mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+            u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'vol_' + str(s.haloname), s.data['vol'][mask])
+            np.save(path + 'mass_' + str(s.haloname), s.data['mass'][mask])
+            np.save(path + 'temperature_' + str(s.haloname), u)
+    
+    # Generate the figure and define its parameters #
+    f = plt.figure(figsize=(10, 7.5))
+    gs = gridspec.GridSpec(1, 2, wspace=0.05)
+    plt.grid(True)
+    ax00 = plt.subplot(gs[0, 0])
+    ax01 = plt.subplot(gs[0, 1])
+    plt.ylabel(r'Gas fraction', size=16)
+    
+    # Load and plot the data #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    for i in range(len(names)):
+        vol = np.load(path + 'vol_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        mass = np.load(path + 'mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        ydata, edges = np.histogram(temperature, weights=mass, bins=100)
+        ydata /= edges[1:] - edges[:-1]
+        ax00.plot(0.5 * (edges[1:] + edges[:-1]), ydata)
+        
+        ydata, edges = np.histogram(temperature, weights=vol, bins=100)
+        ydata /= edges[1:] - edges[:-1]
+        ax01.plot(0.5 * (edges[1:] + edges[:-1]), ydata)
+        
+    
+    # plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    plt.close()
     return None
 
 

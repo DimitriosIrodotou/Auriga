@@ -748,7 +748,6 @@ def AGN_modes_distribution(date, data, read):
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
-        # Generate the figure and define its parameters #
         f = plt.figure(figsize=(10, 7.5))
         gs = gridspec.GridSpec(2, 2, wspace=0.05, hspace=0.1, height_ratios=[0.05, 1])
         ax00 = plt.subplot(gs[1, 0])
@@ -908,12 +907,14 @@ def AGN_modes_step(date, data, read):
             a.xaxis.set_ticks_position('bottom')
             a.spines['top'].set_visible(False)
             a.spines['right'].set_visible(False)
-            
+        
         ax00.set_xticklabels([])
         ax11.set_yticklabels([])
         
         ax10.set_xlim(0, 4e55)
         ax10.set_ylim(0, 6e56)
+        ax00.set_ylabel(r'PDF', size=16)
+        ax11.set_xlabel(r'PDF', size=16)
         ax10.set_ylabel(r'Thermal feedback energy [ergs]', size=16)
         ax10.set_xlabel(r'Mechanical feedback energy [ergs]', size=16)
         f.text(1.01, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax10.transAxes)
@@ -936,6 +937,106 @@ def AGN_modes_step(date, data, read):
         ax11.hist(thermals, bins=np.linspace(0, 6e56, 50), histtype='bar', edgecolor='none', weights=weights, orientation='horizontal', color='k')
         
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNms-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.close()
+    
+    return None
+
+
+def AGN_modes_gas(date):
+    """
+        Get information about different black hole modes from log files and plot the step feedbacks.
+        :param date: .
+        :return: None
+        """
+    path_gas = '/u/di43/Auriga/plots/data/' + 'gtfe/'
+    path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+    
+    # Load and plot the data #
+    names = glob.glob(path_modes + '/name_*')
+    names.sort()
+    
+    # Load and plot the data #
+    for i in range(len(names)):
+        
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        plt.grid(True)
+        ax.set_ylim(-0.2, 1.2)
+        ax.set_xlim(0, 2)
+        ax2 = ax.twinx()
+        ax2.set_ylim(1e52, 1e56)
+        ax2.set_yscale('log')
+        ax.set_xlabel(r'Redshift', size=16)
+        ax.set_ylabel(r'Gas fraction', size=16)
+        ax2.set_ylabel(r'AGN feedback energy [ergs]', size=16)
+        ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
+        
+        # Load and plot the data #
+        wg_ratios = np.load(path_gas + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        hg_ratios = np.load(path_gas + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts_gas = np.load(path_gas + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        sfg_ratios = np.load(path_gas + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts_modes = np.load(path_modes + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Transform the arrays to comma separated strings and convert each element to float #
+        redshifts = [re.sub(',', '', i) for i in redshifts_modes]  # Remove the commas at the end of each redshift string.
+        thermals = ','.join(thermals)
+        redshifts = ','.join(redshifts)
+        mechanicals = ','.join(mechanicals)
+        thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+        redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
+        mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+        
+        # Plot the gas fractions #
+        b1, = ax.plot(redshifts_gas, sfg_ratios, color='blue')
+        b2, = ax.plot(redshifts_gas, wg_ratios, color='green')
+        b3, = ax.plot(redshifts_gas, hg_ratios, color='red')
+        ax.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+        
+        # Calculate median and 1-sigma #
+        nbin = int((max(redshifts[np.where(mechanicals > 0)]) - min(redshifts[np.where(mechanicals > 0)])) / 0.02)
+        x_value = np.empty(nbin)
+        median = np.empty(nbin)
+        slow = np.empty(nbin)
+        shigh = np.empty(nbin)
+        x_low = min(redshifts[np.where(mechanicals > 0)])
+        for j in range(nbin):
+            index = np.where((redshifts[np.where(mechanicals > 0)] >= x_low) & (redshifts[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+            x_value[j] = np.mean(np.absolute(redshifts[np.where(mechanicals > 0)])[index])
+            if len(index) > 0:
+                median[j] = np.nanmedian(mechanicals[np.where(mechanicals > 0)][index])
+                slow[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 15.87)
+                shigh[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 84.13)
+            x_low += 0.05
+        
+        # Plot median and 1-sigma lines #
+        median, = ax2.plot(x_value, median, color='black', zorder=5, label=r'Mechanical')
+        # plt.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        
+        # Calculate median and 1-sigma #
+        nbin = int((max(redshifts[np.where(thermals > 0)]) - min(redshifts[np.where(thermals > 0)])) / 0.02)
+        x_value = np.empty(nbin)
+        median = np.empty(nbin)
+        slow = np.empty(nbin)
+        shigh = np.empty(nbin)
+        x_low = min(redshifts[np.where(thermals > 0)])
+        for j in range(nbin):
+            index = np.where((redshifts[np.where(thermals > 0)] >= x_low) & (redshifts[np.where(thermals > 0)] < x_low + 0.05))[0]
+            x_value[j] = np.mean(np.absolute(redshifts[np.where(thermals > 0)])[index])
+            if len(index) > 0:
+                median[j] = np.nanmedian(thermals[np.where(thermals > 0)][index])
+                slow[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 15.87)
+                shigh[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 84.13)
+            x_low += 0.05
+        
+        # Plot median and 1-sigma lines #
+        median, = ax2.plot(x_value, median, color='black', zorder=5, linestyle="dashed", label=r'Thermal')
+        # plt.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        
+        ax2.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmg-' + date + '.png', bbox_inches='tight')  # Save the figure.
         plt.close()
     
     return None

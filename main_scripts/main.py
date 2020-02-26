@@ -279,7 +279,7 @@ class AurigaPdf:
         
         # TODO remove set_axes and level from projections and astype and add read
         # Projections #
-        projections.multiple(pdf, self, redshift, read=False)
+        # projections.multiple(pdf, self, redshift, read=False)
         # Stars #
         # projections.stellar_light(pdf, self, level, redshift)
         # projections.stellar_density(pdf, self, redshift, read=False)
@@ -310,6 +310,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=False)
+        # time_evolution.AGN_modes_gas(date)
         # main.time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, [level])
         
@@ -327,13 +328,14 @@ class AurigaPdf:
         # galaxy.bar_strength(pdf, self, read=True)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
+        galaxy.gas_temperature_histogram(pdf, self, redshift, read=False)
         
         # Metallicities #
         # metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
         file_name = 'Auriga-' + date + '.pdf'
-        # file_name = 'AGNms-' + date + '.png'
+        # file_name = 'AGNmg-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 
