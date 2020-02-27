@@ -337,6 +337,12 @@ def bar_strength_evolution(pdf, data, read):
             
             # Loop over all haloes #
             for s in data:
+                # Check if any of the haloes' data already exists, if not then read and save it #
+                names = glob.glob(path + '/name_*')
+                names = [re.split('_|.npy', name)[1] for name in names]
+                if str(s.haloname) in names:
+                    continue
+                
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -435,6 +441,12 @@ def gas_temperature_fraction_evolution(pdf, data, read):
             
             # Loop over all haloes #
             for s in data:
+                # Check if any of the haloes' data already exists, if not then read and save it #
+                names = glob.glob(path + '/name_*')
+                names = [re.split('_|.npy', name)[1] for name in names]
+                if str(s.haloname) in names:
+                    continue
+                
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                 s.calc_sf_indizes(s.subfind, verbose=False)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -523,6 +535,12 @@ def AGN_modes_cumulative(date, data, read):
     
     # Loop over all haloes #
     for s in data:
+        # Check if any of the haloes' data already exists, if not then read and save it #
+        names = glob.glob(path + '/name_*')
+        names = [re.split('_|.npy', name)[1] for name in names]
+        if str(s.haloname) in names:
+            continue
+        
         # Declare arrays to store the desired words and lines that contain these words #
         redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
         # Read the data #
@@ -555,7 +573,7 @@ def AGN_modes_cumulative(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18*')
     names.sort()
     
     # Load and plot the data #
@@ -569,11 +587,11 @@ def AGN_modes_cumulative(date, data, read):
         ax00.grid(True)
         ax00.set_xscale('log')
         ax00.set_yscale('log')
-        ax00.set_xlim(1e54, 1e61)
-        ax00.set_ylim(1e54, 1e61)
+        ax00.set_xlim(1e54, 1e62)
+        ax00.set_ylim(1e54, 1e62)
         ax00.set_xlabel(r'Cumulative thermal feedback energy [ergs]', size=16)
         ax00.set_ylabel(r'Cumulative mechanical feedback energy [ergs]', size=16)
-        f.text(0.0, 1.01, 'Au-06', color='k', fontsize=16, transform=ax00.transAxes)
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
         
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -589,11 +607,11 @@ def AGN_modes_cumulative(date, data, read):
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         
         # Mask the data and plot the scatter #
-        ax00.plot([1e54, 1e61], [1e54 / 10, 1e61 / 10], label='1:10')
-        ax00.plot([1e54, 1e61], [1e54 / 50, 1e61 / 50], label='1:50')
+        ax00.plot([1e54, 1e62], [1e54 / 10, 1e62 / 10], label='1:10')
+        ax00.plot([1e54, 1e62], [1e54 / 50, 1e62 / 50], label='1:50')
         
         mask, = np.where((mechanicals != 0) | (thermals != 0))
-        sc = ax00.scatter(thermals[mask], mechanicals[mask], edgecolor='None', s=50, c=redshifts[mask], vmin=0, vmax=4, cmap='jet')
+        sc = ax00.scatter(thermals[mask], mechanicals[mask], edgecolor='None', s=50, c=redshifts[mask], vmin=0, vmax=7, cmap='jet')
         cb = plt.colorbar(sc, cax=axcbar)
         cb.set_label(r'Redshift', size=16)
         ax00.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
@@ -620,6 +638,12 @@ def AGN_modes_histogram(date, data, read):
     
     # Loop over all haloes #
     for s in data:
+        # Check if any of the haloes' data already exists, if not then read and save it #
+        names = glob.glob(path + '/name_*')
+        names = [re.split('_|.npy', name)[1] for name in names]
+        if str(s.haloname) in names:
+            continue
+        
         # Declare arrays to store the desired words and lines that contain these words #
         redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
         # Read the data #
@@ -652,7 +676,7 @@ def AGN_modes_histogram(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18*')
     names.sort()
     
     # Load and plot the data #
@@ -664,7 +688,7 @@ def AGN_modes_histogram(date, data, read):
         ax2 = ax.twiny()
         ax.set_yscale('log')
         set_axis_evo(ax, ax2)
-        ax.text(0.01, 0.95, 'Au-06', color='k', fontsize=16, transform=ax.transAxes)
+        ax.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
         
         # Load and plot the data #
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -709,6 +733,12 @@ def AGN_modes_distribution(date, data, read):
     
     # Loop over all haloes #
     for s in data:
+        # Check if any of the haloes' data already exists, if not then read and save it #
+        names = glob.glob(path + '/name_*')
+        names = [re.split('_|.npy', name)[1] for name in names]
+        if str(s.haloname) in names:
+            continue
+        
         # Declare arrays to store the desired words and lines that contain these words #
         redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
         # Read the data #
@@ -741,7 +771,7 @@ def AGN_modes_distribution(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_06*')
     names.sort()
     
     # Load and plot the data #
@@ -759,9 +789,9 @@ def AGN_modes_distribution(date, data, read):
         ax02.yaxis.tick_right()
         for a in [ax00, ax02]:
             a.grid(True)
-            a.set_xlim(0, 3.4)
+            a.set_xlim(12, 0)
             a.set_yscale('log')
-            a.set_ylim(1e49, 1e56)
+            a.set_ylim(1e51, 1e61)
             a.set_xlabel(r'Redshift', size=16)
             a.tick_params(direction='out', which='both', right='on', left='on')
         ax00.set_ylabel(r'Mechanical feedback energy [ergs]', size=16)
@@ -781,13 +811,15 @@ def AGN_modes_distribution(date, data, read):
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
         redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
         
         # Plot hexbins #
-        hb = ax00.hexbin(redshifts[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='gist_heat_r', gridsize=100)
+        hb = ax00.hexbin(lookback_times[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='gist_heat_r',
+                         gridsize=100)
         cb = plt.colorbar(hb, cax=axcbar, orientation='horizontal')
         cb.set_label(r'Counts per hexbin', size=16)
         
-        hb = ax02.hexbin(redshifts[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r', gridsize=100)
+        hb = ax02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r', gridsize=100)
         cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
         cb2.set_label(r'Counts per hexbin', size=16)
         
@@ -797,44 +829,44 @@ def AGN_modes_distribution(date, data, read):
             a.tick_params(direction='out', which='both', right='on')
         
         # Calculate median and 1-sigma #
-        nbin = int((max(redshifts[np.where(mechanicals > 0)]) - min(redshifts[np.where(mechanicals > 0)])) / 0.02)
+        nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
         x_value = np.empty(nbin)
         median = np.empty(nbin)
         slow = np.empty(nbin)
         shigh = np.empty(nbin)
-        x_low = min(redshifts[np.where(mechanicals > 0)])
+        x_low = min(lookback_times[np.where(mechanicals > 0)])
         for j in range(nbin):
-            index = np.where((redshifts[np.where(mechanicals > 0)] >= x_low) & (redshifts[np.where(mechanicals > 0)] < x_low + 0.05))[0]
-            x_value[j] = np.mean(np.absolute(redshifts[np.where(mechanicals > 0)])[index])
+            index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+            x_value[j] = np.mean(np.absolute(lookback_times[np.where(mechanicals > 0)])[index])
             if len(index) > 0:
-                median[j] = np.nanmedian(mechanicals[np.where(mechanicals > 0)][index])
+                median[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
                 slow[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 15.87)
                 shigh[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 84.13)
             x_low += 0.05
         
         # Plot median and 1-sigma lines #
         median, = ax00.plot(x_value, median, color='black', zorder=5)
-        ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        # ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
         
         # Calculate median and 1-sigma #
-        nbin = int((max(redshifts[np.where(thermals > 0)]) - min(redshifts[np.where(thermals > 0)])) / 0.02)
+        nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
         x_value = np.empty(nbin)
         median = np.empty(nbin)
         slow = np.empty(nbin)
         shigh = np.empty(nbin)
-        x_low = min(redshifts[np.where(thermals > 0)])
+        x_low = min(lookback_times[np.where(thermals > 0)])
         for j in range(nbin):
-            index = np.where((redshifts[np.where(thermals > 0)] >= x_low) & (redshifts[np.where(thermals > 0)] < x_low + 0.05))[0]
-            x_value[j] = np.mean(np.absolute(redshifts[np.where(thermals > 0)])[index])
+            index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.05))[0]
+            x_value[j] = np.mean(np.absolute(lookback_times[np.where(thermals > 0)])[index])
             if len(index) > 0:
-                median[j] = np.nanmedian(thermals[np.where(thermals > 0)][index])
+                median[j] = np.sum(thermals[np.where(thermals > 0)][index])
                 slow[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 15.87)
                 shigh[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 84.13)
             x_low += 0.05
         
         # Plot median and 1-sigma lines #
         median, = ax02.plot(x_value, median, color='black', zorder=5)
-        ax02.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        # ax02.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
         
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')  # Save the figure.
         plt.close()
@@ -859,6 +891,12 @@ def AGN_modes_step(date, data, read):
     
     # Loop over all haloes #
     for s in data:
+        # Check if any of the haloes' data already exists, if not then read and save it #
+        names = glob.glob(path + '/name_*')
+        names = [re.split('_|.npy', name)[1] for name in names]
+        if str(s.haloname) in names:
+            continue
+        
         # Declare arrays to store the desired words and lines that contain these words #
         feedback_lines, thermals, mechanicals = [], [], []
         # Read the data #
@@ -885,7 +923,7 @@ def AGN_modes_step(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_06*')
     names.sort()
     
     # Load and plot the data #

@@ -65,7 +65,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax10, x, y, y2, area
     
     elif multiple is True:
-        gs = gridspec.GridSpec(3, 4, hspace=0.07, wspace=0.05, height_ratios=[0.05, 1, 0.5])
+        gs = gridspec.GridSpec(3, 4, hspace=0.07, wspace=0.07, height_ratios=[0.05, 1, 0.5])
         axcbar = plt.subplot(gs[0, 0])
         ax10 = plt.subplot(gs[1, 0])
         ax20 = plt.subplot(gs[2, 0])
@@ -1064,7 +1064,7 @@ def multiple(pdf, data, redshift, read):
             np.save(path + 'sfr_edge_on_' + str(s.haloname), sfr_edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_06L*')
     names.sort()
     
     # Load and plot the data #
@@ -1082,6 +1082,7 @@ def multiple(pdf, data, redshift, read):
             a.set_xlim(-2, 2)
             a.set_ylim(-2, 2)
             a.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+            a.tick_params(direction='out', which='both', top='on', right='on')
         for a in [ax11, ax21, ax12, ax22, ax13, ax23]:
             a.set_yticklabels([])
         
@@ -1101,24 +1102,24 @@ def multiple(pdf, data, redshift, read):
         sfr_edge_on = np.load(path + 'sfr_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Plot the gas density projections #
-        pcm = ax10.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(vmin=2e8, vmax=3e10), cmap='magma', rasterized=True)
-        ax20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(vmin=2e8, vmax=3e10), cmap='magma', rasterized=True)
+        pcm = ax10.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
+        ax20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$", orientation='horizontal')
         
         # Plot the gas temperature projections #
-        pcm = ax11.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=8e3, vmax=3e7),
+        pcm = ax11.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(),
                               cmap='viridis', rasterized=True)
-        ax21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=8e3, vmax=3e7), cmap='viridis',
+        ax21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
                         rasterized=True)
         create_colorbar(axcbar2, pcm, "$T\,\mathrm{[K]}$", orientation='horizontal')
         
         # Plot the magnetic field projections #
-        pcm = ax12.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e0, vmax=8e1), cmap='CMRmap', rasterized=True)
-        ax22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e0, vmax=8e1), cmap='CMRmap', rasterized=True)
+        pcm = ax12.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
+        ax22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
         create_colorbar(axcbar3, pcm, "$B\,\mathrm{[\mu G]}$", orientation='horizontal')
         
         # Plot the sfr projections #
-        pcm = ax13.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-4, vmax=1e-1), cmap='gist_heat', rasterized=True)
+        pcm = ax13.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
         ax23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
         create_colorbar(axcbar4, pcm, "$SFR\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
         
@@ -1127,8 +1128,8 @@ def multiple(pdf, data, redshift, read):
             a.xaxis.set_label_position("top")
             a.tick_params(direction='out', which='both', right='on')
         
-        f.text(-0.15, 2.2, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
-               transform=axcbar.transAxes)
+        f.text(0, 0, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='white', fontsize=16,
+               transform=ax20.transAxes)
         pdf.savefig(f, bbox_inches='tight')  # S ave the figure.
         plt.close()
     return None

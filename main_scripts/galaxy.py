@@ -951,13 +951,15 @@ def gas_temperature_histogram(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
+            # if str(s.haloname) in names:
+            #     continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            mask, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
+            spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
+            mask, = np.where(
+                (spherical_distance < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
             
             # Calculate the temperature of the gas cells #
             ne = s.data['ne'][mask]
@@ -975,14 +977,14 @@ def gas_temperature_histogram(pdf, data, redshift, read):
     
     # Generate the figure and define its parameters #
     f = plt.figure(figsize=(10, 7.5))
-    gs = gridspec.GridSpec(1, 2, wspace=0.05)
     plt.grid(True)
-    ax00 = plt.subplot(gs[0, 0])
-    ax01 = plt.subplot(gs[0, 1])
-    plt.ylabel(r'Gas fraction', size=16)
+    plt.xscale('log')
+    plt.xlabel(r'Temperature [K]')
+    plt.yscale('log')
+    plt.tick_params(direction='out', which='both', top='on', right='on')
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_06*')
     names.sort()
     
     for i in range(len(names)):
@@ -990,27 +992,100 @@ def gas_temperature_histogram(pdf, data, redshift, read):
         mass = np.load(path + 'mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        ydata, edges = np.histogram(temperature, weights=mass, bins=100)
-        ydata /= edges[1:] - edges[:-1]
-        ax00.plot(0.5 * (edges[1:] + edges[:-1]), ydata)
+        ydata, edges = np.histogram(temperature, weights=mass / np.sum(mass), bins=100)
+        plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Mass-weighted')
         
-        ydata, edges = np.histogram(temperature, weights=vol, bins=100)
-        ydata /= edges[1:] - edges[:-1]
-        ax01.plot(0.5 * (edges[1:] + edges[:-1]), ydata)
-        
+        ydata, edges = np.histogram(temperature, weights=vol / np.sum(vol), bins=100)
+        plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Volume-weighted')
     
-    # plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    plt.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None
 
 
-def find_nearest(array, value):
-    if len(value) == 1:
-        idx = (np.abs(array - value)).argmin()
-    else:
-        idx = np.zeros(len(value))
-        for i in range(len(value)):
-            idx[i] = (np.abs(array - value[i])).argmin()
+def gas_distance_temperature(date, pdf, data, redshift, read):
+    """
+    Mass- and volume-weighted histograms of gas temperature
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param read: boolean.
+    :return:
+    """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'gdt/'
+    if not os.path.exists(path):
+        os.makedirs(path)
     
-    return idx
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
+            mask, = np.where(
+                (spherical_distance < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
+            
+            # Calculate the temperature of the gas cells #
+            ne = s.data['ne'][mask]
+            metallicity = s.data['gz'][mask]
+            XH = s.data['gmet'][mask, element['H']]
+            yhelium = (1 - XH - metallicity) / (4. * XH)
+            mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+            u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'temperature_' + str(s.haloname), u)
+            np.save(path + 'spherical_distance_' + str(s.haloname), spherical_distance[mask])
+    
+    # Load and plot the data #
+    names = glob.glob(path + '/name_18N*')
+    names.sort()
+    
+    # Generate the figure and define its parameters #
+    f, ax = plt.subplots(1, figsize=(10, 7.5))
+    plt.grid(True)
+    plt.xscale('log')
+    plt.ylabel(r'Temperature [K]')
+    plt.xlabel(r'Radius [Mpc]')
+    plt.yscale('log')
+    plt.tick_params(direction='out', which='both', top='on', right='on')
+    f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
+    
+    for i in range(len(names)):
+        temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        hb = plt.hexbin(spherical_distance, temperature, bins='log', xscale='log', yscale='log')
+        cb2 = plt.colorbar(hb)
+        cb2.set_label(r'Counts per hexbin', size=16)
+        
+        plt.savefig('/u/di43/Auriga/plots/' + 'Test-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        # pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        plt.close()
+        return None
+    
+    
+    def find_nearest(array, value):
+        if len(value) == 1:
+            idx = (np.abs(array - value)).argmin()
+        else:
+            idx = np.zeros(len(value))
+            for i in range(len(value)):
+                idx[i] = (np.abs(array - value[i])).argmin()
+        
+        return idx
