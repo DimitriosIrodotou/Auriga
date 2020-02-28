@@ -746,13 +746,13 @@ def gas_temperature_fraction(pdf, data, level, read):
             XH = s.data['gmet'][mask, element['H']]
             yhelium = (1 - XH - metallicity) / (4. * XH)
             mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
             
             # Calculate the mass of the gas cells within three temperatures regimes #
             mass = s.data['mass'][mask]
-            sfgmass = mass[np.where((u < 2e4))]
-            warmgmass = mass[np.where((u >= 2e4) & (u < 5e5))]
-            hotgmass = mass[np.where((u >= 5e5))]
+            sfgmass = mass[np.where((temperature < 2e4))]
+            warmgmass = mass[np.where((temperature >= 2e4) & (temperature < 5e5))]
+            hotgmass = mass[np.where((temperature >= 5e5))]
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -967,13 +967,13 @@ def gas_temperature_histogram(pdf, data, redshift, read):
             XH = s.data['gmet'][mask, element['H']]
             yhelium = (1 - XH - metallicity) / (4. * XH)
             mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
             np.save(path + 'vol_' + str(s.haloname), s.data['vol'][mask])
             np.save(path + 'mass_' + str(s.haloname), s.data['mass'][mask])
-            np.save(path + 'temperature_' + str(s.haloname), u)
+            np.save(path + 'temperature_' + str(s.haloname), temperature)
     
     # Generate the figure and define its parameters #
     f = plt.figure(figsize=(10, 7.5))
@@ -1045,11 +1045,11 @@ def gas_distance_temperature(date, pdf, data, redshift, read):
             XH = s.data['gmet'][mask, element['H']]
             yhelium = (1 - XH - metallicity) / (4. * XH)
             mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
-            np.save(path + 'temperature_' + str(s.haloname), u)
+            np.save(path + 'temperature_' + str(s.haloname), temperature)
             np.save(path + 'spherical_distance_' + str(s.haloname), spherical_distance[mask])
     
     # Load and plot the data #

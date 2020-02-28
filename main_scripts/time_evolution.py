@@ -460,14 +460,14 @@ def gas_temperature_fraction_evolution(pdf, data, read):
                 XH = s.data['gmet'][mask, element['H']]
                 yhelium = (1 - XH - metallicity) / (4. * XH)
                 mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-                u = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+                temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
                 
                 # Calculate the mass of the gas cells within three temperatures regimes #
                 mass = s.data['mass'][mask]
                 masses.append(np.sum(mass))
-                sfg_ratios.append(np.sum(mass[np.where((u < 2e4))]) / np.sum(mass))
-                wg_ratios.append(np.sum(mass[np.where((u >= 2e4) & (u < 5e5))]) / np.sum(mass))
-                hg_ratios.append(np.sum(mass[np.where((u >= 5e5))]) / np.sum(mass))
+                sfg_ratios.append(np.sum(mass[np.where((temperature < 2e4))]) / np.sum(mass))
+                wg_ratios.append(np.sum(mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(mass))
+                hg_ratios.append(np.sum(mass[np.where((temperature >= 5e5))]) / np.sum(mass))
         
         # Save data for each halo in numpy arrays #
         np.save(path + 'masses_' + str(s.haloname), masses)
@@ -531,20 +531,21 @@ def AGN_modes_cumulative(date, data, read):
     if not os.path.exists(path):
         os.makedirs(path)
     
-    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
-    
-    # Loop over all haloes #
-    for s in data:
-        # Check if any of the haloes' data already exists, if not then read and save it #
-        names = glob.glob(path + '/name_*')
-        names = [re.split('_|.npy', name)[1] for name in names]
-        if str(s.haloname) in names:
-            continue
+    # Read the data #
+    if read is True:
+        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
-        # Declare arrays to store the desired words and lines that contain these words #
-        redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
-        # Read the data #
-        if read is True:
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Declare arrays to store the desired words and lines that contain these words #
+            redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
+            
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
@@ -579,16 +580,18 @@ def AGN_modes_cumulative(date, data, read):
     # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10))
-        gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
+        f = plt.figure(figsize=(10, 7.5))
+        gs = gridspec.GridSpec(1, 2, wspace=0, width_ratios=[1, 0.05])
         ax00 = plt.subplot(gs[0, 0])
         axcbar = plt.subplot(gs[:, 1])
         
         ax00.grid(True)
         ax00.set_xscale('log')
         ax00.set_yscale('log')
+        ax00.set_aspect('equal')
         ax00.set_xlim(1e54, 1e62)
         ax00.set_ylim(1e54, 1e62)
+        ax00.tick_params(direction='out', which='both', right='on', left='on')
         ax00.set_xlabel(r'Cumulative thermal feedback energy [ergs]', size=16)
         ax00.set_ylabel(r'Cumulative mechanical feedback energy [ergs]', size=16)
         f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
@@ -606,16 +609,21 @@ def AGN_modes_cumulative(date, data, read):
         redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
+        
         # Mask the data and plot the scatter #
         ax00.plot([1e54, 1e62], [1e54 / 10, 1e62 / 10], label='1:10')
         ax00.plot([1e54, 1e62], [1e54 / 50, 1e62 / 50], label='1:50')
         
         mask, = np.where((mechanicals != 0) | (thermals != 0))
-        sc = ax00.scatter(thermals[mask], mechanicals[mask], edgecolor='None', s=50, c=redshifts[mask], vmin=0, vmax=7, cmap='jet')
+        sc = ax00.scatter(thermals[mask], mechanicals[mask], edgecolor='None', s=50, c=lookback_times[mask], vmin=0, vmax=max(lookback_times),
+                          cmap='jet')
         cb = plt.colorbar(sc, cax=axcbar)
-        cb.set_label(r'Redshift', size=16)
-        ax00.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+        cb.set_label(r'$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=16)
+        axcbar.tick_params(direction='out', which='both', right='on', left='on')
+        axcbar.yaxis.tick_left()
         
+        ax00.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmc-' + date + '.png', bbox_inches='tight')  # Save the figure.
         plt.close()
     return None
@@ -634,20 +642,22 @@ def AGN_modes_histogram(date, data, read):
     if not os.path.exists(path):
         os.makedirs(path)
     
-    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
-    
-    # Loop over all haloes #
-    for s in data:
-        # Check if any of the haloes' data already exists, if not then read and save it #
-        names = glob.glob(path + '/name_*')
-        names = [re.split('_|.npy', name)[1] for name in names]
-        if str(s.haloname) in names:
-            continue
+    # Read the data #
+    if read is True:
         
-        # Declare arrays to store the desired words and lines that contain these words #
-        redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
-        # Read the data #
-        if read is True:
+        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Declare arrays to store the desired words and lines that contain these words #
+            redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
+            
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
@@ -729,20 +739,21 @@ def AGN_modes_distribution(date, data, read):
     if not os.path.exists(path):
         os.makedirs(path)
     
-    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
-    
-    # Loop over all haloes #
-    for s in data:
-        # Check if any of the haloes' data already exists, if not then read and save it #
-        names = glob.glob(path + '/name_*')
-        names = [re.split('_|.npy', name)[1] for name in names]
-        if str(s.haloname) in names:
-            continue
+    # Read the data #
+    if read is True:
+        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
-        # Declare arrays to store the desired words and lines that contain these words #
-        redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
-        # Read the data #
-        if read is True:
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Declare arrays to store the desired words and lines that contain these words #
+            redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
+            
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
@@ -778,7 +789,7 @@ def AGN_modes_distribution(date, data, read):
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 7.5))
+        f = plt.figure(figsize=(20, 7.5))
         gs = gridspec.GridSpec(2, 2, wspace=0.05, hspace=0.1, height_ratios=[0.05, 1])
         ax00 = plt.subplot(gs[1, 0])
         axcbar = plt.subplot(gs[0, 0])
@@ -791,8 +802,9 @@ def AGN_modes_distribution(date, data, read):
             a.grid(True)
             a.set_xlim(12, 0)
             a.set_yscale('log')
+            a.set_aspect('equal')
             a.set_ylim(1e51, 1e61)
-            a.set_xlabel(r'Redshift', size=16)
+            a.set_xlabel(r'$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=16)
             a.tick_params(direction='out', which='both', right='on', left='on')
         ax00.set_ylabel(r'Mechanical feedback energy [ergs]', size=16)
         ax02.set_ylabel(r'Thermal feedback energy [ergs]', size=16)
@@ -887,20 +899,21 @@ def AGN_modes_step(date, data, read):
     if not os.path.exists(path):
         os.makedirs(path)
     
-    data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
-    
-    # Loop over all haloes #
-    for s in data:
-        # Check if any of the haloes' data already exists, if not then read and save it #
-        names = glob.glob(path + '/name_*')
-        names = [re.split('_|.npy', name)[1] for name in names]
-        if str(s.haloname) in names:
-            continue
+    # Read the data #
+    if read is True:
+        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
-        # Declare arrays to store the desired words and lines that contain these words #
-        feedback_lines, thermals, mechanicals = [], [], []
-        # Read the data #
-        if read is True:
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Declare arrays to store the desired words and lines that contain these words #
+            feedback_lines, thermals, mechanicals = [], [], []
+            
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
@@ -923,7 +936,7 @@ def AGN_modes_step(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_17*')
+    names = glob.glob(path + '/name_18*')
     names.sort()
     
     # Load and plot the data #
@@ -972,7 +985,7 @@ def AGN_modes_step(date, data, read):
         # Plot the scatter and the axes histograms #
         ax10.scatter(mechanicals, thermals, s=50, edgecolor='none', c='k', marker="1")
         weights = np.ones_like(mechanicals) / float(len(mechanicals))
-
+        
         ax00.hist(mechanicals, bins=np.linspace(0, 2e56, 100), histtype='step', weights=weights, orientation='vertical', color='k')
         weights = np.ones_like(thermals) / float(len(thermals))
         ax11.hist(thermals, bins=np.linspace(0, 5e57, 100), histtype='step', weights=weights, orientation='horizontal', color='k')
