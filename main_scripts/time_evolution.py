@@ -923,7 +923,7 @@ def AGN_modes_step(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_06*')
+    names = glob.glob(path + '/name_17*')
     names.sort()
     
     # Load and plot the data #
@@ -949,8 +949,10 @@ def AGN_modes_step(date, data, read):
         ax00.set_xticklabels([])
         ax11.set_yticklabels([])
         
-        ax10.set_xlim(0, 4e55)
-        ax10.set_ylim(0, 6e56)
+        ax10.set_xlim(0, 2e56)
+        ax10.set_ylim(0, 5e57)
+        ax00.set_yscale('log')
+        ax11.set_xscale('log')
         ax00.set_ylabel(r'PDF', size=16)
         ax11.set_xlabel(r'PDF', size=16)
         ax10.set_ylabel(r'Thermal feedback energy [ergs]', size=16)
@@ -970,9 +972,10 @@ def AGN_modes_step(date, data, read):
         # Plot the scatter and the axes histograms #
         ax10.scatter(mechanicals, thermals, s=50, edgecolor='none', c='k', marker="1")
         weights = np.ones_like(mechanicals) / float(len(mechanicals))
-        ax00.hist(mechanicals, bins=np.linspace(0, 4e55, 50), histtype='bar', edgecolor='none', weights=weights, orientation='vertical', color='k')
+
+        ax00.hist(mechanicals, bins=np.linspace(0, 2e56, 100), histtype='step', weights=weights, orientation='vertical', color='k')
         weights = np.ones_like(thermals) / float(len(thermals))
-        ax11.hist(thermals, bins=np.linspace(0, 6e56, 50), histtype='bar', edgecolor='none', weights=weights, orientation='horizontal', color='k')
+        ax11.hist(thermals, bins=np.linspace(0, 5e57, 100), histtype='step', weights=weights, orientation='horizontal', color='k')
         
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNms-' + date + '.png', bbox_inches='tight')  # Save the figure.
         plt.close()
