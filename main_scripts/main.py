@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_*" % self.directory)
+        haloes = glob.glob("%s/halo_17" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -277,11 +277,11 @@ class AurigaPdf:
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
-        # TODO remove set_axes and level from projections and astype and add read
+        # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
-        # projections.multiple(pdf, self, redshift, read=False)
+        projections.multiple(pdf, self, redshift, read=False)
         # Stars #
-        projections.stellar_light(pdf, self, redshift, read=False)
+        # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
         # Gas #
         # projections.gas_density(pdf, self, redshift, read=False)
@@ -314,6 +314,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
+        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
         
         # Global galactic relations #
         # galaxy.sfr(pdf, self, [level])

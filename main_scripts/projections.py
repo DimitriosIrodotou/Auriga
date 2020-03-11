@@ -66,21 +66,24 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax10, x, y, y2, area
     
     elif multiple is True:
-        gs = gridspec.GridSpec(3, 4, hspace=0.07, wspace=0.07, height_ratios=[0.05, 1, 0.5])
-        axcbar = plt.subplot(gs[0, 0])
-        ax10 = plt.subplot(gs[1, 0])
+        gs = gridspec.GridSpec(3, 5, hspace=0.05, wspace=0.05, height_ratios=[1, 0.05, 1])
+        axcbar = plt.subplot(gs[1, 0])
+        ax10 = plt.subplot(gs[0, 0])
         ax20 = plt.subplot(gs[2, 0])
-        axcbar2 = plt.subplot(gs[0, 1])
-        ax11 = plt.subplot(gs[1, 1])
+        axcbar2 = plt.subplot(gs[1, 1])
+        ax11 = plt.subplot(gs[0, 1])
         ax21 = plt.subplot(gs[2, 1])
-        axcbar3 = plt.subplot(gs[0, 2])
-        ax12 = plt.subplot(gs[1, 2])
+        axcbar3 = plt.subplot(gs[1, 2])
+        ax12 = plt.subplot(gs[0, 2])
         ax22 = plt.subplot(gs[2, 2])
-        axcbar4 = plt.subplot(gs[0, 3])
-        ax13 = plt.subplot(gs[1, 3])
+        axcbar4 = plt.subplot(gs[1, 3])
+        ax13 = plt.subplot(gs[0, 3])
         ax23 = plt.subplot(gs[2, 3])
+        axcbar5 = plt.subplot(gs[1, 4])
+        ax14 = plt.subplot(gs[0, 4])
+        ax24 = plt.subplot(gs[2, 4])
         
-        return axcbar, ax10, ax20, axcbar2, ax11, ax21, axcbar3, ax12, ax22, axcbar4, ax13, ax23, x, y, area
+        return axcbar, ax10, ax20, axcbar2, ax11, ax21, axcbar3, ax12, ax22, axcbar4, ax13, ax23, axcbar5, ax14, ax24, x, y, area
     
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
@@ -103,8 +106,10 @@ def create_colorbar(ax, pcm, label, orientation='vertical'):
     cb = plt.colorbar(pcm, cax=ax, orientation=orientation)
     
     # Set the colorbar parameters #
-    cb.set_label(label, size=16)
-    cb.tick_params(direction='out', which='both')
+    cb.set_label(label, size=36)
+    for label in ax.xaxis.get_ticklabels():
+        label.set_size(36)
+    # cb.tick_params(direction='out', which='both')
     
     return None
 
@@ -303,7 +308,7 @@ def stellar_light(pdf, data, redshift, read):
             a.set_xticks([])
             a.set_xticklabels([])
             a.set_aspect('equal')
-
+        
         # Load and plot the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -773,7 +778,6 @@ def gas_slice(pdf, data, redshift, read):
                 np.save(path + 'vygrid_' + str(j) + '_' + str(s.haloname), vygrid)
                 np.save(path + 'rgbArray_' + str(j) + '_' + str(s.haloname), rgbArray)
     
-    # Load and plot the image and over-plot the velocity field #
     names = glob.glob(path + '/name_*')
     names.sort()
     
@@ -790,6 +794,7 @@ def gas_slice(pdf, data, redshift, read):
             a.set_xticklabels([])
             a.set_yticklabels([])
         
+        # Load and plot the data #
         j = 0
         for a in [ax00, ax10]:
             xc = np.load(path + 'xc_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
@@ -1047,8 +1052,8 @@ def multiple(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
+            # if str(s.haloname) in names:
+            #     continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1079,6 +1084,24 @@ def multiple(pdf, data, redshift, read):
             sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
             sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
             
+            bfac = np.sqrt(1e10 * msol) / np.sqrt(1e6 * parsec) * 1e5 / (1e6 * parsec)
+            elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
+            meanweight = np.sum(s.gmet[s.type == 0, 0:9], axis=1) / (
+                np.sum(s.gmet[s.type == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.type == 0, 0])
+            Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
+            
+            # Get the gas total pressure projections #
+            s.data['T'] = s.u / Tfac
+            s.data['dens'] = s.rho / (1e6 * parsec) ** 3. * msol * 1e10
+            s.data['n_H'] = s.data['dens'] / PROTONMASS * s.gmet[s.type == 0, 0]
+            s.data['Ptherm'] = s.data['dens'] * s.data['T'] / (meanweight * PROTONMASS)
+            s.data['B'] = np.sqrt((s.bfld ** 2).sum(axis=1)) * bfac
+            s.data['PB'] = s.data['B'] ** 2. / (8 * np.pi) / KB
+            s.data['Ptot'] = s.data['Ptherm'] + s.data['PB']
+            
+            pressure_face_on = s.get_Aslice("Ptot", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            pressure_edge_on = s.get_Aslice("Ptot", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
             np.save(path + 'density_face_on_' + str(s.haloname), density_face_on)
@@ -1091,32 +1114,42 @@ def multiple(pdf, data, redshift, read):
             np.save(path + 'bfld_edge_on_' + str(s.haloname), bfld_edge_on)
             np.save(path + 'sfr_face_on_' + str(s.haloname), sfr_face_on)
             np.save(path + 'sfr_edge_on_' + str(s.haloname), sfr_edge_on)
+            np.save(path + 'pressure_face_on_' + str(s.haloname), pressure_face_on)
+            np.save(path + 'pressure_edge_on_' + str(s.haloname), pressure_edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_06L*')
+    names = glob.glob(path + '/name_17.*')
     names.sort()
     
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(20, 10), dpi=300)
-        axcbar, ax10, ax20, axcbar2, ax11, ax21, axcbar3, ax12, ax22, axcbar4, ax13, ax23, x, y, area = create_axes(res=res, boxsize=boxsize * 1e3,
-                                                                                                                    multiple=True)
-        for a in [ax10, ax11, ax12, ax13]:
+        f = plt.figure(figsize=(50, 22.5), dpi=300)
+        axcbar, ax10, ax20, axcbar2, ax11, ax21, axcbar3, ax12, ax22, axcbar4, ax13, ax23, axcbar5, ax14, ax24, x, y, area = create_axes(res=res,
+                                                                                                                                         boxsize=boxsize * 1e3,
+                                                                                                                                         multiple=True)
+        for a in [ax10, ax11, ax12, ax13, ax14]:
             a.set_xlim(-2, 2)
             a.set_ylim(-2, 2)
+            a.set_aspect('equal')
             a.set_xticklabels([])
             a.tick_params(direction='out', which='both', top='on', right='on')
-        for a in [ax20, ax21, ax22, ax23]:
+        for a in [ax20, ax21, ax22, ax23, ax24]:
             a.set_xlim(-2, 2)
             a.set_ylim(-2, 2)
-            a.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
+            a.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=36)
             a.tick_params(direction='out', which='both', top='on', right='on')
-        for a in [ax11, ax21, ax12, ax22, ax13, ax23]:
+            for label in a.xaxis.get_ticklabels():
+                label.set_size(36)
+        for a in [ax11, ax21, ax12, ax22, ax13, ax23, ax14, ax24]:
             a.set_yticklabels([])
         
-        ax10.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=16)
-        ax20.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
+        ax10.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=36)
+        for label in ax20.yaxis.get_ticklabels():
+            label.set_size(36)
+        ax20.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=36)
+        for label in ax10.yaxis.get_ticklabels():
+            label.set_size(36)
         
         # Load and plot the data #
         density_face_on = np.load(path + 'density_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1129,6 +1162,8 @@ def multiple(pdf, data, redshift, read):
         bfld_edge_on = np.load(path + 'bfld_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         sfr_face_on = np.load(path + 'sfr_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         sfr_edge_on = np.load(path + 'sfr_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        pressure_face_on = np.load(path + 'pressure_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        pressure_edge_on = np.load(path + 'pressure_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Plot the gas density projections #
         pcm = ax10.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
@@ -1151,12 +1186,17 @@ def multiple(pdf, data, redshift, read):
         ax23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
         create_colorbar(axcbar4, pcm, "$SFR\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
         
-        for a in [axcbar, axcbar2, axcbar3, axcbar4]:
+        # Plot the gas total pressure projections #
+        pcm = ax14.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='twilight', rasterized=True)
+        ax24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='twilight', rasterized=True)
+        create_colorbar(axcbar5, pcm, "$P\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
+        
+        for a in [axcbar, axcbar2, axcbar3, axcbar4, axcbar5]:
             a.xaxis.tick_top()
             a.xaxis.set_label_position("top")
-            a.tick_params(direction='out', which='both', right='on')
+            a.tick_params(direction='out', which='both', top='on', right='on')
         
-        f.text(0, 0, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='white', fontsize=16,
+        f.text(0, 0, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='white', fontsize=36,
                transform=ax20.transAxes)
         pdf.savefig(f, bbox_inches='tight')  # S ave the figure.
         plt.close()

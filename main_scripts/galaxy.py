@@ -77,8 +77,8 @@ def set_axis_evo(s, ax, ax2):
     
     ax.set_xlim(0, 13)
     ax.invert_xaxis()
-    ax.tick_params(direction='out', which='both', right='on')
     ax.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=12)
+    ax.tick_params(direction='out', which='both', top='on', right='on')
     
     ax2.set_xticks(times)
     ax2.set_xticklabels(lb)
@@ -766,12 +766,13 @@ def gas_temperature_fraction(pdf, data, level, read):
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.2)
     plt.ylabel(r'Gas fraction', size=16)
-    
-    # Load and plot the data #
+
+    # Get the names and sort them #
     names = glob.glob(path + '/name_*')
     names.sort()
     
     for i in range(len(names)):
+        # Load and plot the data #
         sfg_ratio = np.load(path + 'sfg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         wg_ratio = np.load(path + 'wg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         hg_ratio = np.load(path + 'hg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1078,14 +1079,3 @@ def gas_distance_temperature(date, pdf, data, redshift, read):
         # pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
         return None
-    
-    
-    def find_nearest(array, value):
-        if len(value) == 1:
-            idx = (np.abs(array - value)).argmin()
-        else:
-            idx = np.zeros(len(value))
-            for i in range(len(value)):
-                idx[i] = (np.abs(array - value[i])).argmin()
-        
-        return idx
