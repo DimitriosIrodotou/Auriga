@@ -66,7 +66,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax10, x, y, y2, area
     
     elif multiple is True:
-        gs = gridspec.GridSpec(3, 5, hspace=0.05, wspace=0.05, height_ratios=[1, 0.05, 1])
+        gs = gridspec.GridSpec(3, 5, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
         axcbar = plt.subplot(gs[1, 0])
         ax10 = plt.subplot(gs[0, 0])
         ax20 = plt.subplot(gs[2, 0])
@@ -106,9 +106,7 @@ def create_colorbar(ax, pcm, label, orientation='vertical'):
     cb = plt.colorbar(pcm, cax=ax, orientation=orientation)
     
     # Set the colorbar parameters #
-    cb.set_label(label, size=36)
-    for label in ax.xaxis.get_ticklabels():
-        label.set_size(36)
+    cb.set_label(label, size=12)
     # cb.tick_params(direction='out', which='both')
     
     return None
@@ -301,7 +299,7 @@ def stellar_light(pdf, data, redshift, read):
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
+        f = plt.figure(figsize=(10, 10))
         ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize)
         for a in [ax00, ax10]:
             a.set_yticks([])
@@ -390,7 +388,7 @@ def stellar_density(pdf, data, redshift, read):
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 7.5), dpi=300)
+        f = plt.figure(figsize=(10, 7.5))
         ax00, ax01, ax10, ax11, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
         for a in [ax00, ax01, ax10, ax11]:
             a.set_xlim(-30, 30)
@@ -476,7 +474,7 @@ def gas_density(pdf, data, redshift, read):
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
+        f = plt.figure(figsize=(10, 10))
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         for a in [ax00, ax10]:
             a.tick_params(direction='out', which='both', top='on', right='on')
@@ -557,7 +555,7 @@ def gas_temperature(pdf, data, redshift, read):
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
+        f = plt.figure(figsize=(10, 10))
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         for a in [ax00, ax10]:
             a.set_xlim(-30, 30)
@@ -604,7 +602,7 @@ def gas_metallicity(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
+        f = plt.figure(figsize=(10, 10))
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
@@ -784,7 +782,7 @@ def gas_slice(pdf, data, redshift, read):
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 15), dpi=300)
+        f = plt.figure(figsize=(10, 15))
         ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
         f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', str(names[i]))[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
                transform=ax00.transAxes)
@@ -828,7 +826,7 @@ def bfld(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
+        f = plt.figure(figsize=(10, 10))
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
@@ -870,7 +868,7 @@ def dm_mass(pdf, data, level, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
+        f = plt.figure(figsize=(10, 10))
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         f.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
@@ -998,7 +996,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 10), dpi=300)
+        f = plt.figure(figsize=(10, 10))
         gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
         ax00 = plt.subplot(gs[0, 0])
         axcbar = plt.subplot(gs[:, 1])
@@ -1059,75 +1057,102 @@ def multiple(pdf, data, redshift, read):
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
-            # Get the gas density projections #
-            density_face_on = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
-            density_edge_on = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            # # Get the gas density projections #
+            # density_face_on = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True,proj_fact=0.125, numthreads=8)["grid"]
+            # * boxsize * 1e3
+            # density_edge_on = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True,proj_fact=0.125, numthreads=8)["grid"]
+            # * boxsize * 1e3
+            #
+            # # Get the gas temperature projections #
+            # meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+            # temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
+            # s.data['temprho'] = s.rho * temperature
+            #
+            # temperature_face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True,proj_fact=0.125, numthreads=8)[
+            # "grid"]
+            # temperature_face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,numthreads=8)[
+            # "grid"]
+            # temperature_edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True,proj_fact=0.125, numthreads=8)[
+            # "grid"]
+            # temperature_edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,numthreads=8)[
+            # "grid"]
+            #
+            # # Get the magnetic field projections #
+            # s.data['b2'] = (s.data['bfld'] ** 2.).sum(axis=1)
+            # bfld_face_on = np.sqrt(
+            #     s.get_Aslice("b2", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,numthreads=8)["grid"] / res) * bfac *
+            #     1e6
+            # bfld_edge_on = np.sqrt(
+            #     s.get_Aslice("b2", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,numthreads=8)["grid"] / res) * bfac *
+            #     1e6
+            #
+            # # Get the gas sfr projections #
+            # sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,numthreads=8)["grid"] *
+            # boxsize * 1e3
+            # sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,numthreads=8)["grid"] *
+            # boxsize * 1e3
+            #
+            # # Get the gas total pressure projections #
+            # elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
+            # meanweight = np.sum(s.gmet[s.type == 0, 0:9], axis=1) / (
+            #     np.sum(s.gmet[s.type == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.type == 0, 0])
+            # Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
+            #
+            # # in megabars (10**12dyne/cm**2)
+            # s.data['T'] = s.u / Tfac
+            # s.data['dens'] = s.rho / (1e6 * parsec) ** 3. * msol * 1e10
+            # s.data['Ptherm'] = s.data['dens'] * s.data['T'] / (meanweight * PROTONMASS)
+            #
+            # pressure_face_on = s.get_Aslice("Ptherm", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+            #                        "grid"] * boxsize * 1e3
+            # pressure_edge_on = s.get_Aslice("Ptherm", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+            #                        "grid"] * boxsize * 1e3
             
-            # Get the gas temperature projections #
-            meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-            temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
-            s.data['temprho'] = s.rho * temperature
+            # Get the radial velocity projections #
+            gas_mask, = np.where(s.type == 0)
+            # spherical_radius = np.sqrt(np.sum(s.pos[gas_mask, :] ** 2, axis=1))
+            # CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.mass[gas_mask][:, None], axis=0) / np.sum(s.mass[gas_mask])
+            # s.data['vrad'] = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.pos[gas_mask], axis=1) / spherical_radius
             
-            temperature_face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-            temperature_face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-            temperature_edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-            temperature_edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+            rxy = np.sqrt((s.pos[:, 1:] ** 2.).sum(axis=1)) * 1e3
+            vel = (s.data['vel'][gas_mask, :] * s.mass[gas_mask][:, None]).sum(axis=0) / s.mass[gas_mask].sum()
+            s.data['vrad'] = ((s.data['vel'][gas_mask, 1:] - vel[1:]) * s.pos[gas_mask, 1:] * 1e3).sum(axis=1) / rxy[gas_mask]
             
-            # Get the magnetic field projections #
-            s.data['b2'] = (s.data['bfld'] ** 2.).sum(axis=1)
-            bfld_face_on = np.sqrt(
-                s.get_Aslice("b2", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
-            bfld_edge_on = np.sqrt(
-                s.get_Aslice("b2", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] / res) * bfac * 1e6
+            print(min(s.data['vrad']))
+            print(max(s.data['vrad']))
             
-            # Get the gas sfr projections #
-            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
-            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
-            
-            bfac = np.sqrt(1e10 * msol) / np.sqrt(1e6 * parsec) * 1e5 / (1e6 * parsec)
-            elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
-            meanweight = np.sum(s.gmet[s.type == 0, 0:9], axis=1) / (
-                np.sum(s.gmet[s.type == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.type == 0, 0])
-            Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
-            
-            # Get the gas total pressure projections #
-            s.data['T'] = s.u / Tfac
-            s.data['dens'] = s.rho / (1e6 * parsec) ** 3. * msol * 1e10
-            s.data['n_H'] = s.data['dens'] / PROTONMASS * s.gmet[s.type == 0, 0]
-            s.data['Ptherm'] = s.data['dens'] * s.data['T'] / (meanweight * PROTONMASS)
-            s.data['B'] = np.sqrt((s.bfld ** 2).sum(axis=1)) * bfac
-            s.data['PB'] = s.data['B'] ** 2. / (8 * np.pi) / KB
-            s.data['Ptot'] = s.data['Ptherm'] + s.data['PB']
-            
-            pressure_face_on = s.get_Aslice("Ptot", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
-            pressure_edge_on = s.get_Aslice("Ptot", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            vrad_face_on = s.get_Aslice("vrad", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
+            vrad_edge_on = s.get_Aslice("vrad", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"] * boxsize * 1e3
             
             # Save data for each halo in numpy arrays #
-            np.save(path + 'name_' + str(s.haloname), s.haloname)
-            np.save(path + 'density_face_on_' + str(s.haloname), density_face_on)
-            np.save(path + 'density_edge_on_' + str(s.haloname), density_edge_on)
-            np.save(path + 'temperature_face_on_' + str(s.haloname), temperature_face_on)
-            np.save(path + 'temperature_edge_on_' + str(s.haloname), temperature_edge_on)
-            np.save(path + 'temperature_face_on_rho_' + str(s.haloname), temperature_face_on_rho)
-            np.save(path + 'temperature_edge_on_rho_' + str(s.haloname), temperature_edge_on_rho)
-            np.save(path + 'bfld_face_on_' + str(s.haloname), bfld_face_on)
-            np.save(path + 'bfld_edge_on_' + str(s.haloname), bfld_edge_on)
-            np.save(path + 'sfr_face_on_' + str(s.haloname), sfr_face_on)
-            np.save(path + 'sfr_edge_on_' + str(s.haloname), sfr_edge_on)
-            np.save(path + 'pressure_face_on_' + str(s.haloname), pressure_face_on)
-            np.save(path + 'pressure_edge_on_' + str(s.haloname), pressure_edge_on)
+            # np.save(path + 'name_' + str(s.haloname), s.haloname)
+            # np.save(path + 'density_face_on_' + str(s.haloname), density_face_on)
+            # np.save(path + 'density_edge_on_' + str(s.haloname), density_edge_on)
+            # np.save(path + 'temperature_face_on_' + str(s.haloname), temperature_face_on)
+            # np.save(path + 'temperature_edge_on_' + str(s.haloname), temperature_edge_on)
+            # np.save(path + 'temperature_face_on_rho_' + str(s.haloname), temperature_face_on_rho)
+            # np.save(path + 'temperature_edge_on_rho_' + str(s.haloname), temperature_edge_on_rho)
+            # np.save(path + 'bfld_face_on_' + str(s.haloname), bfld_face_on)
+            # np.save(path + 'bfld_edge_on_' + str(s.haloname), bfld_edge_on)
+            # np.save(path + 'sfr_face_on_' + str(s.haloname), sfr_face_on)
+            # np.save(path + 'sfr_edge_on_' + str(s.haloname), sfr_edge_on)
+            # np.save(path + 'pressure_face_on_' + str(s.haloname), pressure_face_on)
+            # np.save(path + 'pressure_edge_on_' + str(s.haloname), pressure_edge_on)
+            np.save(path + 'vrad_face_on_' + str(s.haloname), vrad_face_on)
+            np.save(path + 'vrad_edge_on_' + str(s.haloname), vrad_edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_17.*')
+    names = glob.glob(path + '/name_06.*')
     names.sort()
     
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(50, 22.5), dpi=300)
+        f = plt.figure(figsize=(16, 9))
         axcbar, ax10, ax20, axcbar2, ax11, ax21, axcbar3, ax12, ax22, axcbar4, ax13, ax23, axcbar5, ax14, ax24, x, y, area = create_axes(res=res,
                                                                                                                                          boxsize=boxsize * 1e3,
                                                                                                                                          multiple=True)
+        tick_labels = np.array(['', '-1.5', '', '', '0', '', '', '1.5', ''])
         for a in [ax10, ax11, ax12, ax13, ax14]:
             a.set_xlim(-2, 2)
             a.set_ylim(-2, 2)
@@ -1137,66 +1162,75 @@ def multiple(pdf, data, redshift, read):
         for a in [ax20, ax21, ax22, ax23, ax24]:
             a.set_xlim(-2, 2)
             a.set_ylim(-2, 2)
-            a.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=36)
+            a.set_aspect('equal')
+            a.set_xticklabels(tick_labels)
+            a.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=12)
             a.tick_params(direction='out', which='both', top='on', right='on')
             for label in a.xaxis.get_ticklabels():
-                label.set_size(36)
+                label.set_size(12)
         for a in [ax11, ax21, ax12, ax22, ax13, ax23, ax14, ax24]:
             a.set_yticklabels([])
         
-        ax10.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=36)
-        for label in ax20.yaxis.get_ticklabels():
-            label.set_size(36)
-        ax20.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=36)
-        for label in ax10.yaxis.get_ticklabels():
-            label.set_size(36)
+        ax10.set_ylabel(r'$y\,\mathrm{[kpc]}$', size=12)
+        ax20.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=12)
+        for a in [ax10, ax20]:
+            for label in a.yaxis.get_ticklabels():
+                label.set_size(12)
+                a.set_yticklabels(tick_labels)
         
         # Load and plot the data #
-        density_face_on = np.load(path + 'density_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        density_edge_on = np.load(path + 'density_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        temperature_face_on = np.load(path + 'temperature_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        temperature_edge_on = np.load(path + 'temperature_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        temperature_face_on_rho = np.load(path + 'temperature_face_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        temperature_edge_on_rho = np.load(path + 'temperature_edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        bfld_face_on = np.load(path + 'bfld_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        bfld_edge_on = np.load(path + 'bfld_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        sfr_face_on = np.load(path + 'sfr_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        sfr_edge_on = np.load(path + 'sfr_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        pressure_face_on = np.load(path + 'pressure_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        pressure_edge_on = np.load(path + 'pressure_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # density_face_on = np.load(path + 'density_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # density_edge_on = np.load(path + 'density_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # temperature_face_on = np.load(path + 'temperature_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # temperature_edge_on = np.load(path + 'temperature_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # temperature_face_on_rho = np.load(path + 'temperature_face_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # temperature_edge_on_rho = np.load(path + 'temperature_edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # bfld_face_on = np.load(path + 'bfld_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # bfld_edge_on = np.load(path + 'bfld_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # sfr_face_on = np.load(path + 'sfr_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # sfr_edge_on = np.load(path + 'sfr_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # pressure_face_on = np.load(path + 'pressure_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        # pressure_edge_on = np.load(path + 'pressure_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        vrad_face_on = np.load(path + 'vrad_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        vrad_edge_on = np.load(path + 'vrad_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        # Plot the gas density projections #
-        pcm = ax10.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
-        ax20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
-        create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$", orientation='horizontal')
-        
+        # # Plot the gas density projections #
+        # pcm = ax10.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
+        # ax20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
+        # create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$", orientation='horizontal')
+        #
         # Plot the gas temperature projections #
-        pcm = ax11.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
-                              rasterized=True)
-        ax21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
-        create_colorbar(axcbar2, pcm, "$T\,\mathrm{[K]}$", orientation='horizontal')
+        # pcm = ax11.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
+        #                       rasterized=True)
+        # ax21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
+        # create_colorbar(axcbar2, pcm, "$T\,\mathrm{[K]}$", orientation='horizontal')
+        #
+        # # Plot the magnetic field projections #
+        # pcm = ax12.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
+        # ax22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
+        # create_colorbar(axcbar3, pcm, "$B\,\mathrm{[\mu G]}$", orientation='horizontal')
+        #
+        # # Plot the sfr projections #
+        # pcm = ax13.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
+        # ax23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
+        # create_colorbar(axcbar4, pcm, "$SFR\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
+        #
+        # # Plot the gas total pressure projections #
+        # pcm = ax14.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='coolwarm', rasterized=True)
+        # ax24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='coolwarm', rasterized=True)
+        # create_colorbar(axcbar5, pcm, "$P\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
         
-        # Plot the magnetic field projections #
-        pcm = ax12.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
-        ax22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
-        create_colorbar(axcbar3, pcm, "$B\,\mathrm{[\mu G]}$", orientation='horizontal')
-        
-        # Plot the sfr projections #
-        pcm = ax13.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
-        ax23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
-        create_colorbar(axcbar4, pcm, "$SFR\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
-        
-        # Plot the gas total pressure projections #
-        pcm = ax14.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='twilight', rasterized=True)
-        ax24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='twilight', rasterized=True)
+        pcm = ax14.pcolormesh(x, y, vrad_face_on.T,  cmap='coolwarm', rasterized=True)
+        ax24.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', rasterized=True)
         create_colorbar(axcbar5, pcm, "$P\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
         
         for a in [axcbar, axcbar2, axcbar3, axcbar4, axcbar5]:
             a.xaxis.tick_top()
-            a.xaxis.set_label_position("top")
+            for label in a.xaxis.get_ticklabels():
+                label.set_size(12)
             a.tick_params(direction='out', which='both', top='on', right='on')
         
-        f.text(0, 0, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='white', fontsize=36,
+        f.text(0, 0, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), color='white', fontsize=12,
                transform=ax20.transAxes)
         pdf.savefig(f, bbox_inches='tight')  # S ave the figure.
         plt.close()

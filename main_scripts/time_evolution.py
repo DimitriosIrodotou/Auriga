@@ -1187,7 +1187,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_06.*')
+        names = glob.glob(path + '/name_06*')
         names.sort()
         
         for i in range(len(names)):
