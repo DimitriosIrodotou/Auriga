@@ -279,7 +279,7 @@ class AurigaPdf:
         
         # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
-        projections.multiple(pdf, self, redshift, read=True)
+        projections.multiple(pdf, self, redshift, read=False)
         # Stars #
         # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
