@@ -17,7 +17,7 @@ from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
 from scripts.gigagalaxy.util import satellite_utilities
 
-element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
+element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
 def get_names_sorted(names):
@@ -773,21 +773,27 @@ def AGN_modes_distribution(date, data, read):
             
             file.close()  # Close the opened file.
             
+            #  Convert redshifts to lookback times in Gyr #
+            redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
+            redshifts = ','.join(redshifts)  # Transform the arrays to comma separated strings.
+            redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')  # Convert each element to float.
+            lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))
+            
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
             np.save(path + 'thermals_' + str(s.haloname), thermals)
-            np.save(path + 'redshifts_' + str(s.haloname), redshifts)
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
+            np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_06*')
+    names = glob.glob(path + '/name_*')
     names.sort()
     
     # Load and plot the data #
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(20, 7.5))
+        f = plt.figure(figsize=(16, 9))
         gs = gridspec.GridSpec(2, 2, wspace=0.05, hspace=0.1, height_ratios=[0.05, 1])
         axcbar = plt.subplot(gs[0, 0])
         ax00 = plt.subplot(gs[1, 0])
@@ -800,38 +806,35 @@ def AGN_modes_distribution(date, data, read):
             a.grid(True)
             a.set_xlim(12, 0)
             a.set_yscale('log')
-            a.set_aspect('equal')
-            a.set_ylim(1e51, 1e61)
-            a.set_xlabel(r'$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=16)
+            a.set_ylim(1e51, 1e60)
+            a.set_xlabel(r'$\mathrm{t_{look}\,[Gyr]}$', size=16)
             a.tick_params(direction='out', which='both', right='on', left='on')
-        ax00.set_ylabel(r'Mechanical feedback energy [ergs]', size=16)
-        ax02.set_ylabel(r'Thermal feedback energy [ergs]', size=16)
+        ax00.set_ylabel(r'$\mathrm{Mechanical\,feedback\,energy\,[ergs]}$', size=16)
+        ax02.set_ylabel(r'$\mathrm{Thermal\,feedback\,energy\,[ergs]}$', size=16)
         f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Load and plot the data #
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Transform the arrays to comma separated strings and convert each element to float #
-        redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
         thermals = ','.join(thermals)
-        redshifts = ','.join(redshifts)
         mechanicals = ','.join(mechanicals)
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
-        redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
-        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
         
         # Plot hexbins #
         hb = ax00.hexbin(lookback_times[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='gist_heat_r',
-                         gridsize=100)
+                         gridsize=(100, 50))
         cb = plt.colorbar(hb, cax=axcbar, orientation='horizontal')
-        cb.set_label(r'Counts per hexbin', size=16)
+        cb.set_label(r'$\mathrm{Counts\,per\,hexbin}$', size=16)
         
-        hb = ax02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r', gridsize=100)
+        hb = ax02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r',
+                         gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
+        
         cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
-        cb2.set_label(r'Counts per hexbin', size=16)
+        cb2.set_label(r'$\mathrm{Counts\,per\,hexbin}$', size=16)
         
         for a in [axcbar, axcbar2]:
             a.xaxis.tick_top()
@@ -842,41 +845,31 @@ def AGN_modes_distribution(date, data, read):
         nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
         x_value = np.empty(nbin)
         median = np.empty(nbin)
-        slow = np.empty(nbin)
-        shigh = np.empty(nbin)
         x_low = min(lookback_times[np.where(mechanicals > 0)])
         for j in range(nbin):
             index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
             x_value[j] = np.mean(np.absolute(lookback_times[np.where(mechanicals > 0)])[index])
             if len(index) > 0:
                 median[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-                slow[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 15.87)
-                shigh[j] = np.nanpercentile(mechanicals[np.where(mechanicals > 0)][index], 84.13)
             x_low += 0.05
         
         # Plot median and 1-sigma lines #
-        median, = ax00.plot(x_value, median, color='black', zorder=5)
-        # ax00.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        sum00, = ax00.plot(x_value, median, color='black', zorder=5)
         
         # Calculate median and 1-sigma #
         nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
         x_value = np.empty(nbin)
         median = np.empty(nbin)
-        slow = np.empty(nbin)
-        shigh = np.empty(nbin)
         x_low = min(lookback_times[np.where(thermals > 0)])
         for j in range(nbin):
             index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.05))[0]
             x_value[j] = np.mean(np.absolute(lookback_times[np.where(thermals > 0)])[index])
             if len(index) > 0:
                 median[j] = np.sum(thermals[np.where(thermals > 0)][index])
-                slow[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 15.87)
-                shigh[j] = np.nanpercentile(thermals[np.where(thermals > 0)][index], 84.13)
             x_low += 0.05
         
         # Plot median and 1-sigma lines #
-        median, = ax02.plot(x_value, median, color='black', zorder=5)
-        # ax02.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        sum02, = ax02.plot(x_value, median, color='black', zorder=5)
         
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')  # Save the figure.
         plt.close()

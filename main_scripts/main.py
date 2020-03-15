@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_06" % self.directory)
+        haloes = glob.glob("%s/halo_*" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -279,7 +279,7 @@ class AurigaPdf:
         
         # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
-        projections.multiple(pdf, self, redshift, read=False)
+        # projections.multiple(pdf, self, redshift, read=True)
         # Stars #
         # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
@@ -311,7 +311,7 @@ class AurigaPdf:
         #  AGN modes #
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
-        # time_evolution.AGN_modes_distribution(date, self, read=False)
+        time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
         # time_evolution.gas_stars_sfr_evolution(pdf, self, read=False)
@@ -337,16 +337,17 @@ class AurigaPdf:
         # metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
-        file_name = 'Auriga-' + date + '.pdf'
-        # file_name = 'AGNmc-' + date + '.png'
+        # file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 
 
 # Set the path to the simulation data and the level of the run #
+level = 4
 b = AurigaPdf()
-b.add_directory('/u/di43/Auriga/output/', 4)
-b.make_pdf(4)  # Generate the pdf.
+b.add_directory('/u/di43/Auriga/output/', level)
+b.make_pdf(level)  # Generate the pdf.
 
 # Print total time # hewwoc-dItnub-8fejza
 print('–––––––––––––––––––––––––––––––––––––––––––––')

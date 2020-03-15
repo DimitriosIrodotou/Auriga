@@ -16,6 +16,7 @@ from loadmodules import *
 from matplotlib import gridspec
 
 res = 512
+level = 4
 boxsize = 0.06
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
@@ -271,7 +272,7 @@ def stellar_light(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -344,7 +345,7 @@ def stellar_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['mass', 'pos']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -447,7 +448,7 @@ def gas_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'rho']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -520,7 +521,7 @@ def gas_temperature(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -649,7 +650,7 @@ def gas_slice(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['pos', 'vel', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'id', 'vol']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -965,7 +966,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -1046,7 +1047,7 @@ def multiple(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u', 'bfld', 'sfr']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -1065,12 +1066,12 @@ def multiple(pdf, data, redshift, read):
                                   "grid"] * boxsize * 1e3
             density_edge_on = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
                                   "grid"] * boxsize * 1e3
-
+            
             # Get the gas temperature projections #
             meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
             temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
             s.data['temprho'] = s.rho * temperature
-
+            
             temperature_face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
                 "grid"]
             temperature_face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
@@ -1079,29 +1080,29 @@ def multiple(pdf, data, redshift, read):
                 "grid"]
             temperature_edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
                 "grid"]
-
+            
             # Get the magnetic field projections #
             s.data['b2'] = (s.data['bfld'] ** 2.).sum(axis=1)
             bfld_face_on = np.sqrt(
                 s.get_Aslice("b2", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"] / res) * bfac * 1e6
             bfld_edge_on = np.sqrt(
                 s.get_Aslice("b2", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"] / res) * bfac * 1e6
-
+            
             # Get the gas sfr projections #
             sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
             sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
-
+            
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
             meanweight = np.sum(s.gmet[s.type == 0, 0:9], axis=1) / (
                 np.sum(s.gmet[s.type == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.type == 0, 0])
             Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
-
+            
             # in megabars (10**12dyne/cm**2)
             s.data['T'] = s.u / Tfac
             s.data['dens'] = s.rho / (1e6 * parsec) ** 3. * msol * 1e10
             s.data['Ptherm'] = s.data['dens'] * s.data['T'] / (meanweight * PROTONMASS)
-
+            
             pressure_face_on = s.get_Aslice("Ptherm", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
             pressure_edge_on = s.get_Aslice("Ptherm", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
             
@@ -1188,23 +1189,23 @@ def multiple(pdf, data, redshift, read):
         pcm = ax00.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
         ax20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\,\mathrm{[M_\odot\,kpc^{-2}]}$", orientation='horizontal')
-
+        
         # Plot the gas temperature projections #
         pcm = ax01.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
                               rasterized=True)
         ax21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
         create_colorbar(axcbar1, pcm, "$T\,\mathrm{[K]}$", orientation='horizontal')
-
+        
         # Plot the magnetic field projections #
         pcm = ax02.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
         ax22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
         create_colorbar(axcbar2, pcm, "$B\,\mathrm{[\mu G]}$", orientation='horizontal')
-
+        
         # Plot the sfr projections #
         pcm = ax03.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
         ax23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
         create_colorbar(axcbar3, pcm, "$SFR\,\mathrm{[M_\odot\,yr^{-1}]}$", orientation='horizontal')
-
+        
         # Plot the gas total pressure projections #
         pcm = ax04.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
         ax24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
