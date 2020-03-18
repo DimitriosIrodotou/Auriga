@@ -4,6 +4,7 @@ import os
 import re
 import glob
 import pickle
+import matplotlib
 import projections
 import numpy as np
 import matplotlib.cm as cm
@@ -16,6 +17,9 @@ from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
 from scripts.gigagalaxy.util import satellite_utilities
 
+res = 512
+level = 4
+boxsize = 0.06
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
@@ -1200,4 +1204,107 @@ def gas_stars_sfr_evolution(pdf, data, read):
             
             pdf.savefig(f, bbox_inches='tight')  # Save the figure.
             plt.close()
+    return None
+
+
+def gas_temperature_movie(pdf, data, read):
+    """
+    Plot gas temperature projection for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean
+    :return: None
+    """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'gtm/' + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        redshift_cut = 1e-1
+        
+        # Get all available redshifts #
+        haloes = data.get_haloes(4)
+        for name, halo in haloes.items():
+            redshifts = halo.get_redshifts()
+        
+        for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
+            print(redshift)
+            
+            # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+            particle_type = [0, 4]
+            attributes = ['mass', 'ne', 'pos', 'rho', 'u']
+            data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            
+            # Loop over all haloes #
+            for s in data:
+                # Check if any of the haloes' data already exists, if not then read and save it #
+                names = glob.glob(path + '/name_*')
+                names = [re.split('_|.npy', name)[1] for name in names]
+                if str(s.haloname) in names:
+                    continue
+                
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+                s.calc_sf_indizes(s.subfind)
+                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+                
+                # Plot the projections #
+                meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+                temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
+                s.data['temprho'] = s.rho * temperature
+                
+                face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+                face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+                edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+                edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+                
+                # Save data for each halo in numpy arrays #
+                np.save(path + 'name_' + str(s.haloname) + '_' + str(redshift), s.haloname)
+                np.save(path + 'face_on_' + str(s.haloname) + '_' + str(redshift), face_on)
+                np.save(path + 'edge_on_' + str(s.haloname) + '_' + str(redshift), edge_on)
+                np.save(path + 'redshift_' + str(s.haloname) + '_' + str(redshift), redshift)
+                np.save(path + 'face_on_rho_' + str(s.haloname) + '_' + str(redshift), face_on_rho)
+                np.save(path + 'edge_on_rho_' + str(s.haloname) + '_' + str(redshift), edge_on_rho)
+    
+    # Get the redshifts and sort them #
+    names = glob.glob(path + '/name_3000_*')
+    names.sort()
+    
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Load and plot the data #
+        face_on = np.load(path + 'face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        edge_on = np.load(path + 'edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        face_on_rho = np.load(path + 'face_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        edge_on_rho = np.load(path + 'edge_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        
+        # Plot the projections #
+        x = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
+        y = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 10))
+        plt.axis('off')
+        plt.xlim(-30, 30)
+        plt.ylim(-30, 30)
+        ax.set_aspect('auto')
+        
+        plt.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        f.tight_layout()
+        plt.savefig('/u/di43/Auriga/plots/' + 'gtmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
+        plt.close()
+        
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 10))
+        plt.axis('off')
+        plt.xlim(-30, 30)
+        plt.ylim(-30, 30)
+        ax.set_aspect('auto')
+        
+        plt.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        f.tight_layout()
+        plt.savefig('/u/di43/Auriga/plots/' + 'gtme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
+        plt.close()
+    
     return None

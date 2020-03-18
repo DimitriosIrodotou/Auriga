@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_06" % self.directory)
+        haloes = glob.glob("%s/halo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -315,6 +315,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
         # time_evolution.gas_stars_sfr_evolution(pdf, self, read=False)
+        time_evolution.gas_temperature_movie(pdf, self, read=False)
         
         # Global galactic relations #
         # galaxy.sfr(pdf, self, [level])
@@ -332,15 +333,13 @@ class AurigaPdf:
         # galaxy.circular_velocity_curves(pdf, self, redshift)
         # galaxy.gas_temperature_histogram(pdf, self, redshift, read=False)
         # galaxy.gas_distance_temperature(pdf, self, redshift, read=False)
-        # galaxy.sfr_birth_distribution(date,pdf, self, redshift, read=False)
-        galaxy.plot_birth_dist(date)
         
         # Metallicities #
         # metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
         # file_name = 'Auriga-' + date + '.pdf'
-        file_name = 'Test-' + date + '.png'
+        # file_name = 'gtm_f_' + str(2.220446049250313e-16) + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 
