@@ -4,6 +4,7 @@ import os
 import re
 import glob
 import calcGrid
+import matplotlib
 import projections
 
 import numpy as np
@@ -19,7 +20,7 @@ from scipy.optimize import curve_fit
 from scripts.gigagalaxy.util import plot_helper
 from parse_particledata import parse_particledata
 
-element = {'H': 0, 'He': 1, 'C': 2, 'N': 3, 'O': 4, 'Ne': 5, 'Mg': 6, 'Si': 7, 'Fe': 8}
+element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
 def create_axis(f, idx, ncol=5):
@@ -766,7 +767,7 @@ def gas_temperature_fraction(pdf, data, level, read):
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.2)
     plt.ylabel(r'Gas fraction', size=16)
-
+    
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
     names.sort()
@@ -781,7 +782,7 @@ def gas_temperature_fraction(pdf, data, level, read):
         b3, = plt.bar(np.divide(i, 5), hg_ratio, bottom=np.sum(np.vstack([sfg_ratio, wg_ratio]).T), width=0.1, alpha=0.6, color='red')
     
     ax.set_xticklabels(np.append('', ['Au-' + re.split('_|.npy', halo)[1] for halo in names]))
-    plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold star-forming gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
+    plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold gas'], loc='upper left', fontsize=12, frameon=False, numpoints=1)
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None
@@ -1005,7 +1006,7 @@ def gas_temperature_histogram(pdf, data, redshift, read):
     return None
 
 
-def gas_distance_temperature(date, pdf, data, redshift, read):
+def gas_distance_temperature(pdf, data, redshift, read):
     """
     Mass- and volume-weighted histograms of gas temperature
     :param pdf: path to save the pdf from main.make_pdf
@@ -1037,45 +1038,232 @@ def gas_distance_temperature(date, pdf, data, redshift, read):
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-            mask, = np.where(
-                (spherical_distance < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
             
             # Calculate the temperature of the gas cells #
-            ne = s.data['ne'][mask]
-            metallicity = s.data['gz'][mask]
-            XH = s.data['gmet'][mask, element['H']]
+            ne = s.data['ne']
+            metallicity = s.data['gz']
+            XH = s.data['gmet'][:, element['H']]
             yhelium = (1 - XH - metallicity) / (4. * XH)
             mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            temperature = GAMMA_MINUS1 * s.data['u'] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
             np.save(path + 'temperature_' + str(s.haloname), temperature)
-            np.save(path + 'spherical_distance_' + str(s.haloname), spherical_distance[mask])
+            np.save(path + 'spherical_distance_' + str(s.haloname), spherical_distance)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18N*')
+    names = glob.glob(path + '/name_*')
     names.sort()
     
-    # Generate the figure and define its parameters #
-    f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
-    plt.xscale('log')
-    plt.ylabel(r'Temperature [K]')
-    plt.xlabel(r'Radius [Mpc]')
-    plt.yscale('log')
-    plt.tick_params(direction='out', which='both', top='on', right='on')
-    f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
-    
     for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        plt.grid(True)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.ylim(1e1, 1e8)
+        plt.xlim(1e-2, 2e2)
+        cmap = matplotlib.cm.get_cmap('jet')
+        ax.set_facecolor(cmap(0))
+        plt.xlabel(r'$\mathrm{Radius\;[kpc]}$')
+        plt.ylabel(r'$\mathrm{Temperature\;[K]}$')
+        plt.tick_params(direction='out', which='both', top='on', right='on')
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=ax.transAxes)
+        
         temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        hb = plt.hexbin(spherical_distance, temperature, bins='log', xscale='log', yscale='log')
+        hb = plt.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log')
         cb2 = plt.colorbar(hb)
-        cb2.set_label(r'Counts per hexbin', size=16)
+        cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
-        plt.savefig('/u/di43/Auriga/plots/' + 'Test-' + date + '.png', bbox_inches='tight')  # Save the figure.
-        # pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
         plt.close()
-        return None
+    return None
+
+
+def sfr_birth_distribution(date, pdf, data, redshift, read):
+    """
+    Mass- and volume-weighted histograms of gas temperature
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param read: boolean.
+    :return:
+    """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'sbd/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['age', 'mass', 'pos', 'bpos', 'sfr']
+        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            mask, = np.where((s.r() < 0.03) & (s.type == 0))
+            sfr = s.data['sfr'][mask]
+            np.save(path + 'sfr_' + str(s.haloname), sfr)
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+        
+        attrs = ['age', 'pos', 'id', 'vel', 'mass', 'bpos', 'sfr', 'bvel']
+        s = gadget_readsnap(127, snappath='../output/halo_06/output/', hdf5=True, loadonlytype=[0, 4], loadonly=attrs)
+        sf = load_subfind(127, dir='../output/halo_06/output/', hdf5=True, loadonly=['fpos', 'frc2', 'svel', 'flty', 'sfr', 'fnsh', 'slty', 'fmc2'])
+        s.calc_sf_indizes(sf)
+        s.select_halo(sf, 3., use_principal_axis=True, use_cold_gas_spin=False, do_rotation=True)
+        
+        stardatafile = '/virgo/simulations/Auriga/level4_MHD/birthdata/birthdata_halo_6.dat'
+        g = parse_particledata(s, sf, attrs, radialcut=sf.data['frc2'][0], stardatafile=stardatafile)
+        g.prep_data()
+        sdata = g.sgdata['sdata']
+        
+        mask, = np.where((s.r() < 0.03) & (s.type == 0))
+        bpos = sdata['bpos'][mask]
+        bsrxy = np.sqrt((bpos[:, 1:] ** 2).sum(axis=1))
+        # Calculate the temperature of the gas cells #
+        np.save(path + 'bsrxy_06', bsrxy)
+    
+    # Load and plot the data #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        plt.grid(True)
+        plt.xscale('log')
+        plt.yscale('log')
+        # plt.ylim(1e1, 1e8)
+        # plt.xlim(1e-2, 2e2)
+        
+        plt.ylabel(r'$\mathrm{SFR\;[Msun/yr]}$')
+        plt.xlabel(r'$\mathrm{bsrxy\;[kpc]}$')
+        plt.tick_params(direction='out', which='both', top='on', right='on')
+        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=ax.transAxes)
+        bsrxy = np.load(path + 'bsrxy_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        sfr = np.load(path + 'sfr_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        sfr = sfr[sfr > 0]
+        bsrxy = bsrxy[sfr > 0]
+        hb = plt.scatter(bsrxy * 1e3, sfr)
+        
+        # cb2 = plt.colorbar(hb)
+        # cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
+        
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmh-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.close()
+    return None
+
+
+def plot_birth_dist(date):
+    alpha = 0
+    disc_stars = False
+    arrows = True
+    toinch = 0.393700787
+    plt.figure(figsize=(10, 7.5), dpi=300)
+    
+    ascale = [6000., 6000.]
+    
+    # Get birth data
+    attrs = ['pos', 'vel', 'id', 'mass', 'age', 'gmet', 'pot', 'gz', 'bpos', 'bvel']
+    snap = 127
+    stardatafile = '/virgo/simulations/Auriga/level4_MHD/birthdata/birthdata_halo_6.dat'
+    s = gadget_readsnap(snap, snappath='../output/halo_06/output/', hdf5=True, loadonlytype=[4], loadonly=attrs)
+    sf = load_subfind(127, dir='../output/halo_06/output/', hdf5=True, loadonly=['fpos', 'frc2', 'svel', 'flty', 'sfr', 'fnsh', 'slty', 'fmc2'])
+    s.center = sf.data['fpos'][0, :]
+    
+    g = parse_particledata(s, sf, attrs, radialcut=sf.data['frc2'][0], stardatafile=stardatafile)
+    g.prep_data()
+    sdata = g.sgdata['sdata']
+    
+    for j in range(2):
+        
+        if j == 1:
+            star_bpos = sdata['bpos']
+        else:
+            star_bpos = sdata['pos']
+        
+        jj, = np.where((sdata['age'] > 0))
+        temp_pos = star_bpos[jj, :]
+        
+        pos = np.zeros((len(temp_pos), 3))
+        pos[:, 0] = temp_pos[:, 0]  # 0:1
+        pos[:, 1] = temp_pos[:, 1]  # 1:2
+        pos[:, 2] = temp_pos[:, 2]  # 2:0
+        
+        nx = 60
+        ny = 60
+        
+        n, xedges, yedges = np.histogram2d(pos[:, 1], pos[:, 2], bins=(nx, ny), range=[[-.025, .025], [-.025, .025]])
+        xbin = np.zeros(len(xedges) - 1)
+        ybin = np.zeros(len(yedges) - 1)
+        xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
+        ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
+        xc, yc = np.meshgrid(xbin, ybin)
+        
+        levels = [0.2, 0.4, 0.6, 0.8, 1., 1.2, 1.5, 2.0, 2.5, 3., 3.5, 4., 4.5, 5.]
+        plt.contourf(xc, yc, np.log10(n.T), cmap=cm.get_cmap('magma'), levels=levels)
+        
+        if arrows:
+            nbin = nx
+            d1, d2 = 1, 2
+            pn, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), range=[[-0.025, 0.025], [-0.025, 0.025]])
+            vxgrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), range=[[-0.025, 0.025], [-0.025, 0.025]])
+            vygrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), range=[[-0.025, 0.025], [-0.025, 0.025]])
+            vxgrid /= pn
+            vygrid /= pn
+            
+            xbin = np.zeros(len(xedges) - 1)
+            ybin = np.zeros(len(yedges) - 1)
+            xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
+            ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
+            xc, yc = np.meshgrid(xbin, ybin)
+            
+            vygrid *= -1
+            plt.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=ascale[0], pivot='middle', color='w', alpha=0.8, width=0.001)
+        
+        n, xedges, yedges = np.histogram2d(pos[jj, 1], pos[jj, 0], bins=(nx, ny / 2), range=[[-0.025, 0.025], [-0.0125, 0.0125]])
+        xbin = np.zeros(len(xedges) - 1)
+        ybin = np.zeros(len(yedges) - 1)
+        xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
+        ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
+        
+        xc, yc = np.meshgrid(xbin, ybin)
+        plt.contourf(xc, yc, np.log10(n.T), cmap=cm.get_cmap('magma'), levels=levels)
+        
+        if arrows:
+            nbin = nx
+            d1, d2 = 1, 0  # 2,1
+            pn, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), range=[[-0.025, 0.025], [-0.0125, 0.0125]])
+            vxgrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), range=[[-0.025, 0.025], [-0.0125, 0.0125]])
+            vygrid, xedges, yedges = np.histogram2d(pos[:, d1], pos[:, d2], bins=(nbin, nbin), range=[[-0.025, 0.025], [-0.0125, 0.0125]])
+            vxgrid /= pn
+            vygrid /= pn
+            
+            xbin = np.zeros(len(xedges) - 1)
+            ybin = np.zeros(len(yedges) - 1)
+            xbin[:] = 0.5 * (xedges[:-1] + xedges[1:])
+            ybin[:] = 0.5 * (yedges[:-1] + yedges[1:])
+            xc, yc = np.meshgrid(xbin, ybin)
+            
+            vygrid *= -1
+            
+            plt.quiver(xc, yc, np.flipud(vxgrid.T), np.flipud(vygrid.T), scale=ascale[1], pivot='middle', color='white', alpha=0.8, width=0.001)
+    
+    if alpha == 1:
+        plt.savefig('/u/di43/Auriga/plots/' + 'Test1-' + date + '.png', bbox_inches='tight')  # Save the figure.
+    plt.close()
+    return None
