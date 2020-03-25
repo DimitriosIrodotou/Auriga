@@ -78,8 +78,8 @@ def set_axis(s, ax, ax2, ylabel, ylim=None):
     ax2.set_xticklabels(lb)
     
     ax.set_ylabel(ylabel, size=6)
-    ax.set_xlabel(r'$t_\mathrm{look}\;\mathrm{[Gyr]}$', size=6)
-    ax2.set_xlabel(r'z', size=6)
+    ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
+    ax2.set_xlabel(r'$\mathrm{z}$', size=6)
     
     for a in [ax, ax2]:
         for label in a.xaxis.get_ticklabels():
@@ -114,13 +114,13 @@ def set_axis_evo(ax, ax2, ylabel=None):
     ax.set_xlim(0, 13)
     ax.invert_xaxis()
     ax.set_ylabel(ylabel, size=16)
-    ax.set_xlabel(r'$t_\mathrm{look}\;\mathrm{[Gyr]}$', size=16)
+    ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
     ax.tick_params(direction='out', which='both', right='on')
     
     ax2.set_xticks(times)
     ax2.set_xticklabels(lb)
     ax2.set_xlim(ax.get_xlim())
-    ax2.set_xlabel(r'z', size=16)
+    ax2.set_xlabel(r'$\mathrm{z}$', size=16)
     ax2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
@@ -151,9 +151,9 @@ def sfr(pdf, data, levels):
             
             ax, ax2 = create_axis(f, isnap)
             ax.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / time_bin, histtype='step', bins=100, range=[0, 13])
-            set_axis(s, ax, ax2, r'$\\mathrm{Sfr}\;\mathrm{[M_\odot\;yr^{-1}]}$')
+            set_axis(s, ax, ax2, r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
             
-            ax.text(0.05, 0.92, "Au%s-%d r < 5kpc" % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
+            ax.text(0.05, 0.92, 'Au%s-%d r < 5kpc' % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
             
             isnap += 1
     
@@ -187,7 +187,7 @@ def bfld(pdf, data, levels):
         level = levels[il]
         
         res = {}
-        rpath = "../plots/data/bfld_%d.npy" % level
+        rpath = '../plots/data/bfld_%d.npy' % level
         if os.path.exists(rpath):
             with open(rpath, 'rb') as ff:
                 res = pickle.load(ff)
@@ -225,7 +225,7 @@ def bfld(pdf, data, levels):
         level = levels[il]
         
         res = {}
-        rpath = "../plots/data/bfld_%d.npy" % level
+        rpath = '../plots/data/bfld_%d.npy' % level
         if os.path.exists(rpath):
             with open(rpath, 'rb') as ff:
                 res = pickle.load(ff)
@@ -235,7 +235,7 @@ def bfld(pdf, data, levels):
             ax, ax2 = create_axis(f, idx)
             
             ax.plot(res[name]["time"], res[name]["bfld"] * 1e6)
-            set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$B_\mathrm{r<1\;kpc}\;\mathrm{[\mu G]}$", [0., 100.])
+            set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, '$B_\mathrm{r<1\;kpc}\;\mathrm{[\mu G]}$', [0., 100.])
     
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
@@ -270,7 +270,7 @@ def bh_mass(pdf, data, levels):
         level = levels[il]
         
         res = {}
-        rpath = "../plots/data/bhmass_%d.npy" % level
+        rpath = '../plots/data/bhmass_%d.npy' % level
         if os.path.exists(rpath):
             with open(rpath, 'rb') as ff:
                 res = pickle.load(ff)
@@ -299,8 +299,8 @@ def bh_mass(pdf, data, levels):
             ax, ax2 = create_axis(f, idx)
             
             ax.semilogy(res[name]["time"], res[name]["mass"] * 1e10)
-            set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$M_\mathrm{BH}\;\mathrm{[M_\odot]}$")
-            ax.text(0.05, 0.92, "Au%s" % name, color='k', fontsize=6, transform=ax.transAxes)
+            set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, '$M_\mathrm{BH}\;\mathrm{[M_\odot]}$')
+            ax.text(0.05, 0.92, 'Au%s' % name, color='k', fontsize=6, transform=ax.transAxes)
     
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
     plt.close()
@@ -397,16 +397,17 @@ def bar_strength_evolution(pdf, data, read):
         plt.grid(True)
         plt.xlim(0, 2)
         plt.ylim(0, 1)
-        plt.xlabel(r'Redshift', size=16)
+        plt.xlabel(r'$\mathrm{Redshift}$', size=16)
         plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
         
         # Load and plot the data #
         A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         plt.plot(redshifts, A2, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
-        ax.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
         
-        pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+        # Create the legends and save the figure #
+        ax.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
+        pdf.savefig(f, bbox_inches='tight')
         plt.close()
     return None
 
@@ -478,19 +479,20 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
         np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
-    # Generate the figure and define its parameters #
-    f, ax = plt.subplots(1, figsize=(10, 7.5))
-    plt.ylim(-0.2, 1.2)
-    plt.xlim(0, 5)
-    plt.grid(True)
-    plt.ylabel(r'Gas fraction', size=16)
-    plt.xlabel(r'Redshift', size=16)
-    
     # Load and plot the data #
     names = glob.glob(path + '/name_17.*')
     names.sort()
     
     for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        plt.ylim(-0.2, 1.2)
+        plt.xlim(0, 5)
+        plt.grid(True)
+        plt.ylabel(r'$\mathrm{Gas\;fraction}$', size=16)
+        plt.xlabel(r'$\mathrm{Redshift}$', size=16)
+        ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
+        
         sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -512,9 +514,10 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         b2, = plt.plot(redshifts, wg_ratios, color='green')
         b3, = plt.plot(redshifts, hg_ratios, color='red')
     
-    plt.legend([b3, b2, b1], [r'Hot gas', r'Warm gas', r'Cold gas'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
-    ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
-    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    # Create the legends and save the figure #
+    plt.legend([b3, b2, b1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left', fontsize=16, frameon=False,
+               numpoints=1)
+    pdf.savefig(f, bbox_inches='tight')
     plt.close()
     return None
 
@@ -581,7 +584,7 @@ def AGN_modes_cumulative(date, data, read):
     # Load and plot the data #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 7.5))
+        figure = plt.figure(figsize=(10, 7.5))
         gs = gridspec.GridSpec(1, 2, wspace=0, width_ratios=[1, 0.05])
         ax00 = plt.subplot(gs[0, 0])
         axcbar = plt.subplot(gs[:, 1])
@@ -593,9 +596,9 @@ def AGN_modes_cumulative(date, data, read):
         ax00.set_xlim(1e54, 1e62)
         ax00.set_ylim(1e54, 1e62)
         ax00.tick_params(direction='out', which='both', right='on', left='on')
-        ax00.set_xlabel(r'Cumulative thermal feedback energy [ergs]', size=16)
-        ax00.set_ylabel(r'Cumulative mechanical feedback energy [ergs]', size=16)
-        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
+        ax00.set_xlabel(r'$\mathrm{Cumulative\;thermal\;feedback\;energy\;[ergs]}$', size=16)
+        ax00.set_ylabel(r'$\mathrm{Cumulative\;mechanical\;feedback\;energy\;[ergs]}$', size=16)
+        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
         
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -613,19 +616,21 @@ def AGN_modes_cumulative(date, data, read):
         lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
         
         # Mask the data and plot the scatter #
-        ax00.plot([1e54, 1e62], [1e54 / 10, 1e62 / 10], label='1:10')
-        ax00.plot([1e54, 1e62], [1e54 / 50, 1e62 / 50], label='1:50')
+        plot000 = ax00.plot([1e54, 1e62], [1e54 / 10, 1e62 / 10])
+        plot001 = ax00.plot([1e54, 1e62], [1e54 / 50, 1e62 / 50])
         
         mask, = np.where((mechanicals != 0) | (thermals != 0))
         sc = ax00.scatter(thermals[mask], mechanicals[mask], edgecolor='None', s=50, c=lookback_times[mask], vmin=0, vmax=max(lookback_times),
                           cmap='jet')
         cb = plt.colorbar(sc, cax=axcbar)
-        cb.set_label(r'$t_\mathrm{look}\;\mathrm{[Gyr]}$', size=16)
+        cb.set_label(r'$$\mathrm{t_{look}\;[Gyr]}$', size=16)
         axcbar.tick_params(direction='out', which='both', right='on', left='on')
         axcbar.yaxis.tick_left()
         
+        # Create the legends and save the figure #
+        ax00.legend([plot000, plot001], [r'$\mathrm{1:10}$', r'$\mathrm{1:50}$'], loc='upper center', fontsize=16, frameon=False, numpoints=1)
         ax00.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmc-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmc-' + date + '.png', bbox_inches='tight')
         plt.close()
     return None
 
@@ -698,7 +703,7 @@ def AGN_modes_histogram(date, data, read):
         ax.grid(True)
         ax2 = ax.twiny()
         ax.set_yscale('log')
-        set_axis_evo(ax, ax2, r'AGN feedback energy [ergs]')
+        set_axis_evo(ax, ax2, r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
         ax.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
         
         # Load and plot the data #
@@ -717,11 +722,12 @@ def AGN_modes_histogram(date, data, read):
         
         # Convert redshifts to lookback times and plot #
         lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # in Gyr
-        ax.hist(lookback_times, weights=thermals, histtype='step', bins=100, label=r'Thermal')
-        ax.hist(lookback_times, weights=mechanicals, histtype='step', bins=100, label=r'Mechanical')
+        hist0 = ax.hist(lookback_times, weights=thermals, histtype='step', bins=100)
+        hist1 = ax.hist(lookback_times, weights=mechanicals, histtype='step', bins=100)
         
-        ax.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmh-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        # Create the legends and save the figure #
+        ax.legend([hist0, hist1], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper right', fontsize=16, frameon=False, numpoints=1)
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmh-' + date + '.png', bbox_inches='tight')
         plt.close()
     
     return None
@@ -796,7 +802,7 @@ def AGN_modes_distribution(date, data, read):
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(16, 9))
+        figure = plt.figure(figsize=(16, 9))
         gs = gridspec.GridSpec(2, 2, wspace=0.05, hspace=0.1, height_ratios=[0.05, 1])
         axcbar = plt.subplot(gs[0, 0])
         ax00 = plt.subplot(gs[1, 0])
@@ -814,7 +820,7 @@ def AGN_modes_distribution(date, data, read):
             a.tick_params(direction='out', which='both', right='on', left='on')
         ax00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
         ax02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
-        f.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
+        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
         
         # Load and plot the data #
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -873,10 +879,10 @@ def AGN_modes_distribution(date, data, read):
         # Plot sum #
         sum02, = ax02.plot(x_value, sum, color='black', zorder=5)
         
+        # Create the legends and save the figure #
         ax00.legend([sum00], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
         ax02.legend([sum02], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
-        
-        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')
         plt.close()
     
     return None
@@ -939,11 +945,11 @@ def AGN_modes_step(date, data, read):
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
-        f = plt.figure(figsize=(10, 7.5))
+        figure = plt.figure(figsize=(10, 7.5))
         gs = plt.GridSpec(2, 2, hspace=0.07, wspace=0.07, height_ratios=[0.5, 1], width_ratios=[1, 0.5])
-        ax00 = f.add_subplot(gs[0, 0])
-        ax10 = f.add_subplot(gs[1, 0])
-        ax11 = f.add_subplot(gs[1, 1])
+        ax00 = figure.add_subplot(gs[0, 0])
+        ax10 = figure.add_subplot(gs[1, 0])
+        ax11 = figure.add_subplot(gs[1, 1])
         
         for a in [ax00, ax10, ax11]:
             a.grid(True)
@@ -966,7 +972,7 @@ def AGN_modes_step(date, data, read):
         ax11.set_xlabel(r'$\mathrm{PDF}$', size=16)
         ax10.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
         ax10.set_xlabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
-        f.text(1.01, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax10.transAxes)
+        figure.text(1.01, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax10.transAxes)
         
         # Load and plot the data #
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1024,8 +1030,8 @@ def AGN_modes_gas(date):
         # Load and plot the data #
         wg_ratios = np.load(path_gas + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         hg_ratios = np.load(path_gas + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        redshifts_gas = np.load(path_gas + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         sfg_ratios = np.load(path_gas + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        redshifts_gas = np.load(path_gas + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1038,11 +1044,9 @@ def AGN_modes_gas(date):
         lookback_times_gas = satellite_utilities.return_lookbacktime_from_a((redshifts_gas + 1.0) ** (-1.0))
         
         # Plot the gas fractions #
-        b1, = ax.plot(lookback_times_gas, sfg_ratios, color='blue')
-        b2, = ax.plot(lookback_times_gas, wg_ratios, color='green')
-        b3, = ax.plot(lookback_times_gas, hg_ratios, color='red')
-        ax.legend([b3, b2, b1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left', fontsize=16,
-                  frameon=False, numpoints=1)
+        plot1, = ax.plot(lookback_times_gas, sfg_ratios, color='blue')
+        plot1, = ax.plot(lookback_times_gas, wg_ratios, color='green')
+        plot3, = ax.plot(lookback_times_gas, hg_ratios, color='red')
         
         # Calculate and plot the thermals energy sum #
         nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
@@ -1072,9 +1076,11 @@ def AGN_modes_gas(date):
         
         sum02, = plt.plot(x_value, sum, color='black', zorder=5)
         
+        # Create the legends and save the figure #
+        ax.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left', fontsize=16,
+                  frameon=False, numpoints=1)
         ax2.legend([sum00, sum02], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False, numpoints=1)
-        
-        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmg-' + date + '.png', bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmg-' + date + '.png', bbox_inches='tight')
         plt.close()
     
     return None
@@ -1092,6 +1098,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
     for radial_limit in radial_limits:
         # Check if a folder to save the data exists, if not create one #
         path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
+        path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+        
         if not os.path.exists(path):
             os.makedirs(path)
         
@@ -1127,8 +1135,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
             
             redshift_cut = 7.0
-            gas_masses, stellar_masses = [], []  # Declare lists to store the data.
-            
+            gas_masses, stellar_masses, sfg_ratios, wg_ratios, hg_ratios = [], [], [], [], []  # Declare lists to store the data.
             # Get all available redshifts #
             haloes = data.get_haloes(4)
             for name, halo in haloes.items():
@@ -1145,8 +1152,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     # Check if any of the haloes' data already exists, if not then read and save it #
                     names = glob.glob(path + '/name_*')
                     names = [re.split('_|.npy', name)[1] for name in names]
-                    if str(s.haloname) in names:
-                        continue
+                    # if str(s.haloname) in names:
+                    #     continue
                     
                     # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                     s.calc_sf_indizes(s.subfind)
@@ -1156,16 +1163,32 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     age = np.zeros(s.npartall)
                     age[s.type == 4] = s.data['age']
                     spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-                    stellar_mask, = np.where((spherical_distance < radial_limit) & (s.type == 4) & (age > 0))
                     gas_mask, = np.where((spherical_distance < radial_limit) & (s.type == 0))
+                    stellar_mask, = np.where((spherical_distance < radial_limit) & (s.type == 4) & (age > 0))
                     
                     # Calculate the stellar and gas mass of each halo #
-                    gas_mass = s.mass[gas_mask].sum()
-                    stellar_mass = s.mass[stellar_mask].sum()
+                    gas_mass = s.mass[gas_mask]
+                    stellar_mass = s.mass[stellar_mask]
                     gas_masses.append(np.sum(gas_mass))
                     stellar_masses.append(np.sum(stellar_mass))
+                    
+                    # Calculate the temperature of the gas cells #
+                    ne = s.data['ne'][gas_mask]
+                    metallicity = s.data['gz'][gas_mask]
+                    XH = s.data['gmet'][gas_mask, element['H']]
+                    yhelium = (1 - XH - metallicity) / (4. * XH)
+                    mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
+                    temperature = GAMMA_MINUS1 * s.data['u'][gas_mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+                    
+                    # Calculate the mass of the gas cells within three temperatures regimes #
+                    sfg_ratios.append(np.sum(gas_mass[np.where((temperature < 2e4))]) / np.sum(gas_mass))
+                    wg_ratios.append(np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass))
+                    hg_ratios.append(np.sum(gas_mass[np.where((temperature >= 5e5))]) / np.sum(gas_mass))
             
             # Save data for each halo in numpy arrays #
+            np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
+            np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
+            np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
             lookback_times = satellite_utilities.return_lookbacktime_from_a(
                 (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
             np.save(path + 'gas_masses_' + str(s.haloname), gas_masses)
@@ -1173,36 +1196,107 @@ def gas_stars_sfr_evolution(pdf, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_06*')
+        names = glob.glob(path + '/name_17.*')
         names.sort()
         
         for i in range(len(names)):
             # Generate the figure and define its parameters #
-            f, ax = plt.subplots(1, figsize=(10, 7.5))
-            plt.grid(True)
-            plt.xlabel(r'$\mathrm{R\;[kpc]}$', size=16)
-            ax2 = ax.twinx()
-            ax2.set_yscale('log')
-            ax2.set_ylim(1e6, 1e11)
-            ax2.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
-            plt.tick_params(direction='out', which='both', top='on', right='on')
-            f.text(0.01, 0.9, 'Au-%s' '\n' 'r < %.0f pc' % (str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit) * 1e6)), fontsize=16,
-                   transform=ax.transAxes)
+            figure = plt.figure(figsize=(10, 7.5))
+            gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
+            ax00 = plt.subplot(gs[0, 0])
+            ax10 = plt.subplot(gs[1, 0])
+            for a in [ax00, ax10]:
+                a.grid(True)
+                a.tick_params(direction='out', which='both', top='on', right='on')
+            ax00.set_ylim(0, 8)
+            ax00.set_xticklabels([])
+            ax002 = ax00.twinx()
+            ax002.set_yscale('log')
+            ax002.set_ylim(1e53, 2e56)
+            ax002.set_ylabel(r'$\mathrm{Feedback\;energy\;[ergs]}$', size=16)
+            ax10.set_yscale('log')
+            ax10.set_ylim(1e6, 1e11)
+            ax10.set_xlim(13, 0)
+            ax10.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
+            ax10.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
+            ax003 = ax00.twiny()
+            set_axis_evo(ax00, ax003, r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
+            ax102 = ax10.twinx()
+            ax10.set_ylim(-0.2, 1.2)
+            ax10.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
+            
+            figure.text(0.01, 0.88, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{r\;<\;%.0f\;pc}$' % (
+                str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit) * 1e6)), fontsize=16, transform=ax00.transAxes)
             
             # Load and plot the data #
+            thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             gas_masses = np.load(path + 'gas_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             stellar_masses = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             
-            ax2.plot(lookback_times, gas_masses * 1e10, c='b', label=r'Gas mass')
-            ax2.plot(lookback_times, stellar_masses * 1e10, c='r', label=r'Stellar mass')
-            ax.hist(age, weights=weights, histtype='step', bins=100, range=[0, 13], edgecolor='k', label=r'SFR')
-            ax2 = ax.twiny()
-            set_axis_evo(ax, ax2, r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
+            # Transform the arrays to comma separated strings and convert each element to float #
+            thermals = ','.join(thermals)
+            mechanicals = ','.join(mechanicals)
+            thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+            mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
             
-            pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+            ax00.hist(age, weights=weights, histtype='step', bins=100, range=[0, 13], edgecolor='k')  # Plot the sfr history.
+            
+            # Calculate and plot the thermals energy median #
+            nbin = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
+            x_value = np.empty(nbin)
+            sum = np.empty(nbin)
+            x_low = min(lookback_times_modes[np.where(thermals > 0)])
+            for j in range(nbin):
+                index = \
+                    np.where((lookback_times_modes[np.where(thermals > 0)] >= x_low) & (lookback_times_modes[np.where(thermals > 0)] < x_low + 0.05))[
+                        0]
+                x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(thermals > 0)])[index])
+                if len(index) > 0:
+                    sum[j] = np.median(thermals[np.where(thermals > 0)][index])
+                x_low += 0.05
+            plot20, = ax002.plot(x_value, sum, color='orange', zorder=5)
+            
+            # Calculate and plot the mechanical energy median #
+            nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
+            x_value = np.empty(nbin)
+            sum = np.empty(nbin)
+            x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
+            for j in range(nbin):
+                index = np.where(
+                    (lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+                x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
+                if len(index) > 0:
+                    sum[j] = np.median(mechanicals[np.where(mechanicals > 0)][index])
+                x_low += 0.05
+            plot21, = ax002.plot(x_value, sum, color='magenta', zorder=5)
+            
+            # Plot the stellar and gaseous masses #
+            plot100, = ax10.plot(lookback_times, gas_masses * 1e10, c='b')
+            plot101, = ax10.plot(lookback_times, stellar_masses * 1e10, c='r')
+            
+            # Plot the gas fractions #
+            plot1, = ax102.plot(lookback_times, sfg_ratios, color='blue')
+            plot2, = ax102.plot(lookback_times, wg_ratios, color='green')
+            plot3, = ax102.plot(lookback_times, hg_ratios, color='red')
+            
+            # Create the legends and save the figure #
+            ax10.legend([plot100, plot101], [r'$\mathrm{Gas}$', r'$\mathrm{Stars}$'], loc='lower center', fontsize=16, frameon=False, numpoints=1,
+                        ncol=2)
+            ax002.legend([plot20, plot21], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False,
+                         numpoints=1, ncol=2)
+            ax00.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, ncol=2)
+            ax102.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
+                         fontsize=16, frameon=False, numpoints=1)
+            
+            pdf.savefig(figure, bbox_inches='tight')
             plt.close()
     return None
 
@@ -1212,7 +1306,6 @@ def gas_temperature_movie(pdf, data, read):
     Plot gas temperature projection for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param redshift: redshift from main.make_pdf
     :param read: boolean
     :return: None
     """
@@ -1241,8 +1334,8 @@ def gas_temperature_movie(pdf, data, read):
             # Loop over all haloes #
             for s in data:
                 # Check if any of the haloes' data already exists, if not then read and save it #
-                names = glob.glob(path + '/name_*')
-                names = [re.split('_|.npy', name)[1] for name in names]
+                names = glob.glob(path + '/name_3000_*')
+                names = [re.split('_|.npy', name)[2] for name in names]
                 if str(s.haloname) in names:
                     continue
                 
@@ -1251,8 +1344,8 @@ def gas_temperature_movie(pdf, data, read):
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
                 # Plot the projections #
-                meanweight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-                temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * meanweight
+                mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+                temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * mean_weight
                 s.data['temprho'] = s.rho * temperature
                 
                 face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
@@ -1273,7 +1366,8 @@ def gas_temperature_movie(pdf, data, read):
     names.sort()
     
     # Loop over all available haloes #
-    for i in range(len(names)):
+    for i in range(177, len(names)):
+        print(i)
         # Load and plot the data #
         face_on = np.load(path + 'face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         edge_on = np.load(path + 'edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
@@ -1284,14 +1378,14 @@ def gas_temperature_movie(pdf, data, read):
         x = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         y = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         # Generate the figure and define its parameters #
-        f, ax = plt.subplots(1, figsize=(10, 10))
+        figure, ax = plt.subplots(1, figsize=(10, 10))
         plt.axis('off')
         plt.xlim(-30, 30)
         plt.ylim(-30, 30)
         ax.set_aspect('auto')
         
         plt.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        f.tight_layout()
+        figure.tight_layout()
         plt.savefig('/u/di43/Auriga/plots/' + 'gtmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
         
@@ -1303,7 +1397,7 @@ def gas_temperature_movie(pdf, data, read):
         ax.set_aspect('auto')
         
         plt.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        f.tight_layout()
+        figure.tight_layout()
         plt.savefig('/u/di43/Auriga/plots/' + 'gtme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
     

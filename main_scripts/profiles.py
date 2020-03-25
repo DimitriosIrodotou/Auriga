@@ -116,12 +116,12 @@ def radial_profiles(pdf, data, level, redshift):
             ax = create_axes(f, isnap * 5 + ipanel)
             if ipanel == 0:  # Plot gas density.
                 ax.semilogy(center, mass / vol / 1e9 * 1e10, 'k')
-                set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$\\rho\,\mathrm{[M_\odot\,kpc^{-3}]}$", "$\mathrm{Gas\ density}$", [1e5, 1e8])
+                set_axes(isnap, ax, "$r\;\mathrm{[kpc]}$", "$\\rho\;\mathrm{[M_\odot\;kpc^{-3}]}$", "$\mathrm{Gas\ density}$", [1e5, 1e8])
             
             elif ipanel == 1:  # Plot gas metallicity.
                 metals, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['mass'][i] * s.data['gz'][i])
                 ax.semilogy(center, metals / mass / 0.0134, 'k')
-                set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$Z\,\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.5, 20.0])
+                set_axes(isnap, ax, "$r\;\mathrm{[kpc]}$", "$Z\;\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.5, 20.0])
             
             elif ipanel == 2:  # Plot gas energy densities.
                 eB = (s.data['bfld'] ** 2).sum(axis=1) / (8.0 * np.pi)
@@ -148,12 +148,12 @@ def radial_profiles(pdf, data, level, redshift):
                 ax.semilogy(center, reT / vol * efac, 'g', label='$\\epsilon_\\mathrm{turb}$')
                 ax.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$\\epsilon\\,\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$", [1e42, 1e48])
+                set_axes(isnap, ax, "$r\;\mathrm{[kpc]}$", "$\\epsilon\\;\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$", [1e42, 1e48])
             
             elif ipanel == 3:  # Plot magnetic field strength.
                 bsqr, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['vol'][i] * bfld[i] ** 2)
                 ax.semilogy(center, np.sqrt(bsqr / vol))
-                set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$B\,\mathrm{[\mu G]}$", "$\mathrm{Magnetic\ field\ strength}$", [0.1, 100])
+                set_axes(isnap, ax, "$r\;\mathrm{[kpc]}$", "$B\;\mathrm{[\mu G]}$", "$\mathrm{Magnetic\ field\ strength}$", [0.1, 100])
             
             elif ipanel == 4:  # Plot gas velocity dispersion.
                 velz, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['mass'][i] * s.data['vel'][i, 0])
@@ -171,7 +171,7 @@ def radial_profiles(pdf, data, level, redshift):
                 ax.plot(center, sigmar, 'r', label="$\\sigma_\mathrm{r}$")
                 ax.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\,[km\\,s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$", [0.0, 160.0])
+                set_axes(isnap, ax, "$r\;\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\;[km\\;s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$", [0.0, 160.0])
             else:
                 continue
             
@@ -242,12 +242,12 @@ def vertical_profiles(pdf, data, level, redshift):
             ax = create_axes(f, isnap * 5 + ipanel)
             if ipanel == 0:  # Plot gas density.
                 ax.semilogy(center, mass / vol / 1e9 * 1e10, 'k')
-                set_axes(isnap, ax, "$z\,\mathrm{[kpc]}$", "$\\rho\,\mathrm{[M_\odot\,kpc^{-3}]}$", "$\mathrm{Gas\ density}$", [1e5, 1e7])
+                set_axes(isnap, ax, "$z\;\mathrm{[kpc]}$", "$\\rho\;\mathrm{[M_\odot\;kpc^{-3}]}$", "$\mathrm{Gas\ density}$", [1e5, 1e7])
             
             elif ipanel == 1:  # Plot gas metallicity.
                 metals, edges = np.histogram(z[i], bins=30, range=[0.0, 10.0], weights=s.data['mass'][i] * s.data['gz'][i])
                 ax.semilogy(center, metals / mass / 0.0134, 'k')
-                set_axes(isnap, ax, "$z\,\mathrm{[kpc]}$", "$Z\,\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.3, 10.0])
+                set_axes(isnap, ax, "$z\;\mathrm{[kpc]}$", "$Z\;\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.3, 10.0])
             
             elif ipanel == 2:  # Plot gas energy densities.
                 eB = (s.data['bfld'] ** 2).sum(axis=1) / (8.0 * np.pi)
@@ -274,12 +274,12 @@ def vertical_profiles(pdf, data, level, redshift):
                 ax.semilogy(center, reT / vol * efac, 'g', label='$\\epsilon_\\mathrm{turb}$')
                 ax.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, ax, "$z\,\mathrm{[kpc]}$", "$\\epsilon\\,\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$", [1e42, 1e46])
+                set_axes(isnap, ax, "$z\;\mathrm{[kpc]}$", "$\\epsilon\\;\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$", [1e42, 1e46])
             
             elif ipanel == 3:  # Plot magnetic field strength.
                 bsqr, edges = np.histogram(z[i], bins=30, range=[0.0, 10.0], weights=s.data['vol'][i] * bfld[i] ** 2)
                 ax.semilogy(center, np.sqrt(bsqr / vol))
-                set_axes(isnap, ax, "$z\,\mathrm{[kpc]}$", "$B\,\mathrm{[\mu G]}$", "$\mathrm{Magnetic\ field\ strength}$", [0.1, 30.0])
+                set_axes(isnap, ax, "$z\;\mathrm{[kpc]}$", "$B\;\mathrm{[\mu G]}$", "$\mathrm{Magnetic\ field\ strength}$", [0.1, 30.0])
             
             elif ipanel == 4:  # Plot gas velocity dispersion.
                 velz, edges = np.histogram(z[i], bins=30, range=[0.0, 10.0], weights=s.data['mass'][i] * s.data['vel'][i, 0])
@@ -297,7 +297,7 @@ def vertical_profiles(pdf, data, level, redshift):
                 ax.plot(center, sigmar, 'r', label="$\\sigma_\mathrm{r}$")
                 ax.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, ax, "$z\,\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\,[km\\,s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$", [0.0, 100.0])
+                set_axes(isnap, ax, "$z\;\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\;[km\\;s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$", [0.0, 100.0])
             
             else:
                 continue
@@ -331,10 +331,10 @@ def stellar_profiles(pdf, data, level, redshift):
     ax10 = plt.subplot(gs[1, 0])
     ax11 = plt.subplot(gs[1, 1])
     
-    ax00.set_xlabel(r'$r\,\mathrm{[kpc]}$', size=16)
-    ax00.set_ylabel(r'$\\rho\,\mathrm{[M_\odot\,kpc^{-3}]}$', size=16)
-    # ax11.set_xlabel(r'$x\,\mathrm{[kpc]}$', size=16)
-    # ax10.set_ylabel(r'$z\,\mathrm{[kpc]}$', size=16)
+    ax00.set_xlabel(r'$r\;\mathrm{[kpc]}$', size=16)
+    ax00.set_ylabel(r'$\\rho\;\mathrm{[M_\odot\;kpc^{-3}]}$', size=16)
+    # ax11.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
+    # ax10.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=16)
     
     plt.close()
     f = plt.figure(figsize=(10, 7.5))
@@ -377,12 +377,12 @@ def stellar_profiles(pdf, data, level, redshift):
         rho[:, :] = pn[:, :] * 1e10 / dv[:, :]
         rho[:, :] *= 1e-9  # /pc^3
         ax00.semilogy(center, rho, 'k')
-        # set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$\\rho\,\mathrm{[M_\odot\,kpc^{-3}]}$", "$\mathrm{Gas\ density}$", [1e5, 1e8])
+        # set_axes(isnap, ax, "$r\;\mathrm{[kpc]}$", "$\\rho\;\mathrm{[M_\odot\;kpc^{-3}]}$", "$\mathrm{Gas\ density}$", [1e5, 1e8])
         
         # Plot stellar metallicity.
         metals, edges = np.histogram(rxy[mask], bins=30, range=[0.0, 30.0], weights=s.data['mass'][mask] * s.data['gz'][mask])
         ax01.semilogy(center, metals / mass / 0.0134,
-                      'k')  # set_axes(isnap, ax, "$r\,\mathrm{[kpc]}$", "$Z\,\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.5, 20.0])
+                      'k')  # set_axes(isnap, ax, "$r\;\mathrm{[kpc]}$", "$Z\;\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.5, 20.0])
         
         # f.text(0.0, 1.01, "Au%s" % s.haloname, color='k', fontsize=6, transform=ax.transAxes)
     

@@ -25,7 +25,7 @@ def get_names_sorted(names):
     Sort Auriga haloes based on their names.
     :return: names_sorted
     """
-    # Find the number (0-30) in each Auriga halo's name and sort them based on that #
+    # Find the number (0-30hewwoc-dItnub-8fejza) in each Auriga halo's name and sort them based on that #
     if list(names)[0].find("_"):
         names_sorted = np.array(list(names))
         names_sorted.sort()
@@ -279,16 +279,18 @@ class AurigaPdf:
         
         # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
-        # projections.multiple(pdf, self, redshift, read=True)
+        # projections.combination_central(pdf, self, redshift, read=True)
         # Stars #
         # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
+        # projections.stellar_light_combination(pdf, redshift)
         # Gas #
         # projections.gas_density(pdf, self, redshift, read=False)
         # projections.gas_slice(pdf, self, redshift, read=False)
         # projections.gas_metallicity(pdf, self, level, redshift)
         # projections.gas_temperature(pdf, self, redshift, read=False)
         # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
+        projections.gas_density_combination(pdf, redshift)
         # Magnetic fields #
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
@@ -314,8 +316,8 @@ class AurigaPdf:
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
-        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=False)
-        time_evolution.gas_temperature_movie(pdf, self, read=False)
+        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
+        # time_evolution.gas_temperature_movie(pdf, self, read=False)
         
         # Global galactic relations #
         # galaxy.sfr(pdf, self, [level])
@@ -338,7 +340,7 @@ class AurigaPdf:
         # metallicities.ratios(pdf, self, [level], 0.)
         
         pdf.close()
-        # file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'Auriga-' + date + '.pdf'
         # file_name = 'gtm_f_' + str(2.220446049250313e-16) + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
