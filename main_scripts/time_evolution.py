@@ -1152,8 +1152,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     # Check if any of the haloes' data already exists, if not then read and save it #
                     names = glob.glob(path + '/name_*')
                     names = [re.split('_|.npy', name)[1] for name in names]
-                    # if str(s.haloname) in names:
-                    #     continue
+                    if str(s.haloname) in names:
+                        continue
                     
                     # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                     s.calc_sf_indizes(s.subfind)
@@ -1167,8 +1167,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     stellar_mask, = np.where((spherical_distance < radial_limit) & (s.type == 4) & (age > 0))
                     
                     # Calculate the stellar and gas mass of each halo #
-                    gas_mass = s.mass[gas_mask]
-                    stellar_mass = s.mass[stellar_mask]
+                    gas_mass = s.data['mass'][gas_mask]
+                    stellar_mass = s.data['mass'][stellar_mask]
                     gas_masses.append(np.sum(gas_mass))
                     stellar_masses.append(np.sum(stellar_mass))
                     
@@ -1196,36 +1196,38 @@ def gas_stars_sfr_evolution(pdf, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_17.*')
+        names = glob.glob(path + '/name_18*')
         names.sort()
         
         for i in range(len(names)):
             # Generate the figure and define its parameters #
             figure = plt.figure(figsize=(10, 7.5))
-            gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
+            gs = gridspec.GridSpec(3, 1, hspace=0.06, height_ratios=[1, 0.5, 0.5])
             ax00 = plt.subplot(gs[0, 0])
             ax10 = plt.subplot(gs[1, 0])
-            for a in [ax00, ax10]:
+            ax20 = plt.subplot(gs[2, 0])
+            for a in [ax00, ax10, ax20]:
                 a.grid(True)
                 a.tick_params(direction='out', which='both', top='on', right='on')
             ax00.set_ylim(0, 8)
             ax00.set_xticklabels([])
             ax002 = ax00.twinx()
             ax002.set_yscale('log')
-            ax002.set_ylim(1e53, 2e56)
+            ax002.set_ylim(1e55, 1e61)
             ax002.set_ylabel(r'$\mathrm{Feedback\;energy\;[ergs]}$', size=16)
-            ax10.set_yscale('log')
-            ax10.set_ylim(1e6, 1e11)
-            ax10.set_xlim(13, 0)
-            ax10.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-            ax10.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
             ax003 = ax00.twiny()
             set_axis_evo(ax00, ax003, r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
-            ax102 = ax10.twinx()
-            ax10.set_ylim(-0.2, 1.2)
+            ax10.set_xlim(13, 0)
+            ax10.set_yscale('log')
+            ax10.set_ylim(1e6, 1e11)
+            ax10.set_xticklabels([])
             ax10.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
+            ax10.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
+            ax20.set_xlim(13, 0)
+            ax20.set_ylim(-0.1, 1.1)
+            ax20.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
             
-            figure.text(0.01, 0.88, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{r\;<\;%.0f\;pc}$' % (
+            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{r\;<\;%.0f\;pc}$' % (
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit) * 1e6)), fontsize=16, transform=ax00.transAxes)
             
             # Load and plot the data #
@@ -1249,7 +1251,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             
             ax00.hist(age, weights=weights, histtype='step', bins=100, range=[0, 13], edgecolor='k')  # Plot the sfr history.
             
-            # Calculate and plot the thermals energy median #
+            # Calculate and plot the thermals energy sum #
             nbin = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
             x_value = np.empty(nbin)
             sum = np.empty(nbin)
@@ -1260,11 +1262,11 @@ def gas_stars_sfr_evolution(pdf, data, read):
                         0]
                 x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(thermals > 0)])[index])
                 if len(index) > 0:
-                    sum[j] = np.median(thermals[np.where(thermals > 0)][index])
+                    sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
                 x_low += 0.05
             plot20, = ax002.plot(x_value, sum, color='orange', zorder=5)
             
-            # Calculate and plot the mechanical energy median #
+            # Calculate and plot the mechanical energy sum #
             nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
             x_value = np.empty(nbin)
             sum = np.empty(nbin)
@@ -1274,7 +1276,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     (lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low + 0.05))[0]
                 x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
                 if len(index) > 0:
-                    sum[j] = np.median(mechanicals[np.where(mechanicals > 0)][index])
+                    sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
                 x_low += 0.05
             plot21, = ax002.plot(x_value, sum, color='magenta', zorder=5)
             
@@ -1283,9 +1285,9 @@ def gas_stars_sfr_evolution(pdf, data, read):
             plot101, = ax10.plot(lookback_times, stellar_masses * 1e10, c='r')
             
             # Plot the gas fractions #
-            plot1, = ax102.plot(lookback_times, sfg_ratios, color='blue')
-            plot2, = ax102.plot(lookback_times, wg_ratios, color='green')
-            plot3, = ax102.plot(lookback_times, hg_ratios, color='red')
+            plot1, = ax20.plot(lookback_times, sfg_ratios, color='blue')
+            plot2, = ax20.plot(lookback_times, wg_ratios, color='green')
+            plot3, = ax20.plot(lookback_times, hg_ratios, color='red')
             
             # Create the legends and save the figure #
             ax10.legend([plot100, plot101], [r'$\mathrm{Gas}$', r'$\mathrm{Stars}$'], loc='lower center', fontsize=16, frameon=False, numpoints=1,
@@ -1293,8 +1295,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
             ax002.legend([plot20, plot21], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False,
                          numpoints=1, ncol=2)
             ax00.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, ncol=2)
-            ax102.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
-                         fontsize=16, frameon=False, numpoints=1)
+            ax20.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
+                        fontsize=16, frameon=False, numpoints=1)
             
             pdf.savefig(figure, bbox_inches='tight')
             plt.close()

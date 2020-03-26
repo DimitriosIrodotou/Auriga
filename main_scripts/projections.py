@@ -106,7 +106,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32, x, y, y2, area
     
     elif multiple3 is True:
-        gs = gridspec.GridSpec(4, 4, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
+        gs = gridspec.GridSpec(4, 4, hspace=0.05, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
         ax00 = plt.subplot(gs[0, 0])
         ax10 = plt.subplot(gs[1, 0])
         ax20 = plt.subplot(gs[2, 0])
@@ -1052,7 +1052,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     return None
 
 
-def combination_central(pdf, data, redshift, read):
+def central_combination(pdf, data, redshift, read):
     """
     Plot a combination of projections for Auriga halo(es) for the central 2kpc.
     :param pdf: path to save the pdf from main.make_pdf
@@ -1214,32 +1214,32 @@ def combination_central(pdf, data, redshift, read):
         # Plot the gas density projections #
         pcm = ax00.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
         ax20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
-        create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{gas}\;\mathrm{[M_\odot\;kpc^{-2}]}$", orientation='horizontal')
+        create_colorbar(axcbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$", orientation='horizontal')
         
         # Plot the gas temperature projections #
         pcm = ax01.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
                               rasterized=True)
         ax21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
-        create_colorbar(axcbar1, pcm, "$T\;\mathrm{[K]}$", orientation='horizontal')
+        create_colorbar(axcbar1, pcm, "$\mathrm{T\;[K]}$", orientation='horizontal')
         
         # Plot the magnetic field projections #
         pcm = ax02.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
         ax22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
-        create_colorbar(axcbar2, pcm, "$B\;\mathrm{[\mu G]}$", orientation='horizontal')
+        create_colorbar(axcbar2, pcm, "$\mathrm{B\;[\mu G]}$", orientation='horizontal')
         
         # Plot the sfr projections #
         pcm = ax03.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
         ax23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
-        create_colorbar(axcbar3, pcm, "$SFR\;\mathrm{[M_\odot\;yr^{-1}]}$", orientation='horizontal')
+        create_colorbar(axcbar3, pcm, "$\mathrm{SFR\;[M_\odot\;yr^{-1}]}$", orientation='horizontal')
         
         # Plot the gas total pressure projections #
         pcm = ax04.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
         ax24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
-        create_colorbar(axcbar4, pcm, "$P\;\mathrm{[M_\odot\;yr^{-1}]}$", orientation='horizontal')
+        create_colorbar(axcbar4, pcm, "$\mathrm{P\;[K\;cm^{-3}]}$", orientation='horizontal')
         
-        pcm = ax05.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', rasterized=True)
-        ax25.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', rasterized=True)
-        create_colorbar(axcbar5, pcm, "$P\;\mathrm{[M_\odot\;yr^{-1}]}$", orientation='horizontal')
+        pcm = ax05.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
+        ax25.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
+        create_colorbar(axcbar5, pcm, "$\mathrm{Velocity\;[km\;s^{-1}]}$", orientation='horizontal')
         
         for a in [axcbar, axcbar1, axcbar2, axcbar3, axcbar4, axcbar5]:
             a.xaxis.tick_top()
@@ -1284,7 +1284,6 @@ def stellar_light_combination(pdf, redshift):
         a.imshow(face_on, interpolation='nearest', aspect='equal')
         a2.imshow(edge_on, interpolation='nearest', aspect='equal')
         
-        # figure.tight_layout()
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=a.transAxes)
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
@@ -1309,6 +1308,19 @@ def gas_density_combination(pdf, redshift):
                                                                                                                  multiple3=True)
     axes_face_on = [ax00, ax20, ax01, ax21, ax02, ax22]
     axes_edge_on = [ax10, ax30, ax11, ax31, ax12, ax32]
+    for a in [ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32]:
+        a.tick_params(direction='out', which='both', top='on', right='on')
+    for a in [ax01, ax11, ax21, ax02, ax12, ax22]:
+        a.set_xticklabels([])
+        a.set_yticklabels([])
+    for a in [ax00, ax10, ax20]:
+        a.set_xticklabels([])
+    for a in [ax30, ax31, ax32]:
+        a.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
+    for a in [ax00, ax20]:
+        a.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=16)
+    for a in [ax10, ax30]:
+        a.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=16)
     
     # Loop over all available haloes #
     for i, a, a2 in zip(range(len(names)), axes_face_on, axes_edge_on):
@@ -1322,7 +1334,6 @@ def gas_density_combination(pdf, redshift):
         a2.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         create_colorbar(axcbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$")
         
-        # figure.tight_layout()
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=a.transAxes)
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()

@@ -148,7 +148,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_" % self.directory)
+        haloes = glob.glob("%s/halo_18" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -279,22 +279,23 @@ class AurigaPdf:
         
         # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
-        # projections.combination_central(pdf, self, redshift, read=True)
         # Stars #
         # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
-        # projections.stellar_light_combination(pdf, redshift)
         # Gas #
-        # projections.gas_density(pdf, self, redshift, read=False)
         # projections.gas_slice(pdf, self, redshift, read=False)
         # projections.gas_metallicity(pdf, self, level, redshift)
+        # projections.gas_density(pdf, self, redshift, read=False)
         # projections.gas_temperature(pdf, self, redshift, read=False)
         # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
-        projections.gas_density_combination(pdf, redshift)
         # Magnetic fields #
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
         # projections.dm_mass(pdf, self, level, redshift)
+        # Combinations #
+        projections.gas_density_combination(pdf, redshift)
+        # projections.stellar_light_combination(pdf, redshift)
+        # projections.central_combination(pdf, self, redshift, read=False)
         
         # Profiles #
         # profiles.radial_profiles(pdf, self, level, redshift)
