@@ -325,7 +325,7 @@ def bar_strength_evolution(pdf, data, read):
         redshift_cut = 5.0
         A2, names = [], []  # Declare lists to store the data.
         # Get all available redshifts #
-        haloes = data.get_haloes(4)
+        haloes = data.get_haloes(level)
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
@@ -333,7 +333,7 @@ def bar_strength_evolution(pdf, data, read):
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [4]
             attributes = ['age', 'mass', 'pos']
-            data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
             
             # Loop over all haloes #
             for s in data:
@@ -431,7 +431,7 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         sfg_ratios, wg_ratios, hg_ratios, names, masses = [], [], [], [], []  # Declare lists to store the data.
         
         # Get all available redshifts #
-        haloes = data.get_haloes(4)
+        haloes = data.get_haloes(level)
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
@@ -439,7 +439,7 @@ def gas_temperature_fraction_evolution(pdf, data, read):
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [0, 4]
             attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
-            data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
             
             # Loop over all haloes #
             for s in data:
@@ -537,7 +537,7 @@ def AGN_modes_cumulative(date, data, read):
     
     # Read the data #
     if read is True:
-        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+        data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
         for s in data:
@@ -651,7 +651,7 @@ def AGN_modes_histogram(date, data, read):
     # Read the data #
     if read is True:
         
-        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+        data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
         for s in data:
@@ -748,7 +748,7 @@ def AGN_modes_distribution(date, data, read):
     
     # Read the data #
     if read is True:
-        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+        data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
         for s in data:
@@ -817,7 +817,7 @@ def AGN_modes_distribution(date, data, read):
             a.set_yscale('log')
             a.set_ylim(1e51, 1e60)
             a.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-            a.tick_params(direction='out', which='both', right='on', left='on')
+            a.tick_params(direction='out', which='both', right='on', left='on', fontsize=16)
         ax00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
         ax02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
@@ -903,7 +903,7 @@ def AGN_modes_step(date, data, read):
     
     # Read the data #
     if read is True:
-        data.select_haloes(4, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
+        data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
         for s in data:
@@ -1107,7 +1107,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
         if read is True:
             particle_type = [4]
             attributes = ['age', 'mass', 'pos']
-            data.select_haloes(4, 0, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            data.select_haloes(level, 0, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
             
             # Loop over all haloes #
             for s in data:
@@ -1137,7 +1137,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             redshift_cut = 7.0
             gas_masses, stellar_masses, sfg_ratios, wg_ratios, hg_ratios = [], [], [], [], []  # Declare lists to store the data.
             # Get all available redshifts #
-            haloes = data.get_haloes(4)
+            haloes = data.get_haloes(level)
             for name, halo in haloes.items():
                 redshifts = halo.get_redshifts()
             
@@ -1145,7 +1145,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
                 particle_type = [0, 4]
                 attributes = ['age', 'mass', 'pos']
-                data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+                data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
                 
                 # Loop over all haloes #
                 for s in data:
@@ -1303,10 +1303,9 @@ def gas_stars_sfr_evolution(pdf, data, read):
     return None
 
 
-def gas_temperature_movie(pdf, data, read):
+def gas_temperature_movie(data, read):
     """
     Plot gas temperature projection for Auriga halo(es).
-    :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param read: boolean
     :return: None
@@ -1318,14 +1317,14 @@ def gas_temperature_movie(pdf, data, read):
     
     # Read the data #
     if read is True:
-        redshift_cut = 1e-1
+        redshift_cut = 1e-2
         
         # Get all available redshifts #
-        haloes = data.get_haloes(4)
+        haloes = data.get_haloes(level)
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
-        for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
+        for redshift in np.flip(redshifts[np.where(redshifts <= redshift_cut)]):
             print(redshift)
             
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
@@ -1338,22 +1337,38 @@ def gas_temperature_movie(pdf, data, read):
                 # Check if any of the haloes' data already exists, if not then read and save it #
                 names = glob.glob(path + '/name_3000_*')
                 names = [re.split('_|.npy', name)[2] for name in names]
-                if str(s.haloname) in names:
-                    continue
+                # if str(s.haloname) in names:
+                #     continue
                 
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                 s.calc_sf_indizes(s.subfind)
-                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+                if redshift < 1e-14:
+                    print(redshift)
+                    rot = s.select_halo(s.subfind, rotate_disk=True, use_principal_axis=True, do_rotation=True)
+                else:
+                    print(redshift)
+                    s.select_halo(s.subfind)
+                    s.centerat(s.subfind.data['fpos'][0, :])
+                    s.rotateto(rot[0], rot[1], rot[2])
                 
                 # Plot the projections #
                 mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
                 temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * mean_weight
                 s.data['temprho'] = s.rho * temperature
                 
-                face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-                face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-                edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
-                edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, numthreads=8)["grid"]
+                face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
+                face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
+                edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
+                edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
+                
+                # Get the radial velocity projections #
+                gas_mask, = np.where(s.type == 0)
+                spherical_radius = np.sqrt(np.sum(s.pos[gas_mask, :] ** 2, axis=1))
+                CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.mass[gas_mask][:, None], axis=0) / np.sum(s.mass[gas_mask])
+                s.data['vrad'] = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.pos[gas_mask], axis=1) / spherical_radius
+                
+                vrad_face_on = s.get_Aslice("vrad", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
+                vrad_edge_on = s.get_Aslice("vrad", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
                 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname) + '_' + str(redshift), s.haloname)
@@ -1362,45 +1377,65 @@ def gas_temperature_movie(pdf, data, read):
                 np.save(path + 'redshift_' + str(s.haloname) + '_' + str(redshift), redshift)
                 np.save(path + 'face_on_rho_' + str(s.haloname) + '_' + str(redshift), face_on_rho)
                 np.save(path + 'edge_on_rho_' + str(s.haloname) + '_' + str(redshift), edge_on_rho)
+                np.save(path + 'vrad_face_on_' + str(s.haloname) + '_' + str(redshift), vrad_face_on)
+                np.save(path + 'vrad_edge_on_' + str(s.haloname) + '_' + str(redshift), vrad_edge_on)
     
     # Get the redshifts and sort them #
     names = glob.glob(path + '/name_3000_*')
     names.sort()
     
     # Loop over all available haloes #
-    for i in range(177, len(names)):
+    # for i in range(0, len(names)):
+    for i in range(0, 1):
         print(i)
         # Load and plot the data #
         face_on = np.load(path + 'face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         edge_on = np.load(path + 'edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         face_on_rho = np.load(path + 'face_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         edge_on_rho = np.load(path + 'edge_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        vrad_face_on = np.load(path + 'vrad_face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        vrad_edge_on = np.load(path + 'vrad_edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        
+        # Generate the figure and define its parameters #
+        figure, ax = plt.subplots(1, figsize=(20, 10))
+        gs = gridspec.GridSpec(1, 2)
+        ax00 = plt.subplot(gs[0, 0])
+        ax01 = plt.subplot(gs[0, 1])
+        for a in [ax00, ax01]:
+            a.axis('off')
+            a.set_xlim(-30, 30)
+            a.set_ylim(-30, 30)
+            a.set_aspect('auto')
         
         # Plot the projections #
         x = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         y = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
-        # Generate the figure and define its parameters #
-        figure, ax = plt.subplots(1, figsize=(10, 10))
-        plt.axis('off')
-        plt.xlim(-30, 30)
-        plt.ylim(-30, 30)
-        ax.set_aspect('auto')
-        
-        plt.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        ax00.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        ax01.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
         figure.tight_layout()
-        plt.savefig('/u/di43/Auriga/plots/' + 'gtmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/gtmf/' + 'gtmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
         
         # Generate the figure and define its parameters #
+        figure, ax = plt.subplots(1, figsize=(20, 10))
+        gs = gridspec.GridSpec(1, 2)
+        ax00 = plt.subplot(gs[0, 0])
+        ax01 = plt.subplot(gs[0, 1])
+        for a in [ax00, ax01]:
+            a.axis('off')
+            a.set_xlim(-30, 30)
+            a.set_ylim(-30, 30)
+            a.set_aspect('auto')
         f, ax = plt.subplots(1, figsize=(10, 10))
         plt.axis('off')
         plt.xlim(-30, 30)
         plt.ylim(-30, 30)
         ax.set_aspect('auto')
         
-        plt.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        figure.tight_layout()
-        plt.savefig('/u/di43/Auriga/plots/' + 'gtme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
+        ax00.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
+        
+        plt.savefig('/u/di43/Auriga/plots/gtme/' + 'gtme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
     
     return None

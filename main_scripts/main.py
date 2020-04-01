@@ -7,6 +7,7 @@ import galaxy
 import profiles
 import evolution
 import projections
+import combinations
 import metallicities
 import time_evolution
 
@@ -148,7 +149,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_18" % self.directory)
+        haloes = glob.glob("%s/halo_18_3000" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -292,11 +293,7 @@ class AurigaPdf:
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
         # projections.dm_mass(pdf, self, level, redshift)
-        # Combinations #
-        projections.gas_density_combination(pdf, redshift)
-        # projections.stellar_light_combination(pdf, redshift)
-        # projections.central_combination(pdf, self, redshift, read=False)
-        
+
         # Profiles #
         # profiles.radial_profiles(pdf, self, level, redshift)
         # profiles.vertical_profiles(pdf, self, level, redshift)
@@ -318,7 +315,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
         # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
-        # time_evolution.gas_temperature_movie(pdf, self, read=False)
+        time_evolution.gas_temperature_movie(pdf, self, read=True)
         
         # Global galactic relations #
         # galaxy.sfr(pdf, self, [level])
@@ -340,10 +337,16 @@ class AurigaPdf:
         # Metallicities #
         # metallicities.ratios(pdf, self, [level], 0.)
         
+        # Combinations #
+        # combinations.AGN_modes_distribution(date, pdf)
+        # combinations.gas_density_combination(pdf, redshift)
+        # combinations.stellar_light_combination(pdf, redshift)
+        # combinations.central_combination(pdf, self, redshift, read=False)
+        
         pdf.close()
-        file_name = 'Auriga-' + date + '.pdf'
-        # file_name = 'gtm_f_' + str(2.220446049250313e-16) + '.png'
-        os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
+        # file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'gtm_f_0000.png'
+        os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/gtmf/' % file_name)
         return None
 
 
