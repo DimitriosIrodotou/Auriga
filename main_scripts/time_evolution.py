@@ -1317,7 +1317,7 @@ def gas_temperature_movie(data, read):
     
     # Read the data #
     if read is True:
-        redshift_cut = 1e-2
+        redshift_cut = 2e-3
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
@@ -1335,22 +1335,19 @@ def gas_temperature_movie(data, read):
             # Loop over all haloes #
             for s in data:
                 # Check if any of the haloes' data already exists, if not then read and save it #
-                names = glob.glob(path + '/name_3000_*')
-                names = [re.split('_|.npy', name)[2] for name in names]
+                # names = glob.glob(path + '/name_3000_*')
+                # names = [re.split('_|.npy', name)[2] for name in names]
                 # if str(s.haloname) in names:
                 #     continue
                 
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 if redshift < 1e-14:
-                    print(redshift)
                     rot = s.select_halo(s.subfind, rotate_disk=True, use_principal_axis=True, do_rotation=True)
                 else:
-                    print(redshift)
-                    s.select_halo(s.subfind)
-                    s.centerat(s.subfind.data['fpos'][0, :])
-                    s.rotateto(rot[0], rot[1], rot[2])
-                
+                    s.select_halo(s.subfind, rotate_disk=False, use_principal_axis=False, do_rotation=False)
+                    s.data['pos'] = rotate_value(s.data['pos'], rot)
+                    s.data['vel'] = rotate_value(s.data['vel'], rot)
                 # Plot the projections #
                 mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
                 temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * mean_weight
@@ -1385,9 +1382,7 @@ def gas_temperature_movie(data, read):
     names.sort()
     
     # Loop over all available haloes #
-    # for i in range(0, len(names)):
-    for i in range(0, 1):
-        print(i)
+    for i in range(0, len(names)):
         # Load and plot the data #
         face_on = np.load(path + 'face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         edge_on = np.load(path + 'edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
@@ -1439,3 +1434,10 @@ def gas_temperature_movie(data, read):
         plt.close()
     
     return None
+
+
+def rotate_value(value, matrix):
+    new_value = np.zeros(np.shape(value))
+    for i in range(3):
+        new_value[:, i] = (value * matrix[i, :][None, :]).sum(axis=1)
+    return new_value
