@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_" % self.directory)
+        haloes = glob.glob("%s/halo_18_3000" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -297,7 +297,7 @@ class AurigaPdf:
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
         # projections.dm_mass(pdf, self, level, redshift)
-
+        
         # Profiles #
         # profiles.radial_profiles(pdf, self, level, redshift)
         # profiles.vertical_profiles(pdf, self, level, redshift)
@@ -349,8 +349,8 @@ class AurigaPdf:
         
         pdf.close()
         # file_name = 'Auriga-' + date + '.pdf'
-        file_name = 'gtm_f_0000.png'
-        os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/gtmf/' % file_name)
+        file_name = 'gtm/'
+        os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 
 

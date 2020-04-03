@@ -188,7 +188,7 @@ def obs_tullyfisher_fit(masses):
 def pizagno_convert_color_to_mass(color, magnitude, band=5):
     mass_to_light = 10 ** (-0.306 + 1.097 * color)
     luminosity = 10 ** (2.0 * (Msunabs[band] - magnitude) / 5.0)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # in 10^10 M_sun
+    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 M_sun.
     # this converts in the MPA stellar masses eq. 20 of Dutton+11. There is an offset
     # of -0.1 dex that takes into account the Chabrier IMF see sect. 3.5
     stellar_mass = (stellar_mass - 0.230) / 0.922
@@ -198,7 +198,7 @@ def pizagno_convert_color_to_mass(color, magnitude, band=5):
 def verheijen_convert_color_to_mass(color, magnitude, band=1):
     mass_to_light = 10 ** (-0.976 + 1.111 * color)
     luminosity = 10 ** (2.0 * (Msunabs[band] - magnitude) / 5.0)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # in 10^10 M_sun
+    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 M_sun.
     # this converts in the MPA stellar masses eq. 20 of Dutton+11. There is an offset
     # of -0.1 dex that takes into account the Chabrier IMF see sect. 3.5
     stellar_mass = (stellar_mass - 0.230) / 0.922
@@ -209,7 +209,7 @@ def verheijen_convert_color_to_mass(color, magnitude, band=1):
 def courteau_convert_luminosity_to_mass(loglum):
     mass_to_light = 10 ** (0.172 + 0.144 * (loglum - 10.3))
     luminosity = 10 ** (loglum)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # in 10^10 M_sun
+    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 M_sun.
     # this converts in the MPA stellar masses eq. 20 of Dutton+11. There is an offset
     # of -0.1 dex that takes into account the Chabrier IMF see sect. 3.5
     stellar_mass = (stellar_mass - 0.230) / 0.922

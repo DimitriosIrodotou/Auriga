@@ -227,7 +227,7 @@ def set_axis_evo(ax, ax2, ylabel=None):
     
     times = np.zeros(len(a))
     for i in range(len(a)):
-        times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # in Gyr
+        times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
     
     lb = []
     for v in z:
@@ -432,7 +432,7 @@ def central_combination(pdf, data, redshift, read):
                 np.sum(s.gmet[s.type == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.type == 0, 0])
             Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
             
-            # in megabars (10**12dyne/cm**2)
+            # Un megabars (10**12dyne/cm**2)
             s.data['T'] = s.u / Tfac
             s.data['dens'] = s.rho / (1e6 * parsec) ** 3. * msol * 1e10
             s.data['Ptherm'] = s.data['dens'] * s.data['T'] / (meanweight * PROTONMASS)
