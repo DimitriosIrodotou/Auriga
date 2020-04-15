@@ -1317,7 +1317,7 @@ def gas_temperature_movie(data, read):
     
     # Read the data #
     if read is True:
-        redshift_cut = 1e-15
+        redshift_cut = 1e-3
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
@@ -1363,8 +1363,9 @@ def gas_temperature_movie(data, read):
                 # Get the radial velocity projections #
                 gas_mask, = np.where(s.type == 0)
                 spherical_radius = np.sqrt(np.sum(s.data['pos'][gas_mask, :] ** 2, axis=1))  # In Mpc.
-                CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.mass[gas_mask][:, None], axis=0) / np.sum(s.mass[gas_mask])  # In km/s.
-                s.data['vrad'] = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask], axis=1) / spherical_radius
+                CoM_velocity = np.divide(np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0),
+                                         np.sum(s.data['mass'][gas_mask]))  # In km s^-1.
+                s.data['vrad'] = np.sum(s.data['vel'][gas_mask] * CoM_velocity, axis=1)
                 
                 vrad_face_on = s.get_Aslice("vrad", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
                 vrad_edge_on = s.get_Aslice("vrad", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
@@ -1385,7 +1386,7 @@ def gas_temperature_movie(data, read):
     names.sort()  # (reverse=True)
     
     # Loop over all available haloes #
-    for i in range(0, 1):  # len(names)):
+    for i in range(len(names)):
         # Load and plot the data #
         print(names[i])
         # face_on = np.load(path + 'face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
@@ -1431,7 +1432,7 @@ def gas_temperature_movie(data, read):
             a.set_aspect('auto')
         
         # ax00.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', rasterized=True)
+        sc = ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', rasterized=True)
         figure.tight_layout()
         # figure.text(0.0, 0.97, 'z = %06d' % redshift, color='k', fontsize=16, transform=ax00.transAxes)
         
