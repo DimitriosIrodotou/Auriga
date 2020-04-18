@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_18_3000" % self.directory)
+        haloes = glob.glob("%s/halo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)

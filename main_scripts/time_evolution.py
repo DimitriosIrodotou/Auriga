@@ -1310,6 +1310,8 @@ def gas_temperature_movie(data, read):
     :param read: boolean
     :return: None
     """
+    boxsize = 0.1  # Increase the boxsize.
+    
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'gtm/' + '/'
     if not os.path.exists(path):
@@ -1317,7 +1319,7 @@ def gas_temperature_movie(data, read):
     
     # Read the data #
     if read is True:
-        redshift_cut = 1e-3
+        redshift_cut = 5e-2
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
@@ -1351,53 +1353,53 @@ def gas_temperature_movie(data, read):
                     s.data['vel'] = rotate_value(s.data['vel'], rot)
                 
                 # Get the density-weighted temperature projections #
-                # mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-                # temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * mean_weight
-                # s.data['temprho'] = s.rho * temperature
-                #
-                # face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
-                # face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
-                # edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
-                # edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
+                mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+                temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * mean_weight
+                s.data['temprho'] = s.rho * temperature
+                
+                face_on = s.get_Aslice("temprho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)["grid"]
+                face_on_rho = s.get_Aslice("rho", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)["grid"]
+                edge_on = s.get_Aslice("temprho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)["grid"]
+                edge_on_rho = s.get_Aslice("rho", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)["grid"]
                 
                 # Get the radial velocity projections #
                 gas_mask, = np.where(s.type == 0)
-                spherical_radius = np.sqrt(np.sum(s.data['pos'][gas_mask, :] ** 2, axis=1))  # In Mpc.
-                CoM_velocity = np.divide(np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0),
-                                         np.sum(s.data['mass'][gas_mask]))  # In km s^-1.
-                s.data['vrad'] = np.sum(s.data['vel'][gas_mask] * CoM_velocity, axis=1)
+                cylindrical_radius = np.sqrt(np.sum(s.data['pos'][gas_mask, 1:] ** 2, axis=1))  # In Mpc.
+                s.data['vrad'] = np.divide(np.sum(s.data['vel'][gas_mask, 1:] * s.data['pos'][gas_mask, 1:], axis=1), cylindrical_radius)
+                vrad_face_on = s.get_Aslice("vrad", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)["grid"]
                 
-                vrad_face_on = s.get_Aslice("vrad", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
-                vrad_edge_on = s.get_Aslice("vrad", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
+                # Re-normalise velocities #
+                s.data['vz'] = s.data['vel'][gas_mask, 0]
+                negative_mask, = np.where(s.data['pos'][gas_mask, 0] < 0)
+                s.data['vz'][negative_mask] *= -1
+                
+                vrad_edge_on = s.get_Aslice("vz", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)["grid"]
                 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname) + '_' + str(redshift), s.haloname)
-                # np.save(path + 'face_on_' + str(s.haloname) + '_' + str(redshift), face_on)
-                # np.save(path + 'edge_on_' + str(s.haloname) + '_' + str(redshift), edge_on)
+                np.save(path + 'face_on_' + str(s.haloname) + '_' + str(redshift), face_on)
+                np.save(path + 'edge_on_' + str(s.haloname) + '_' + str(redshift), edge_on)
                 np.save(path + 'redshift_' + str(s.haloname) + '_' + str(redshift), redshift)
-                # np.save(path + 'face_on_rho_' + str(s.haloname) + '_' + str(redshift), face_on_rho)
-                # np.save(path + 'edge_on_rho_' + str(s.haloname) + '_' + str(redshift), edge_on_rho)
+                np.save(path + 'face_on_rho_' + str(s.haloname) + '_' + str(redshift), face_on_rho)
+                np.save(path + 'edge_on_rho_' + str(s.haloname) + '_' + str(redshift), edge_on_rho)
                 np.save(path + 'vrad_face_on_' + str(s.haloname) + '_' + str(redshift), vrad_face_on)
                 np.save(path + 'vrad_edge_on_' + str(s.haloname) + '_' + str(redshift), vrad_edge_on)
     
     # Get the redshifts and sort them #
     names = glob.glob(path + '/name_3000_*')
-    # names = glob.glob(path + '/name_18_*')
-    names.sort()  # (reverse=True)
+    names.sort(reverse=True)
     
     # Loop over all available haloes #
     for i in range(len(names)):
-        # Load and plot the data #
         print(names[i])
-        # face_on = np.load(path + 'face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        # edge_on = np.load(path + 'edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        # redshift = np.load(path + 'redshift_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        # face_on_rho = np.load(path + 'face_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        # edge_on_rho = np.load(path + 'edge_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        # Load and plot the data #
+        face_on = np.load(path + 'face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        edge_on = np.load(path + 'edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        redshift = np.load(path + 'redshift_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        face_on_rho = np.load(path + 'face_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        edge_on_rho = np.load(path + 'edge_on_rho_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         vrad_face_on = np.load(path + 'vrad_face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         vrad_edge_on = np.load(path + 'vrad_edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        # vrad_edge_on = np.load(path + 'vrad_edge_on_18_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        # vrad_face_on = np.load(path + 'vrad_face_on_18_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         
         # Generate the figure and define its parameters #
         figure, ax = plt.subplots(1, figsize=(20, 10))
@@ -1406,17 +1408,18 @@ def gas_temperature_movie(data, read):
         ax01 = plt.subplot(gs[0, 1])
         for a in [ax00, ax01]:
             a.axis('off')
-            a.set_xlim(-30, 30)
-            a.set_ylim(-30, 30)
+            a.set_xlim(-50, 50)
+            a.set_ylim(-50, 50)
             a.set_aspect('auto')
         
         # Plot the projections #
         x = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         y = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
-        # ax00.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        ax01.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', rasterized=True)
+        ax00.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        ax01.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-8e3, vmax=8e3, rasterized=True)
         figure.tight_layout()
-        # figure.text(0.0, 0.97, 'z = %06d' % redshift, color='k', fontsize=16, transform=ax00.transAxes)
+        
+        figure.text(0.0, 0.97, 'z = %.3f' % float(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         plt.savefig('/u/di43/Auriga/plots/gtm/' + 'gtmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
         
@@ -1427,14 +1430,14 @@ def gas_temperature_movie(data, read):
         ax01 = plt.subplot(gs[0, 1])
         for a in [ax00, ax01]:
             a.axis('off')
-            a.set_xlim(-30, 30)
-            a.set_ylim(-30, 30)
+            a.set_xlim(-50, 50)
+            a.set_ylim(-50, 50)
             a.set_aspect('auto')
         
-        # ax00.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        sc = ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', rasterized=True)
+        ax00.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
+        ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-3.5e4, vmax=3.5e4, rasterized=True)
         figure.tight_layout()
-        # figure.text(0.0, 0.97, 'z = %06d' % redshift, color='k', fontsize=16, transform=ax00.transAxes)
+        figure.text(0.0, 0.97, 'z = %.3f' % float(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
         plt.savefig('/u/di43/Auriga/plots/gtm/' + 'gtme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
