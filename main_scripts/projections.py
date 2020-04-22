@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import os
 import re
 import glob
@@ -319,8 +317,10 @@ def stellar_light(pdf, data, redshift, read):
             z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
             s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
             
-            face_on = get_projection(s.pos, s.mass[mask], s.data['gsph'][mask], 0, res, boxsize, 'light', maxHsml=True)
-            edge_on = get_projection(s.pos, s.mass[mask], s.data['gsph'][mask], 1, res, boxsize, 'light', maxHsml=True)
+            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
+                                     maxHsml=True)
+            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
+                                     maxHsml=True)
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -328,7 +328,7 @@ def stellar_light(pdf, data, redshift, read):
             np.save(path + 'edge_on_' + str(s.haloname), edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_06.*')
+    names = glob.glob(path + '/name_18*')
     names.sort()
     
     # Loop over all available haloes #

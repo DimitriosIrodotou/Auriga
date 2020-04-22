@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_" % self.directory)
+        haloes = glob.glob("%s/halo_18NORadio" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -285,7 +285,7 @@ class AurigaPdf:
         # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
-        # projections.stellar_light(pdf, self, redshift, read=False)
+        projections.stellar_light(pdf, self, redshift, read=True)
         # projections.stellar_density(pdf, self, redshift, read=False)
         # Gas #
         # projections.gas_slice(pdf, self, redshift, read=False)
@@ -316,10 +316,10 @@ class AurigaPdf:
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
         # time_evolution.AGN_modes_distribution(date, self, read=False)
-        # time_evolution.AGN_modes_step(date, self, read=False)
+        # time_evolution.AGN_modes_step(date, self, read=True)
         # time_evolution.AGN_modes_gas(date)
         # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
-        time_evolution.gas_temperature_movie(self, read=False)
+        # time_evolution.gas_temperature_movie(self, read=False)
         
         # Global galactic relations #
         # galaxy.sfr(pdf, self, [level])
@@ -348,8 +348,9 @@ class AurigaPdf:
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()
-        # file_name = 'Auriga-' + date + '.pdf'
-        file_name = 'gtm/'
+        file_name = 'Auriga-' + date + '.pdf'
+        # file_name = 'gtm/'
+        # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 

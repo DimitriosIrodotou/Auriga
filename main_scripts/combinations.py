@@ -282,7 +282,7 @@ def AGN_modes_distribution(date, data):
         a.set_yscale('log')
         a.set_ylim(1e51, 1e60)
         a.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-        a.tick_params(direction='out', which='both', right='on', left='on', fontsize=16)
+        a.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
     ax00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
     ax02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
     

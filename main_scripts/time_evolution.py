@@ -578,7 +578,7 @@ def AGN_modes_cumulative(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18*')
+    names = glob.glob(path + '/name_18NORadio*')
     names.sort()
     
     # Load and plot the data #
@@ -591,10 +591,10 @@ def AGN_modes_cumulative(date, data, read):
         
         ax00.grid(True)
         ax00.set_xscale('log')
-        ax00.set_yscale('log')
+        # ax00.set_yscale('log')
         ax00.set_aspect('equal')
         ax00.set_xlim(1e54, 1e62)
-        ax00.set_ylim(1e54, 1e62)
+        ax00.set_ylim(-1, 1)
         ax00.tick_params(direction='out', which='both', right='on', left='on')
         ax00.set_xlabel(r'$\mathrm{Cumulative\;thermal\;feedback\;energy\;[ergs]}$', size=16)
         ax00.set_ylabel(r'$\mathrm{Cumulative\;mechanical\;feedback\;energy\;[ergs]}$', size=16)
@@ -623,7 +623,7 @@ def AGN_modes_cumulative(date, data, read):
         sc = ax00.scatter(thermals[mask], mechanicals[mask], edgecolor='None', s=50, c=lookback_times[mask], vmin=0, vmax=max(lookback_times),
                           cmap='jet')
         cb = plt.colorbar(sc, cax=axcbar)
-        cb.set_label(r'$$\mathrm{t_{look}\;[Gyr]}$', size=16)
+        cb.set_label(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
         axcbar.tick_params(direction='out', which='both', right='on', left='on')
         axcbar.yaxis.tick_left()
         
@@ -692,7 +692,7 @@ def AGN_modes_histogram(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18*')
+    names = glob.glob(path + '/name_18NORadio*')
     names.sort()
     
     # Load and plot the data #
@@ -795,7 +795,7 @@ def AGN_modes_distribution(date, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18.*')
+    names = glob.glob(path + '/name_18NORadio.*')
     names.sort()
     
     # Load and plot the data #
@@ -817,7 +817,7 @@ def AGN_modes_distribution(date, data, read):
             a.set_yscale('log')
             a.set_ylim(1e51, 1e60)
             a.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-            a.tick_params(direction='out', which='both', right='on', left='on', fontsize=16)
+            a.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
         ax00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
         ax02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
@@ -839,8 +839,8 @@ def AGN_modes_distribution(date, data, read):
         cb = plt.colorbar(hb, cax=axcbar, orientation='horizontal')
         cb.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
-        hb = ax02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r',
-                         gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
+        hb = ax02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r')
+                         # gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
         
         cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
         cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
@@ -850,19 +850,19 @@ def AGN_modes_distribution(date, data, read):
             a.xaxis.set_label_position("top")
             a.tick_params(direction='out', which='both', top='on', right='on')
         
-        # Calculate and plot the mechanical energy sum #
-        nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
-        x_value = np.empty(nbin)
-        sum = np.empty(nbin)
-        x_low = min(lookback_times[np.where(mechanicals > 0)])
-        for j in range(nbin):
-            index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
-            x_value[j] = np.mean(np.absolute(lookback_times[np.where(mechanicals > 0)])[index])
-            if len(index) > 0:
-                sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-            x_low += 0.05
-        
-        sum00, = ax00.plot(x_value, sum, color='black', zorder=5)
+        # # Calculate and plot the mechanical energy sum #
+        # nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
+        # x_value = np.empty(nbin)
+        # sum = np.empty(nbin)
+        # x_low = min(lookback_times[np.where(mechanicals > 0)])
+        # for j in range(nbin):
+        #     index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+        #     x_value[j] = np.mean(np.absolute(lookback_times[np.where(mechanicals > 0)])[index])
+        #     if len(index) > 0:
+        #         sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
+        #     x_low += 0.05
+        #
+        # sum00, = ax00.plot(x_value, sum, color='black', zorder=5)
         
         # Calculate and plot the mechanical energy sum #
         nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
@@ -880,7 +880,7 @@ def AGN_modes_distribution(date, data, read):
         sum02, = ax02.plot(x_value, sum, color='black', zorder=5)
         
         # Create the legends and save the figure #
-        ax00.legend([sum00], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
+        # ax00.legend([sum00], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
         ax02.legend([sum02], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')
         plt.close()
@@ -938,7 +938,7 @@ def AGN_modes_step(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18*')
+    names = glob.glob(path + '/name_18NORadio*')
     names.sort()
     
     # Load and plot the data #
