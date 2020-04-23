@@ -258,6 +258,8 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     
     # Calculate light projection #
     if type == 'light':
+        boxx = boxy
+        xres = yres
         proj = np.zeros((xres, yres, 3))
         for k in range(3):
             iband = [3, 1, 0][k]
@@ -1049,4 +1051,77 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
                     transform=ax00.transAxes)
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
         plt.close()
+    return None
+
+
+def stellar_light_fit(data, redshift, read):
+    """
+    Plot stellar light projection for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean
+    :return: None
+    """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'slf/' + str(redshift) + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [4]
+        attributes = ['age', 'gsph', 'mass', 'pos']
+        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            # Mask and rotate the data and plot the projections #
+            mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in kpc.
+            
+            z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
+            s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
+            
+            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
+                                     maxHsml=True)
+            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
+                                     maxHsml=True)
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'face_on_' + str(s.haloname), face_on)
+            np.save(path + 'edge_on_' + str(s.haloname), edge_on)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Loop over all projections #
+        projections = ['face_on', 'edge_on']
+        for projection in projections:
+            # Generate the figure and define its parameters #
+            figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+            plt.axis('off')
+            ax.set_aspect('equal')
+            
+            # Load and plot the data #
+            proj = np.load(path + projection + '_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            plt.imshow(proj, interpolation='nearest', aspect='equal')
+            
+            plt.savefig('/u/di43/Auriga/plots/slf/' + 'Au-' + str(re.split('_|.npy', names[i])[1]) + '_' + str(projection) + '.png',
+                        bbox_inches='tight')  # Save the figure.
+            plt.close()
     return None

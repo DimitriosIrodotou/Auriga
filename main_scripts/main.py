@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_18NORadio" % self.directory)
+        haloes = glob.glob("%s/halo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -285,7 +285,8 @@ class AurigaPdf:
         # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
-        projections.stellar_light(pdf, self, redshift, read=True)
+        projections.stellar_light_fit(self, redshift, read=False)
+        # projections.stellar_light(pdf, self, redshift, read=True)
         # projections.stellar_density(pdf, self, redshift, read=False)
         # Gas #
         # projections.gas_slice(pdf, self, redshift, read=False)
@@ -348,8 +349,8 @@ class AurigaPdf:
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()
-        file_name = 'Auriga-' + date + '.pdf'
-        # file_name = 'gtm/'
+        # file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'slf/'
         # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
