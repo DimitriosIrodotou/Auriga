@@ -26,9 +26,7 @@ def convert_to_grayscale_fits(name):
     ax.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
-    ax.imshow(array, cmap='gray', interpolation='nearest', aspect='equal')
-    
-    plt.savefig(plots_path + str(name) + '_gs' + '.png', bbox_inches='tight', pad_inches=-0.1)
+    plt.imsave(plots_path + str(name) + '_gs' + '.png', array, cmap='gray')
     plt.close()
     
     # Create and save a fits version of the gray scaled image #

@@ -1117,11 +1117,8 @@ def stellar_light_fit(data, redshift, read):
             plt.axis('off')
             ax.set_aspect('equal')
             
-            # Load and plot the data #
+            # Load and save the data #
             proj = np.load(path + projection + '_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            plt.imshow(proj, interpolation='nearest', aspect='equal')
-            
-            plt.savefig('/u/di43/Auriga/plots/slf/' + 'Au-' + str(re.split('_|.npy', names[i])[1]) + '_' + str(projection) + '.png',
-                        bbox_inches='tight')  # Save the figure.
+            plt.imsave('/u/di43/Auriga/plots/slf/' + 'Au-' + str(re.split('_|.npy', names[i])[1]) + '_' + str(projection) + '.png', proj, cmap='gray')
             plt.close()
     return None
