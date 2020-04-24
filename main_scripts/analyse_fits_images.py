@@ -10,13 +10,13 @@ from astropy.io import fits
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/'
 
 
-def convert_to_grayscale_fits(name):
+def convert_to_grayscale(name):
     """
     Convert a png image to gray scale and save it along with a fits version of it.
     :param name: name of the image.
     :return: None
     """
-    # Load png image and convert to array #
+    # Load png image and convert to a grayscale array #
     image = Image.open(plots_path + str(name) + '.png').convert("L")
     array = np.asarray(image)
     
@@ -45,7 +45,7 @@ def show_fits_image(name):
     image_data = fits.getdata(plots_path + str(name) + '.fits', ext=0)
     
     plt.figure()
-    plt.imshow(image_data, cmap='gray')
+    plt.imshow(image_data)
     plt.colorbar()
     plt.show()
     return None
@@ -65,10 +65,36 @@ def image_centre(name):
     return centre
 
 
+def image_intensity(name):
+    """
+    Get the centre of the image in pixels.
+    :param name: name of the image.
+    :return: centre
+    """
+    # Load the png image and calculate the centre #
+    im = Image.open(plots_path + str(name) + '.png').convert("L")
+    
+    # print(Image.Image.getextrema(im))  # Get min and max color values
+    
+    pixel_value = im.getpixel((image_centre(name)))  # Get the pixel value at the centre.
+    
+    # plt.figure()
+    # plt.imshow(im, cmap='gray')
+    # plt.colorbar()
+    # plt.show()
+    
+    intensity = np.array([[pixel, value] for pixel, value in enumerate(im.histogram())])
+    print(intensity[0])
+    plt.bar(intensity[:, 0], intensity[:, 1], log=True)
+    plt.show()
+    return None
+
+
 names = glob.glob(plots_path + '*on.png')
 names = [re.split('projections/|.png', name)[1] for name in names]
-for name in names:
-    convert_to_grayscale_fits(name)
+# for name in names:
+#     convert_to_grayscale(name)
+image_intensity('Au-06_face_on_gs')
 
 # show_fits_image('Au-18_face_on')
 
