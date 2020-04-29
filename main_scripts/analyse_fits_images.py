@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from PIL import Image
 from astropy.io import fits
+from matplotlib.patches import Circle
 
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/'
 
@@ -26,28 +27,32 @@ def convert_to_grayscale(name):
     ax.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
-    plt.imsave(plots_path + str(name) + '_gs' + '.png', array, cmap='gray')
+    plt.imsave(plots_path + str(name) + 'g.png', array, cmap='gray')
     plt.close()
     
     # Create and save a fits version of the gray scaled image #
     hdu = fits.PrimaryHDU(array)
-    hdu.writeto(plots_path + str(name) + '.fits', overwrite=True)
+    hdu.writeto(plots_path + str(name) + 'g.fits', overwrite=True)
     return None
 
 
-def show_fits_image(name):
+def plot_fits_image(name):
     """
     Load and show a fits image.
     :param name: name of the image.
     :return: None
     """
     # Load the fits image and show it #
-    image_data = fits.getdata(plots_path + str(name) + '.fits', ext=0)
+    image_data = fits.getdata(str(name) + '.fits', ext=0)
     
-    plt.figure()
-    plt.imshow(image_data)
-    plt.colorbar()
-    plt.show()
+    # Generate the figure and define its parameters #
+    figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+    plt.axis('off')
+    ax.set_aspect('equal')
+    
+    # Create and save a gray scaled version of the image #
+    plt.imsave(str(name) + '.png', image_data, cmap='gray')
+    plt.close()
     return None
 
 
@@ -58,7 +63,7 @@ def image_centre(name):
     :return: centre
     """
     # Load the png image and calculate the centre #
-    im = Image.open(plots_path + str(name) + '.png')
+    im = Image.open(str(name) + '.png')
     
     (X, Y) = im.size
     centre = X / 2, Y / 2
@@ -74,28 +79,50 @@ def image_intensity(name):
     # Load the png image and calculate the centre #
     im = Image.open(plots_path + str(name) + '.png').convert("L")
     
-    # print(Image.Image.getextrema(im))  # Get min and max color values
-    
-    pixel_value = im.getpixel((image_centre(name)))  # Get the pixel value at the centre.
-    
-    # plt.figure()
-    # plt.imshow(im, cmap='gray')
-    # plt.colorbar()
-    # plt.show()
-    
     intensity = np.array([[pixel, value] for pixel, value in enumerate(im.histogram())])
-    print(intensity[0])
-    plt.bar(intensity[:, 0], intensity[:, 1], log=True)
+    print(1 / intensity[0, 1])
+    plt.bar(intensity[:, 0], intensity[:, 1], width=2, log=True)
     plt.show()
     return None
 
 
-names = glob.glob(plots_path + '*on.png')
-names = [re.split('projections/|.png', name)[1] for name in names]
-# for name in names:
-#     convert_to_grayscale(name)
-image_intensity('Au-06_face_on_gs')
+def plot_fit_data(name, h=0.0, R_eff=0.0):
+    """
+    Over-plot the scale length and effective radius on the fits image.
+    :param name: name of the image.
+    :return: None
+    """
+    # Load the fits image and show it #
+    image_data = fits.getdata(str(name) + '.fits', ext=0)
+    
+    # Generate the figure and define its parameters #
+    figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+    plt.axis('off')
+    ax.set_aspect('equal')
+    
+    ax.imshow(image_data, cmap='gray')
+    centre = image_centre(name)
+    # Plot the scale length
+    for radius in [h, R_eff]:
+        circle = Circle((centre[0], centre[1]), radius, color='tab:red', fill=False)
+        ax.add_patch(circle)
+    
+    # Create and save a gray scaled version of the image #
+    plt.savefig(str(name) + '2.png', cmap='gray', bbox_inches='tight')
+    plt.close()
+    return None
 
-# show_fits_image('Au-18_face_on')
+
+names = glob.glob(plots_path + '*e.png')
+names.extend(glob.glob(plots_path + '*f.png'))
+names = [re.split('projections/|.png', name)[1] for name in names]
+for name in names:
+    if name + '.fits' in names:
+        continue  # convert_to_grayscale(name)
 
 # image_centre('Au-18_face_on')
+# image_intensity('06N_fg')
+
+plot_fits_image('model_E_06N_fg')
+plot_fits_image('resid_E_06N_fg')
+plot_fit_data('resid_ES_06N_fg', h=79.8589, R_eff=128.589)
