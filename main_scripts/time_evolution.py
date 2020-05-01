@@ -380,9 +380,6 @@ def bar_strength_evolution(pdf, data, read):
                 
                 # Calculate bar strength A_2 #
                 max_A2s.append(max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])))
-                # max_A2 = max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:]))
-                # max_A2s.append(max_A2)
-                print(max_A2s)
                 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -390,7 +387,7 @@ def bar_strength_evolution(pdf, data, read):
                 np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_18NOR*')
+    names = glob.glob(path + '/name_18*')
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     
@@ -405,7 +402,6 @@ def bar_strength_evolution(pdf, data, read):
         
         # Load and plot the data #
         max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        print(max_A2s)
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         plt.plot(redshifts, max_A2s, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
         
@@ -1118,8 +1114,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 # Check if any of the haloes' data already exists, if not then read and save it #
                 names = glob.glob(path + '/name_*')
                 names = [re.split('_|.npy', name)[1] for name in names]
-                if str(s.haloname) in names:
-                    continue
+                # if str(s.haloname) in names:
+                #     continue
                 
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
                 s.calc_sf_indizes(s.subfind)

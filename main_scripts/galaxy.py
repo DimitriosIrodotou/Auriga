@@ -546,7 +546,7 @@ def bar_strength(pdf, data, read):
     plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
     
     # Plot bar strength as a function of radius plot r_m versus A2 #
-    names = glob.glob(path + '/name_18NOR*')
+    names = glob.glob(path + '/name_18*')
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     

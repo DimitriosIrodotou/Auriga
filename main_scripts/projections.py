@@ -262,9 +262,8 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
         xres = yres
         proj = np.zeros((xres, yres, 3))
         for k in range(3):
-            iband = [3, 1, 0][k]
+            iband = [3, 1, 0][k]  # bands = ['U', 'B', 'V', 'K', 'g', 'r', 'i', 'z']
             band = 10 ** (-2.0 * data[:, iband] / 5.0)
-            
             grid = calcGrid.calcGrid(pos, hsml, band, rho, rho, xres, yres, 256, boxx, boxy, boxz, 0., 0., 0., 1, 1, numthreads=8)
             
             drange = datarange[k]
@@ -402,7 +401,7 @@ def stellar_density(pdf, data, redshift, read):
             face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
                                      'mass') / area * 1e10
             edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
-                    0.5 * area) * 1e10
+                0.5 * area) * 1e10
             
             # Get the contour lines #
             face_on_count, face_on_xedges, face_on_yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70,
@@ -1061,7 +1060,6 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
 def stellar_light_fit(data, redshift, read):
     """
     Plot stellar light projection for Auriga halo(es).
-    :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
     :param read: boolean
@@ -1084,8 +1082,8 @@ def stellar_light_fit(data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
+            # if str(s.haloname) in names:
+            #     continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1097,9 +1095,9 @@ def stellar_light_fit(data, redshift, read):
             z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
             s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
             
-            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
+            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, 10 * res, boxsize, 'light',
                                      maxHsml=True)
-            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
+            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, 10 * res, boxsize, 'light',
                                      maxHsml=True)
             
             # Save data for each halo in numpy arrays #

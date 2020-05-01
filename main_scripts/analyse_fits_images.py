@@ -1,12 +1,13 @@
 import re
+import PIL
 import glob
-
 import numpy as np
 import matplotlib.pyplot as plt
 
 from PIL import Image
 from astropy.io import fits
 from matplotlib.patches import Circle
+from scipy.ndimage.filters import gaussian_filter
 
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/'
 
@@ -17,8 +18,11 @@ def convert_to_grayscale(name):
     :param name: name of the image.
     :return: None
     """
-    # Load png image and convert to a grayscale array #
+    # Load png image and convert to a 512x512 grayscale Gaussian blurred array #
     image = Image.open(plots_path + str(name) + '.png').convert("L")
+    image = image.resize((512, 512), PIL.Image.NEAREST)
+    sigma = np.sqrt(8 * np.log(2)) / 5
+    image = gaussian_filter(image, sigma=sigma)
     array = np.asarray(image)
     
     # Generate the figure and define its parameters #
@@ -113,16 +117,18 @@ def plot_fit_data(name, h=0.0, R_eff=0.0):
     return None
 
 
-names = glob.glob(plots_path + '*e.png')
-names.extend(glob.glob(plots_path + '*f.png'))
+names = glob.glob(plots_path + '*edge_on.png')
+names.extend(glob.glob(plots_path + '*face_on.png'))
 names = [re.split('projections/|.png', name)[1] for name in names]
 for name in names:
     if name + '.fits' in names:
-        continue  # convert_to_grayscale(name)
+        continue
+    convert_to_grayscale(name)
+# convert_to_grayscale('Au-18NORadio_face_ong')
 
 # image_centre('Au-18_face_on')
 # image_intensity('06N_fg')
 
-plot_fits_image('model_E_06N_fg')
-plot_fits_image('resid_E_06N_fg')
-plot_fit_data('resid_ES_06N_fg', h=79.8589, R_eff=128.589)
+# plot_fits_image('model_E_06N_fg')
+# plot_fits_image('resid_E_06N_fg')
+# plot_fit_data('resid_ES_06N_fg', h=79.8589, R_eff=128.589)
