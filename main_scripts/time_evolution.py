@@ -323,7 +323,7 @@ def bar_strength_evolution(pdf, data, read):
     # Read the data #
     if read is True:
         redshift_cut = 5.0
-        A2, names = [], []  # Declare lists to store the data.
+        max_A2s, names = [], []  # Declare lists to store the data.
         # Get all available redshifts #
         haloes = data.get_haloes(level)
         for name, halo in haloes.items():
@@ -379,15 +379,18 @@ def bar_strength_evolution(pdf, data, read):
                         beta_2[i] = beta_2[i] + np.sin(2 * th_i)
                 
                 # Calculate bar strength A_2 #
-                A2.append(max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])))
+                max_A2s.append(max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:])))
+                # max_A2 = max(np.divide(np.sqrt(alpha_2[:] ** 2 + beta_2[:] ** 2), alpha_0[:]))
+                # max_A2s.append(max_A2)
+                print(max_A2s)
                 
                 # Save data for each halo in numpy arrays #
-                np.save(path + 'A2_' + str(s.haloname), A2)
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
+                np.save(path + 'max_A2s_' + str(s.haloname), max_A2s)
                 np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     
@@ -401,9 +404,10 @@ def bar_strength_evolution(pdf, data, read):
         plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
         
         # Load and plot the data #
-        A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        print(max_A2s)
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        plt.plot(redshifts, A2, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
+        plt.plot(redshifts, max_A2s, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
         
         # Create the legends and save the figure #
         ax.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
@@ -480,7 +484,7 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_17.*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     
     for i in range(len(names)):
@@ -840,7 +844,7 @@ def AGN_modes_distribution(date, data, read):
         cb.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
         hb = ax02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r')
-                         # gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
+        # gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
         
         cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
         cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
@@ -1196,7 +1200,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_18*')
+        names = glob.glob(path + '/name_18NOR*')
         names.sort()
         
         for i in range(len(names)):
@@ -1303,9 +1307,9 @@ def gas_stars_sfr_evolution(pdf, data, read):
     return None
 
 
-def gas_temperature_movie(data, read):
+def gas_movie(data, read):
     """
-    Plot gas temperature projection for Auriga halo(es).
+    Plot gas temperature, peculiar velocity and density projections for Auriga halo(es).
     :param data: data from main.make_pdf
     :param read: boolean
     :return: None
@@ -1313,13 +1317,14 @@ def gas_temperature_movie(data, read):
     boxsize = 0.1  # Increase the boxsize.
     
     # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gtm/' + '/'
+    path = '/u/di43/Auriga/plots/data/' + 'gm/' + '/'
     if not os.path.exists(path):
         os.makedirs(path)
     
     # Read the data #
     if read is True:
-        redshift_cut = 5e-2
+        # redshift_cut = 5e-2
+        redshift_cut = 1e-4
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
@@ -1388,6 +1393,7 @@ def gas_temperature_movie(data, read):
     # Get the redshifts and sort them #
     names = glob.glob(path + '/name_3000_*')
     names.sort(reverse=True)
+    names.append(names.pop(0))  # Move redshift zero to the end.
     
     # Loop over all available haloes #
     for i in range(len(names)):
@@ -1402,11 +1408,12 @@ def gas_temperature_movie(data, read):
         vrad_edge_on = np.load(path + 'vrad_edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         
         # Generate the figure and define its parameters #
-        figure, ax = plt.subplots(1, figsize=(20, 10))
-        gs = gridspec.GridSpec(1, 2)
+        figure, ax = plt.subplots(1, figsize=(20, 20))
+        gs = gridspec.GridSpec(2, 2)
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])
-        for a in [ax00, ax01]:
+        ax10 = plt.subplot(gs[1, 0])
+        for a in [ax00, ax01, ax10]:
             a.axis('off')
             a.set_xlim(-50, 50)
             a.set_ylim(-50, 50)
@@ -1417,18 +1424,20 @@ def gas_temperature_movie(data, read):
         y = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         ax00.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
         ax01.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-8e3, vmax=8e3, rasterized=True)
+        ax10.pcolormesh(x, y, (face_on_rho * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         figure.tight_layout()
         
         figure.text(0.0, 0.97, 'z = %.3f' % float(redshift), color='k', fontsize=16, transform=ax00.transAxes)
-        plt.savefig('/u/di43/Auriga/plots/gtm/' + 'gtmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/gm/' + 'gmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
         
         # Generate the figure and define its parameters #
-        figure, ax = plt.subplots(1, figsize=(20, 10))
-        gs = gridspec.GridSpec(1, 2)
+        figure, ax = plt.subplots(1, figsize=(20, 20))
+        gs = gridspec.GridSpec(2, 2)
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])
-        for a in [ax00, ax01]:
+        ax10 = plt.subplot(gs[1, 0])
+        for a in [ax00, ax01, ax10]:
             a.axis('off')
             a.set_xlim(-50, 50)
             a.set_ylim(-50, 50)
@@ -1436,10 +1445,11 @@ def gas_temperature_movie(data, read):
         
         ax00.pcolormesh(x, y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
         ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-3.5e4, vmax=3.5e4, rasterized=True)
+        ax10.pcolormesh(x, y, (edge_on_rho * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         figure.tight_layout()
         figure.text(0.0, 0.97, 'z = %.3f' % float(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        plt.savefig('/u/di43/Auriga/plots/gtm/' + 'gtme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/gm/' + 'gme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
     
     return None

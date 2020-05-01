@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_" % self.directory)
+        haloes = glob.glob("%s/halo_18NORadio" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -285,15 +285,15 @@ class AurigaPdf:
         # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
-        projections.stellar_light_fit(self, redshift, read=False)
+        # projections.stellar_light_fit(self, redshift, read=False)
         # projections.stellar_light(pdf, self, redshift, read=True)
-        # projections.stellar_density(pdf, self, redshift, read=False)
+        # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
-        # projections.gas_slice(pdf, self, redshift, read=False)
+        # projections.gas_slice(pdf, self, redshift, read=True)
         # projections.gas_metallicity(pdf, self, level, redshift)
-        # projections.gas_density(pdf, self, redshift, read=False)
-        # projections.gas_temperature(pdf, self, redshift, read=False)
-        # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
+        # projections.gas_density(pdf, self, redshift, read=True)
+        # projections.gas_temperature(pdf, self, redshift, read=True)
+        # projections.gas_temperature_edge_on(pdf, self, redshift, read=True)
         # Magnetic fields #
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
@@ -309,18 +309,19 @@ class AurigaPdf:
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)
-        # time_evolution.bar_strength_evolution(pdf, self, read=False)
+        # time_evolution.bar_strength_evolution(pdf, self, read=True)
         # main.time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, [level])
-        # time_evolution.gas_temperature_fraction_evolution(pdf, self, read=False)
+        # time_evolution.gas_temperature_fraction_evolution(pdf, self, read=True)
+        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
         #  AGN modes #
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=True)
         # time_evolution.AGN_modes_gas(date)
-        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
-        # time_evolution.gas_temperature_movie(self, read=False)
+        # Movies#
+        # time_evolution.gas_movie(self, read=False)
         
         # Global galactic relations #
         # galaxy.sfr(pdf, self, [level])
@@ -337,7 +338,7 @@ class AurigaPdf:
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
         # galaxy.gas_temperature_histogram(pdf, self, redshift, read=False)
-        # galaxy.gas_distance_temperature(pdf, self, redshift, read=False)
+        # galaxy.gas_distance_temperature(pdf, self, redshift, read=True)
         
         # Metallicities #
         # metallicities.ratios(pdf, self, [level], 0.)
@@ -349,8 +350,9 @@ class AurigaPdf:
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()
-        # file_name = 'Auriga-' + date + '.pdf'
-        file_name = 'slf/'
+        file_name = 'Auriga-' + date + '.pdf'
+        # file_name = 'slf/'
+        # file_name = 'gm/'
         # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None

@@ -3,7 +3,6 @@ from __future__ import division
 import os
 import re
 import glob
-import pickle
 import matplotlib
 import projections
 import numpy as np
@@ -14,7 +13,6 @@ from const import *
 from sfigure import *
 from loadmodules import *
 from matplotlib import gridspec
-from parallel_decorators import vectorize_parallel
 from scripts.gigagalaxy.util import satellite_utilities
 
 res = 512
@@ -388,8 +386,8 @@ def central_combination(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)

@@ -399,8 +399,10 @@ def stellar_density(pdf, data, redshift, read):
             z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
             s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
             
-            face_on = get_projection(s.pos, s.mass[mask], s.data['mass'][mask], 0, res, boxsize, 'mass') / area * 1e10
-            edge_on = get_projection(s.pos, s.mass[mask], s.data['mass'][mask], 1, res, boxsize, 'mass') / (0.5 * area) * 1e10
+            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
+                                     'mass') / area * 1e10
+            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
+                    0.5 * area) * 1e10
             
             # Get the contour lines #
             face_on_count, face_on_xedges, face_on_yedges = np.histogram2d(s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3, bins=70,
@@ -416,7 +418,7 @@ def stellar_density(pdf, data, redshift, read):
             np.save(path + 'edge_on_count_' + str(s.haloname), edge_on_count)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_06.*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -485,8 +487,8 @@ def gas_density(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -502,7 +504,7 @@ def gas_density(pdf, data, redshift, read):
             np.save(path + 'edge_on_' + str(s.haloname), edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_06.*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -583,7 +585,7 @@ def gas_temperature(pdf, data, redshift, read):
             np.save(path + 'edge_on_rho_' + str(s.haloname), edge_on_rho)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -810,7 +812,7 @@ def gas_slice(pdf, data, redshift, read):
                 np.save(path + 'vygrid_' + str(j) + '_' + str(s.haloname), vygrid)
                 np.save(path + 'rgbArray_' + str(j) + '_' + str(s.haloname), rgbArray)
     
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -912,8 +914,10 @@ def dm_mass(pdf, data, level, redshift):
         
         # Mask the data and plot the projections #
         mask, = np.where((s.r() < 2.0 * boxsize) & (s.type == 1))
-        face_on = get_projection(s.pos[mask], s.mass[mask], s.data['mass'][mask], 0, res, boxsize, 'mass') / area * 1e10
-        edge_on = get_projection(s.pos[mask], s.mass[mask], s.data['mass'][mask], 1, res, boxsize, 'mass') / (0.5 * area) * 1e10
+        face_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
+                                 'mass') / area * 1e10
+        edge_on = get_projection(s.pos[mask].astype('f8'), s.mass[mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
+            0.5 * area) * 1e10
         pcm = ax00.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         ax10.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{DM}\;\mathrm{[M_\odot\;kpc^{-2}]}$")
@@ -1001,8 +1005,8 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             # names = glob.glob(path + '/name_*')
             # names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1022,7 +1026,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             np.save(path + 'edge_on_rho_' + str(s.haloname), edge_on_rho)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     
     # Loop over all available haloes #

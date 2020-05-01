@@ -546,7 +546,7 @@ def bar_strength(pdf, data, read):
     plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
     
     # Plot bar strength as a function of radius plot r_m versus A2 #
-    names = glob.glob(path + '/name_18*')
+    names = glob.glob(path + '/name_18NOR*')
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     
@@ -953,8 +953,8 @@ def gas_temperature_histogram(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1038,22 +1038,24 @@ def gas_distance_temperature(pdf, data, redshift, read):
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
+            mask, = np.where(
+                (spherical_distance < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
             
             # Calculate the temperature of the gas cells #
-            ne = s.data['ne']
-            metallicity = s.data['gz']
-            XH = s.data['gmet'][:, element['H']]
+            ne = s.data['ne'][mask]
+            metallicity = s.data['gz'][mask]
+            XH = s.data['gmet'][mask, element['H']]
             yhelium = (1 - XH - metallicity) / (4. * XH)
             mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            temperature = GAMMA_MINUS1 * s.data['u'] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
             np.save(path + 'temperature_' + str(s.haloname), temperature)
-            np.save(path + 'spherical_distance_' + str(s.haloname), spherical_distance)
+            np.save(path + 'spherical_distance_' + str(s.haloname), spherical_distance[mask])
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18N*')
     names.sort()
     
     for i in range(len(names)):
