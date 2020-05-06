@@ -95,11 +95,7 @@ def set_axis(s, ax, ax2, ylabel, ylim=None):
 
 def set_axis_evo(ax, ax2, ylabel=None):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
-    a = 1. / (1 + z)
-    
-    times = np.zeros(len(a))
-    for i in range(len(a)):
-        times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
+    times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
     
     lb = []
     for v in z:
@@ -309,12 +305,12 @@ def bh_mass(pdf, data, levels):
 
 def bar_strength_evolution(pdf, data, read):
     """
-        Calculate the evolution of bar strength from Fourier modes of surface density.
-        :param pdf:
-        :param data:
-        :param read: boolean.
-        :return:
-        """
+    Calculate the evolution of bar strength from Fourier modes of surface density.
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'bse/'
     if not os.path.exists(path):
@@ -414,12 +410,12 @@ def bar_strength_evolution(pdf, data, read):
 
 def gas_temperature_fraction_evolution(pdf, data, read):
     """
-        Calculate the evolution of gas fraction in different temperature regimes.
-        :param pdf:
-        :param data:
-        :param read: boolean.
-        :return:
-        """
+    Calculate the evolution of gas fraction in different temperature regimes.
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'gtfe/'
     if not os.path.exists(path):
@@ -524,12 +520,12 @@ def gas_temperature_fraction_evolution(pdf, data, read):
 
 def AGN_modes_cumulative(date, data, read):
     """
-        Get information about different black hole modes from log files and plot the evolution of the cumulative feedback.
-        :param date: .
-        :param data: .
-        :param read: boolean.
-        :return: None
-        """
+    Get information about different black hole modes from log files and plot the evolution of the cumulative feedback.
+    :param date: .
+    :param data: data from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'AGNmc/'
     if not os.path.exists(path):
@@ -637,12 +633,12 @@ def AGN_modes_cumulative(date, data, read):
 
 def AGN_modes_histogram(date, data, read):
     """
-        Get information about different black hole modes from log files and plot a histogram of the evolution of the step feedback.
-        :param date: .
-        :param data: .
-        :param read: boolean.
-        :return: None
-        """
+    Get information about different black hole modes from log files and plot a histogram of the evolution of the step feedback.
+    :param date: .
+    :param data: data from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'AGNmh/'
     if not os.path.exists(path):
@@ -735,12 +731,12 @@ def AGN_modes_histogram(date, data, read):
 
 def AGN_modes_distribution(date, data, read):
     """
-        Get information about different black hole modes from log files and plot the evolution of the step feedback.
-        :param date: .
-        :param data: .
-        :param read: boolean.
-        :return: None
-        """
+    Get information about different black hole modes from log files and plot the evolution of the step feedback.
+    :param date: .
+    :param data: data from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
     if not os.path.exists(path):
@@ -890,12 +886,12 @@ def AGN_modes_distribution(date, data, read):
 
 def AGN_modes_step(date, data, read):
     """
-        Get information about different black hole modes from log files and plot the step feedbacks.
-        :param date: .
-        :param data: .
-        :param read: boolean.
-        :return: None
-        """
+    Get information about different black hole modes from log files and plot the step feedbacks.
+    :param date: .
+    :param data: data from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'AGNms/'
     if not os.path.exists(path):
@@ -1000,10 +996,10 @@ def AGN_modes_step(date, data, read):
 
 def AGN_modes_gas(date):
     """
-        Get information about different black hole modes from log files and plot the step feedbacks.
-        :param date: .
-        :return: None
-        """
+    Get information about different black hole modes from log files and plot the step feedbacks.
+    :param date: .
+    :return: None
+    """
     path_gas = '/u/di43/Auriga/plots/data/' + 'gtfe/'
     path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
     
@@ -1091,7 +1087,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
     Plot the evolution of gas mass, stellar mass and star formation rate inside 500, 750 and 1000 pc.
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     radial_limits = (5e-4, 7.5e-4, 1e-3)
@@ -1307,7 +1303,7 @@ def gas_movie(data, read):
     """
     Plot gas temperature, peculiar velocity and density projections for Auriga halo(es).
     :param data: data from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     boxsize = 0.1  # Increase the boxsize.

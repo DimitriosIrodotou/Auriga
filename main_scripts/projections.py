@@ -207,7 +207,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     :param boxsize: boxsize
     :param type: 'light' or 'mass'
     :param maxHsml:
-    :return:
+    :return: proj
     """
     
     pos = np.zeros((np.size(mass), 3))  # Declare array to store the new positions of particles.
@@ -291,7 +291,7 @@ def stellar_light(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #
@@ -363,7 +363,7 @@ def stellar_density(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #
@@ -383,8 +383,8 @@ def stellar_density(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
+            # if str(s.haloname) in names:
+            #     continue
             
             # Generate the axes #
             ax00, ax01, ax10, ax11, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
@@ -466,7 +466,7 @@ def gas_density(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #
@@ -540,7 +540,7 @@ def gas_temperature(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #
@@ -625,7 +625,7 @@ def gas_metallicity(pdf, data, level, redshift):
     Plot gas metallicity projection for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
+    :param level: level of the run.
     :param redshift: redshift from main.make_pdf
     :return: None
     """
@@ -665,7 +665,7 @@ def gas_slice(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #
@@ -849,7 +849,7 @@ def bfld(pdf, data, level, redshift):
     Plot gas metallicity projection for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
+    :param level: level of the run.
     :param redshift: redshift from main.make_pdf
     :return: None
     """
@@ -889,7 +889,7 @@ def dm_mass(pdf, data, level, redshift):
     Plot gas metallicity projection for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
+    :param level: level of the run.
     :param redshift: redshift from main.make_pdf
     :return: None
     """
@@ -983,7 +983,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     boxsize = 0.2  # Increase the boxsize.
@@ -1062,7 +1062,7 @@ def stellar_light_fit(data, redshift, read):
     Plot stellar light projection for Auriga halo(es).
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     # Check if a folder to save the data exists, if not create one #

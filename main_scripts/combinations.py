@@ -219,46 +219,13 @@ def set_axis(s, ax, ax2, ylabel, ylim=None):
     return None
 
 
-def set_axis_evo(ax, ax2, ylabel=None):
-    z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
-    a = 1. / (1 + z)
-    
-    times = np.zeros(len(a))
-    for i in range(len(a)):
-        times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
-    
-    lb = []
-    for v in z:
-        if v >= 1.0:
-            lb += ["%.0f" % v]
-        else:
-            if v != 0:
-                lb += ["%.1f" % v]
-            else:
-                lb += ["%.0f" % v]
-    
-    ax.set_xlim(0, 13)
-    ax.invert_xaxis()
-    ax.set_ylabel(ylabel, size=16)
-    ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-    ax.tick_params(direction='out', which='both', right='on')
-    
-    ax2.set_xticks(times)
-    ax2.set_xticklabels(lb)
-    ax2.set_xlim(ax.get_xlim())
-    ax2.set_xlabel(r'$\mathrm{z}$', size=16)
-    ax2.tick_params(direction='out', which='both', top='on', right='on')
-    
-    return None
-
-
 def AGN_modes_distribution(date, data):
     """
-        Get information about different black hole modes from log files and plot the evolution of the step feedback.
-        :param date: .
-        :param data: .
-        :return: None
-        """
+    Get information about different black hole modes from log files and plot the evolution of the step feedback.
+    :param date: .
+    :param data: data from main.make_pdf
+    :return: None
+    """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
     if not os.path.exists(path):
@@ -289,7 +256,6 @@ def AGN_modes_distribution(date, data):
     names.sort()
     # Load and plot the data #
     for i in range(len(names)):
-        
         
         # Load and plot the data #
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -364,7 +330,7 @@ def central_combination(pdf, data, redshift, read):
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
-    :param read: boolean
+    :param read: boolean to read new data.
     :return: None
     """
     boxsize = 0.004  # Decrease the boxsize.

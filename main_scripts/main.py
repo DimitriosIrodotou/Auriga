@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_*" % self.directory)
+        haloes = glob.glob("%s/halo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -282,10 +282,10 @@ class AurigaPdf:
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
-        # TODO remove: set_axes, level, astype, centerat - add: read, data-exist-check
+        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
-        projections.stellar_light_fit(self, redshift, read=True)
+        # projections.stellar_light_fit(self, redshift, read=True)
         # projections.stellar_light(pdf, self, redshift, read=True)
         # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
@@ -324,12 +324,12 @@ class AurigaPdf:
         # time_evolution.gas_movie(self, read=False)
         
         # Global galactic relations #
-        # galaxy.sfr(pdf, self, [level])
-        # galaxy.delta_sfr(pdf, self, [level])
-        # galaxy.gas_temperature_fraction(pdf, self, level, read=False)
+        # galaxy.sfr_history(pdf, self, redshift, read=True)
+        # galaxy.delta_sfr_history(pdf, self, redshift, read=False)
+        # galaxy.gas_temperature_fraction(pdf, self, read=False)
         # for redshift in np.linspace(0.0, 1.0, 11):
         #     print(redshift)
-        #     galaxy.circularity(pdf, self, [level], redshift)
+        # galaxy.circularity(pdf, self, [level], redshift)
         # galaxy.tully_fisher(pdf, self, [level])
         # galaxy.stellar_vs_total(pdf, self, [level])
         # galaxy.gas_fraction(pdf, self, [level])
@@ -337,7 +337,7 @@ class AurigaPdf:
         # galaxy.bar_strength(pdf, self, read=False)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
-        # galaxy.gas_temperature_histogram(pdf, self, redshift, read=False)
+        galaxy.gas_temperature_histogram(pdf, self, read=False)
         # galaxy.gas_distance_temperature(pdf, self, redshift, read=True)
         
         # Metallicities #
@@ -350,8 +350,8 @@ class AurigaPdf:
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()
-        # file_name = 'Auriga-' + date + '.pdf'
-        file_name = 'slf/'
+        file_name = 'Auriga-' + date + '.pdf'
+        # file_name = 'slf/'
         # file_name = 'gm/'
         # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)

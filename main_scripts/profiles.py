@@ -64,9 +64,9 @@ def radial_profiles(pdf, data, level, redshift):
     Plot radial gas density, gas metallicity, gas energy density, magnetic field strength and gas velocity dispersion profiles for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
+    :param level: level of the run.
     :param redshift: redshift from main.make_pdf
-    :return:
+    :return: None
     """
     
     # Read specific particle type(s) for Auriga haloes #
@@ -190,9 +190,9 @@ def vertical_profiles(pdf, data, level, redshift):
         es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
+    :param level: level of the run.
     :param redshift: redshift from main.make_pdf
-    :return:
+    :return: None
     """
     
     # Read specific particle type(s) for Auriga haloes #
@@ -316,9 +316,9 @@ def stellar_profiles(pdf, data, level, redshift):
     Plot radial and vertical stellar density profiles for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param level: level from main.make_pdf
+    :param level: level of the run.
     :param redshift: redshift from main.make_pdf
-    :return:
+    :return: None
     """
     
     # Read specific particle type(s) for Auriga haloes #
