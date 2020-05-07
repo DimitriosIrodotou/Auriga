@@ -1015,10 +1015,10 @@ def gas_temperature_histogram(pdf, data, read):
                 masses.append(s.data['mass'][mask])
         
         # Save data for each halo in numpy arrays #
-        np.save(path + 'vol_' + str(s.haloname), volumes)
-        np.save(path + 'mass_' + str(s.haloname), masses)
+        np.save(path + 'masses_' + str(s.haloname), masses)
+        np.save(path + 'volumes_' + str(s.haloname), volumes)
         np.save(path + 'name_' + str(s.haloname), s.haloname)
-        np.save(path + 'temperature_' + str(s.haloname), temperatures)
+        np.save(path + 'temperatures_' + str(s.haloname), temperatures)
     
     # Generate the figure and define its parameters #
     f = plt.figure(figsize=(10, 7.5))
@@ -1033,20 +1033,21 @@ def gas_temperature_histogram(pdf, data, read):
     names.sort()
     
     for i in range(len(names)):
-        vol = np.load(path + 'vol_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        mass = np.load(path + 'mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        masses = np.load(path + 'masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        volumes = np.load(path + 'volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         
-        all_ydata = []
-        for i in range(len(temperature)):
-            ydata, edges = np.histogram(temperature[i], weights=mass[i] / np.sum(mass[i]), bins=100)
-            all_ydata.append(ydata)
+        for i in range(len(masses)):
+            print(len(masses[i]))
+        average_masses = np.sum(masses, axis=0) / 10
+        # average_volumes = np.sum(volumes, axis=0) / 10
+        # average_temperatures = np.sum(temperatures, axis=0) / 10
         
-        averageall_ydata[i]
-        plt.plot(0.5 * (edges[1:] + edges[:-1]), np.median(all_ydata,axis=1), label='Mass-weighted')
+        # ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
+        # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Mass-weighted')
         
-        ydata, edges = np.histogram(temperature[0], weights=vol[0] / np.sum(vol[0]), bins=100)
-        plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Volume-weighted')
+        # ydata, edges = np.histogram(temperature[0], weights=vol[0] / np.sum(vol[0]), bins=100)  # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata,
+        # label='Volume-weighted')
     
     plt.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     pdf.savefig(f, bbox_inches='tight')  # Save the figure.
