@@ -2,6 +2,7 @@ import os
 import time
 import glob
 import galaxy
+import movies
 import profiles
 import evolution
 import projections
@@ -284,7 +285,7 @@ class AurigaPdf:
         # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
-        projections.stellar_light_fit(self, redshift, read=True)
+        # projections.stellar_light_fit(self, redshift, read=True)
         # projections.stellar_light(pdf, self, redshift, read=True)
         # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
@@ -319,8 +320,9 @@ class AurigaPdf:
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=True)
         # time_evolution.AGN_modes_gas(date)
-        # Movies#
-        # time_evolution.gas_movie(self, read=False)
+        
+        # Movies #
+        movies.gas_movie(self, read=False)
         
         # Global galactic relations #
         # galaxy.sfr_history(pdf, self, redshift, read=True)
@@ -350,8 +352,8 @@ class AurigaPdf:
         
         pdf.close()
         # file_name = 'Auriga-' + date + '.pdf'
-        file_name = 'slf/Au-18_*'
-        # file_name = 'gm/'
+        # file_name = 'slf/Au-18_*'
+        file_name = 'gm/'
         # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
