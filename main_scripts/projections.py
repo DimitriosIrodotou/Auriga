@@ -67,25 +67,25 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
     elif multiple is True:
         gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
         ax00 = plt.subplot(gs[0, 0])
-        axcbar = plt.subplot(gs[1, 0])
+        ax10 = plt.subplot(gs[1, 0])
         ax20 = plt.subplot(gs[2, 0])
         ax01 = plt.subplot(gs[0, 1])
-        axcbar1 = plt.subplot(gs[1, 1])
+        ax11 = plt.subplot(gs[1, 1])
         ax21 = plt.subplot(gs[2, 1])
         ax02 = plt.subplot(gs[0, 2])
-        axcbar2 = plt.subplot(gs[1, 2])
+        ax12 = plt.subplot(gs[1, 2])
         ax22 = plt.subplot(gs[2, 2])
         ax03 = plt.subplot(gs[0, 3])
-        axcbar3 = plt.subplot(gs[1, 3])
+        ax13 = plt.subplot(gs[1, 3])
         ax23 = plt.subplot(gs[2, 3])
         ax04 = plt.subplot(gs[0, 4])
-        axcbar4 = plt.subplot(gs[1, 4])
+        ax14 = plt.subplot(gs[1, 4])
         ax24 = plt.subplot(gs[2, 4])
         ax05 = plt.subplot(gs[0, 5])
-        axcbar5 = plt.subplot(gs[1, 5])
+        ax15 = plt.subplot(gs[1, 5])
         ax25 = plt.subplot(gs[2, 5])
         
-        return ax00, axcbar, ax20, ax01, axcbar1, ax21, ax02, axcbar2, ax22, ax03, axcbar3, ax23, ax04, axcbar4, ax24, ax05, axcbar5, ax25, x, y, area
+        return ax00, ax10, ax20, ax01, ax11, ax21, ax02, ax12, ax22, ax03, ax13, ax23, ax04, ax14, ax24, ax05, ax15, ax25, x, y, area
     
     elif multiple2 is True:
         gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
@@ -243,8 +243,10 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
         boxx = boxsize
         boxy = boxsize / 2.0
     
+    boxz = max(boxx, boxy)
     tree = pysph.makeTree(pos)
     hsml = tree.calcHsmlMulti(pos, pos, mass, 48, numthreads=8)
+    
     if maxHsml is True:
         hsml = np.minimum(hsml, 4.0 * boxsize / res)
     hsml = np.maximum(hsml, 1.001 * boxsize / res * 0.5)
@@ -254,15 +256,13 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     fac = (512.0 / res) ** 2 * (0.5 * boxsize / 0.025) ** 2
     datarange *= fac
     
-    boxz = max(boxx, boxy)
-    
     # Calculate light projection #
     if type == 'light':
         boxx = boxy
         xres = yres
         proj = np.zeros((xres, yres, 3))
-        for k in range(3):
-            iband = [3, 1, 0][k]  # bands = ['U', 'B', 'V', 'K', 'g', 'r', 'i', 'z']
+        for k in range(1):
+            iband = [5][k]  # bands = ['U', 'B', 'V', 'K', 'g', 'r', 'i', 'z']
             band = 10 ** (-2.0 * data[:, iband] / 5.0)
             grid = calcGrid.calcGrid(pos, hsml, band, rho, rho, xres, yres, 256, boxx, boxy, boxz, 0., 0., 0., 1, 1, numthreads=8)
             
@@ -276,11 +276,6 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     # Calculate mass projection #
     elif type == 'mass':
         proj = calcGrid.calcGrid(pos, hsml, data, rho, rho, xres, yres, 256, boxx, boxy, boxz, 0., 0., 0., 1, 1, numthreads=8)
-    
-    else:
-        print("Type %s not found." % type)
-        
-        return None
     
     return proj
 
@@ -304,11 +299,11 @@ def stellar_light(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -376,7 +371,7 @@ def stellar_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['mass', 'pos']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -389,7 +384,7 @@ def stellar_density(pdf, data, redshift, read):
             # Generate the axes #
             ax00, ax01, ax10, ax11, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -479,7 +474,7 @@ def gas_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'rho']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -489,7 +484,7 @@ def gas_density(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -552,7 +547,7 @@ def gas_temperature(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -562,7 +557,7 @@ def gas_temperature(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -632,7 +627,7 @@ def gas_metallicity(pdf, data, level, redshift):
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'pos', 'gz']
-    data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -641,7 +636,7 @@ def gas_metallicity(pdf, data, level, redshift):
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         figure.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -681,7 +676,7 @@ def gas_slice(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['pos', 'vel', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'id', 'vol']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -856,7 +851,7 @@ def bfld(pdf, data, level, redshift):
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'pos', 'bfld']
-    data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -865,7 +860,7 @@ def bfld(pdf, data, level, redshift):
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         figure.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -898,7 +893,7 @@ def dm_mass(pdf, data, level, redshift):
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [1, 4]
     attributes = ['mass', 'pos']
-    data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -907,7 +902,7 @@ def dm_mass(pdf, data, level, redshift):
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
         figure.text(0.0, 1.01, 'Au-' + str(s.haloname) + ' redshift = ' + str(redshift), color='k', fontsize=16, transform=ax00.transAxes)
         
-        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
@@ -997,7 +992,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -1007,7 +1002,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -1075,7 +1070,7 @@ def stellar_light_fit(data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -1085,7 +1080,7 @@ def stellar_light_fit(data, redshift, read):
             # if str(s.haloname) in names:
             #     continue
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -1095,9 +1090,9 @@ def stellar_light_fit(data, redshift, read):
             z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
             s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
             
-            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, 10 * res, boxsize, 'light',
+            face_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
                                      maxHsml=True)
-            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, 10 * res, boxsize, 'light',
+            edge_on = get_projection(s.pos.astype('f8'), s.mass[mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
                                      maxHsml=True)
             
             # Save data for each halo in numpy arrays #
@@ -1106,7 +1101,7 @@ def stellar_light_fit(data, redshift, read):
             np.save(path + 'edge_on_' + str(s.haloname), edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
     # Loop over all available haloes #

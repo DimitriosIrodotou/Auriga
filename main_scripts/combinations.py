@@ -355,7 +355,7 @@ def central_combination(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             

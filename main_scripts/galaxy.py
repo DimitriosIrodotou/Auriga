@@ -106,7 +106,7 @@ def circularity(pdf, data, levels, redshift):
     for il in range(nlevels):
         level = levels[il]
         particle_type = [4]
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type)
         
         isnap = 0
         for s in data:
@@ -444,7 +444,7 @@ def central_bfld(pdf, data, levels):
         mstar = np.zeros(nhalos)
         bfld = np.zeros(nhalos)
         
-        data.select_haloes(level, 0., loadonlytype=[0, 4], loadonlyhalo=0)
+        data.select_haloes(level, 0., loadonlyhalo=0, loadonlytype=[0, 4])
         
         ihalo = 0
         for s in data:
@@ -488,11 +488,11 @@ def bar_strength(pdf, data, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'mass', 'pos']
-        data.select_haloes(4, 0, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, 0, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
@@ -584,7 +584,7 @@ def sfr_history(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gima', 'mass', 'pos']
-        data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -657,7 +657,7 @@ def delta_sfr_history(pdf, data, redshift, read):
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [4]
             attributes = ['age', 'gima', 'mass', 'pos']
-            data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
             
             # Loop over all haloes #
             for s in data:
@@ -752,7 +752,7 @@ def gas_temperature_fraction(pdf, data, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(level, 0., loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, 0., loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -762,8 +762,8 @@ def gas_temperature_fraction(pdf, data, read):
             if str(s.haloname) in names:
                 continue
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
-            s.calc_sf_indizes(s.subfind, verbose=False)
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
             mask, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
@@ -818,7 +818,7 @@ def gas_temperature_fraction(pdf, data, read):
 def stellar_surface_density_decomposition(pdf, data, redshift):
     particle_type = [4]
     attributes = ['pos', 'vel', 'mass', 'age', 'gsph']
-    data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -891,7 +891,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
 def circular_velocity_curves(pdf, data, redshift):
     particle_type = [0, 1, 4, 5]
     attributes = ['pos', 'vel', 'mass', 'age']
-    data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+    data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -977,14 +977,13 @@ def gas_temperature_histogram(pdf, data, read):
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
-        for i in range(0, 10):
+        for i in range(0, 1):
             redshift = np.flip(redshifts)[i]
-            print(redshift)
             
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [0, 4]
             attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
-            data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
             
             # Loop over all haloes #
             for s in data:
@@ -994,12 +993,19 @@ def gas_temperature_histogram(pdf, data, read):
                 # if str(s.haloname) in names:
                 #     continue
                 
-                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+                
+                # Mask the data: select gas cells within the virial radius R200 #
                 spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-                mask, = np.where((spherical_distance < s.subfind.data['frc2'][0]) & (
-                    s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
+                mask, = np.where((spherical_distance < s.subfind.data['frc2'][0]) & (s.type == 0))
+                
+                plt.figure()
+                weights = s.data['mass'][mask]
+                count, xedges, yedges = np.histogram2d(s.data['pos'][mask, 2], s.data['pos'][mask, 1], weights=weights, bins=500)
+                plt.imshow(count.T, origin='lower', cmap='nipy_spectral_r', interpolation='gaussian', aspect='equal')
+                plt.show()
                 
                 # Calculate the temperature of the gas cells #
                 ne = s.data['ne'][mask]
@@ -1039,12 +1045,12 @@ def gas_temperature_histogram(pdf, data, read):
         
         for i in range(len(masses)):
             print(len(masses[i]))
-        average_masses = np.sum(masses, axis=0) / 10
-        # average_volumes = np.sum(volumes, axis=0) / 10
-        # average_temperatures = np.sum(temperatures, axis=0) / 10
+        average_masses = np.sum(masses,
+                                axis=0) / 10  # average_volumes = np.sum(volumes, axis=0) / 10  # average_temperatures = np.sum(temperatures,
+        # axis=0) / 10
         
-        # ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
-        # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Mass-weighted')
+        # ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)  # plt.plot(0.5 * (edges[1:]
+        # + edges[:-1]), ydata, label='Mass-weighted')
         
         # ydata, edges = np.histogram(temperature[0], weights=vol[0] / np.sum(vol[0]), bins=100)  # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata,
         # label='Volume-weighted')
@@ -1073,7 +1079,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
-        data.select_haloes(4, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -1083,7 +1089,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)

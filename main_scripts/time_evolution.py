@@ -339,7 +339,7 @@ def bar_strength_evolution(pdf, data, read):
                 if str(s.haloname) in names:
                     continue
                 
-                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
@@ -445,8 +445,8 @@ def gas_temperature_fraction_evolution(pdf, data, read):
                 if str(s.haloname) in names:
                     continue
                 
-                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
-                s.calc_sf_indizes(s.subfind, verbose=False)
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+                s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
                 mask, = np.where(
@@ -1113,7 +1113,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 # if str(s.haloname) in names:
                 #     continue
                 
-                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
@@ -1151,7 +1151,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     if str(s.haloname) in names:
                         continue
                     
-                    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+                    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                     s.calc_sf_indizes(s.subfind)
                     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                     
@@ -1340,7 +1340,7 @@ def gas_movie(data, read):
                 # if str(redshift) in names:
                 #     continue
                 
-                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned to the z-axis #
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 if redshift < 1e-15:
                     rot = s.select_halo(s.subfind, rotate_disk=True, use_principal_axis=True, do_rotation=True)

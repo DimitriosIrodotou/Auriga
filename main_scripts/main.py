@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 import time
 import glob
@@ -73,9 +71,10 @@ class AurigaSnapshot:
     def loadsnap(self, **kwargs):
         """
         Read snapshot and subfind files for an Auriga halo.
-        :param kwargs: load desired properties.
+        :param kwargs: load desired attributes.
         :return: s
         """
+        print('Found the following arguments: ', kwargs)
         sf = load_subfind(self.snapid, dir=self.snappath + '/')
         s = gadget_readsnap(self.snapid, snappath=self.snappath, lazy_load=True, subfind=sf, **kwargs)
         s.subfind = sf
@@ -153,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_" % self.directory)
+        haloes = glob.glob("%s/halo_18" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -228,10 +227,10 @@ class AurigaPdf:
     
     def select_haloes(self, level, redshift, **kwargs):
         """
-        Mask haloes and read desired properties.
+        Mask haloes and read desired attributes.
         :param level: level of the run.
         :param redshift: redshift of each snapshot.
-        :param kwargs: select desired properties.
+        :param kwargs: select desired attributes.
         :return: None
         """
         self.selected_index = 0
@@ -285,7 +284,7 @@ class AurigaPdf:
         # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
-        # projections.stellar_light_fit(self, redshift, read=True)
+        projections.stellar_light_fit(self, redshift, read=True)
         # projections.stellar_light(pdf, self, redshift, read=True)
         # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
@@ -337,7 +336,7 @@ class AurigaPdf:
         # galaxy.bar_strength(pdf, self, read=False)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
-        galaxy.gas_temperature_histogram(pdf, self, read=False)
+        # galaxy.gas_temperature_histogram(pdf, self, read=True)
         # galaxy.gas_distance_temperature(pdf, self, redshift, read=True)
         
         # Metallicities #
@@ -350,8 +349,8 @@ class AurigaPdf:
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()
-        file_name = 'Auriga-' + date + '.pdf'
-        # file_name = 'slf/'
+        # file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'slf/Au-18_*'
         # file_name = 'gm/'
         # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
