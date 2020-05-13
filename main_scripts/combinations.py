@@ -205,10 +205,10 @@ def set_axis(s, ax, ax2, ylabel, ylim=None):
     ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
     ax2.set_xlabel(r'$\mathrm{z}$', size=6)
     
-    for a in [ax, ax2]:
-        for label in a.xaxis.get_ticklabels():
+    for axis in [ax, ax2]:
+        for label in axis.xaxis.get_ticklabels():
             label.set_size(6)
-        for label in a.yaxis.get_ticklabels():
+        for label in axis.yaxis.get_ticklabels():
             label.set_size(6)
     
     if ylim is not None:
@@ -239,13 +239,13 @@ def AGN_modes_distribution(date, data):
     
     ax02.yaxis.set_label_position("right")
     ax02.yaxis.tick_right()
-    for a in [ax00, ax02]:
-        a.grid(True)
-        a.set_xlim(12, 0)
-        a.set_yscale('log')
-        a.set_ylim(1e51, 1e60)
-        a.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-        a.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
+    for axis in [ax00, ax02]:
+        axis.grid(True)
+        axis.set_xlim(12, 0)
+        axis.set_yscale('log')
+        axis.set_ylim(1e51, 1e60)
+        axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
+        axis.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
     ax00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
     ax02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
     
@@ -278,10 +278,10 @@ def AGN_modes_distribution(date, data):
         cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
         cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
-        for a in [axcbar, axcbar2]:
-            a.xaxis.tick_top()
-            a.xaxis.set_label_position("top")
-            a.tick_params(direction='out', which='both', top='on', right='on')
+        for axis in [axcbar, axcbar2]:
+            axis.xaxis.tick_top()
+            axis.xaxis.set_label_position("top")
+            axis.tick_params(direction='out', which='both', top='on', right='on')
         
         # Calculate and plot the mechanical energy sum #
         nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
@@ -440,30 +440,30 @@ def central_combination(pdf, data, redshift, read):
         area = create_axes(
             res=res, boxsize=boxsize * 1e3, multiple=True)
         tick_labels = np.array(['', '-1.5', '', '', '0', '', '', '1.5', ''])
-        for a in [ax00, ax01, ax02, ax03, ax04, ax05]:
-            a.set_xlim(-2, 2)
-            a.set_ylim(-2, 2)
-            a.set_aspect('equal')
-            a.set_xticklabels([])
-            a.tick_params(direction='out', which='both', top='on', right='on')
-        for a in [ax20, ax21, ax22, ax23, ax24, ax25]:
-            a.set_xlim(-2, 2)
-            a.set_ylim(-2, 2)
-            a.set_aspect('equal')
-            a.set_xticklabels(tick_labels)
-            a.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=12)
-            a.tick_params(direction='out', which='both', top='on', right='on')
-            for label in a.xaxis.get_ticklabels():
+        for axis in [ax00, ax01, ax02, ax03, ax04, ax05]:
+            axis.set_xlim(-2, 2)
+            axis.set_ylim(-2, 2)
+            axis.set_aspect('equal')
+            axis.set_xticklabels([])
+            axis.tick_params(direction='out', which='both', top='on', right='on')
+        for axis in [ax20, ax21, ax22, ax23, ax24, ax25]:
+            axis.set_xlim(-2, 2)
+            axis.set_ylim(-2, 2)
+            axis.set_aspect('equal')
+            axis.set_xticklabels(tick_labels)
+            axis.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=12)
+            axis.tick_params(direction='out', which='both', top='on', right='on')
+            for label in axis.xaxis.get_ticklabels():
                 label.set_size(12)
-        for a in [ax01, ax21, ax02, ax22, ax03, ax23, ax04, ax24, ax05, ax25]:
-            a.set_yticklabels([])
+        for axis in [ax01, ax21, ax02, ax22, ax03, ax23, ax04, ax24, ax05, ax25]:
+            axis.set_yticklabels([])
         
         ax00.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=12)
         ax20.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=12)
-        for a in [ax00, ax20]:
-            for label in a.yaxis.get_ticklabels():
+        for axis in [ax00, ax20]:
+            for label in axis.yaxis.get_ticklabels():
                 label.set_size(12)
-                a.set_yticklabels(tick_labels)
+                axis.set_yticklabels(tick_labels)
         
         # Load and plot the data #
         density_face_on = np.load(path + 'density_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -511,11 +511,11 @@ def central_combination(pdf, data, redshift, read):
         ax25.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
         create_colorbar(axcbar5, pcm, "$\mathrm{Velocity\;[km\;s^{-1}]}$", orientation='horizontal')
         
-        for a in [axcbar, axcbar1, axcbar2, axcbar3, axcbar4, axcbar5]:
-            a.xaxis.tick_top()
-            for label in a.xaxis.get_ticklabels():
+        for axis in [axcbar, axcbar1, axcbar2, axcbar3, axcbar4, axcbar5]:
+            axis.xaxis.tick_top()
+            for label in axis.xaxis.get_ticklabels():
                 label.set_size(12)
-            a.tick_params(direction='out', which='both', top='on', right='on')
+            axis.tick_params(direction='out', which='both', top='on', right='on')
         
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), fontsize=12, transform=ax00.transAxes)
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
@@ -551,10 +551,10 @@ def stellar_light_combination(pdf, redshift):
         face_on = np.load(path + 'sl/' + str(redshift) + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         edge_on = np.load(path + 'sl/' + str(redshift) + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        a.imshow(face_on, interpolation='nearest', aspect='equal')
+        axis.imshow(face_on, interpolation='nearest', aspect='equal')
         a2.imshow(edge_on, interpolation='nearest', aspect='equal')
         
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=a.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=axis.transAxes)
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None
@@ -578,33 +578,33 @@ def gas_density_combination(pdf, redshift):
                                                                                                                  multiple3=True)
     axes_face_on = [ax00, ax20, ax01, ax21, ax02, ax22]
     axes_edge_on = [ax10, ax30, ax11, ax31, ax12, ax32]
-    for a in [ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32]:
-        a.tick_params(direction='out', which='both', top='on', right='on')
-    for a in [ax01, ax11, ax21, ax02, ax12, ax22]:
-        a.set_xticklabels([])
-        a.set_yticklabels([])
-    for a in [ax00, ax10, ax20]:
-        a.set_xticklabels([])
-    for a in [ax30, ax31, ax32]:
-        a.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
-    for a in [ax00, ax20]:
-        a.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=16)
-    for a in [ax10, ax30]:
-        a.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=16)
+    for axis in [ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32]:
+        axis.tick_params(direction='out', which='both', top='on', right='on')
+    for axis in [ax01, ax11, ax21, ax02, ax12, ax22]:
+        axis.set_xticklabels([])
+        axis.set_yticklabels([])
+    for axis in [ax00, ax10, ax20]:
+        axis.set_xticklabels([])
+    for axis in [ax30, ax31, ax32]:
+        axis.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
+    for axis in [ax00, ax20]:
+        axis.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=16)
+    for axis in [ax10, ax30]:
+        axis.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=16)
     
     # Loop over all available haloes #
-    for i, a, a2 in zip(range(len(names)), axes_face_on, axes_edge_on):
+    for i, axis, a2 in zip(range(len(names)), axes_face_on, axes_edge_on):
         
         # Load and plot the data #
         face_on = np.load(path + 'gd/' + str(redshift) + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         edge_on = np.load(path + 'gd/' + str(redshift) + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Plot the projections #
-        pcm = a.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
+        pcm = axis.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         a2.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         create_colorbar(axcbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$")
         
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=a.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=axis.transAxes)
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None

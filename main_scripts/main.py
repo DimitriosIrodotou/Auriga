@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_18" % self.directory)
+        haloes = glob.glob("%s/halo_18_3000" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -322,7 +322,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_gas(date)
         
         # Movies #
-        movies.gas_movie(self, read=False)
+        movies.gas_movie(self, read=True)
         
         # Global galactic relations #
         # galaxy.sfr_history(pdf, self, redshift, read=True)

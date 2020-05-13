@@ -185,12 +185,12 @@ def set_axes(ax00, ax10, xlabel=None, ylabel=None, y2label=None, ticks=False):
     
     # Set x- and y-axis ticks size #
     if ticks is True:
-        for a in [ax00, ax10]:
-            a.tick_params(direction='out', which='both', top='on', right='on')
+        for axis in [ax00, ax10]:
+            axis.tick_params(direction='out', which='both', top='on', right='on')
             
-            for label in a.xaxis.get_ticklabels():
+            for label in axis.xaxis.get_ticklabels():
                 label.set_size(16)
-            for label in a.yaxis.get_ticklabels():
+            for label in axis.yaxis.get_ticklabels():
                 label.set_size(16)
     
     return None
@@ -332,11 +332,11 @@ def stellar_light(pdf, data, redshift, read):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 10))
         ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize)
-        for a in [ax00, ax10]:
-            a.set_yticks([])
-            a.set_xticks([])
-            a.set_xticklabels([])
-            a.set_aspect('equal')
+        for axis in [ax00, ax10]:
+            axis.set_yticks([])
+            axis.set_xticks([])
+            axis.set_xticklabels([])
+            axis.set_aspect('equal')
         
         # Load and plot the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -420,10 +420,10 @@ def stellar_density(pdf, data, redshift, read):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 7.5))
         ax00, ax01, ax10, ax11, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
-        for a in [ax00, ax01, ax10, ax11]:
-            a.set_xlim(-30, 30)
-            a.set_ylim(-30, 30)
-            a.tick_params(direction='out', which='both', top='on', right='on')
+        for axis in [ax00, ax01, ax10, ax11]:
+            axis.set_xlim(-30, 30)
+            axis.set_ylim(-30, 30)
+            axis.tick_params(direction='out', which='both', top='on', right='on')
         ax00.set_xticklabels([])
         ax01.set_xticklabels([])
         ax01.set_yticklabels([])
@@ -506,8 +506,8 @@ def gas_density(pdf, data, redshift, read):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 10))
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        for a in [ax00, ax10]:
-            a.tick_params(direction='out', which='both', top='on', right='on')
+        for axis in [ax00, ax10]:
+            axis.tick_params(direction='out', which='both', top='on', right='on')
         ax00.set_xticklabels([])
         ax10.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
         ax00.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=16)
@@ -587,9 +587,9 @@ def gas_temperature(pdf, data, redshift, read):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 10))
         ax00, ax10, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
-        for a in [ax00, ax10]:
-            a.set_xlim(-30, 30)
-            a.tick_params(direction='out', which='both', top='on', right='on')
+        for axis in [ax00, ax10]:
+            axis.set_xlim(-30, 30)
+            axis.tick_params(direction='out', which='both', top='on', right='on')
         ax00.set_ylim(-30, 30)
         ax10.set_ylim(-15, 15)
         ax00.set_xticklabels([])
@@ -675,7 +675,7 @@ def gas_slice(pdf, data, redshift, read):
         
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
-        attributes = ['pos', 'vel', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'id', 'vol']
+        attributes = ['pos', 'vel', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'vol']
         data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
@@ -816,23 +816,23 @@ def gas_slice(pdf, data, redshift, read):
         ax00, ax10, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', str(names[i]))[1]) + ' redshift = ' + str(redshift), color='k', fontsize=16,
                     transform=ax00.transAxes)
-        for a in [ax00, ax10]:
-            a.set_xticks([])
-            a.set_yticks([])
-            a.set_xticklabels([])
-            a.set_yticklabels([])
+        for axis in [ax00, ax10]:
+            axis.set_xticks([])
+            axis.set_yticks([])
+            axis.set_xticklabels([])
+            axis.set_yticklabels([])
         
         # Load and plot the data #
         j = 0
-        for a in [ax00, ax10]:
+        for axis in [ax00, ax10]:
             xc = np.load(path + 'xc_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
             yc = np.load(path + 'yc_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
             vxgrid = np.load(path + 'vxgrid_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
             vygrid = np.load(path + 'vygrid_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
             rgbArray = np.load(path + 'rgbArray_' + str(j) + '_' + str(re.split('_|.npy', str(names[i]))[1]) + '.npy')
             
-            a.imshow(rgbArray, rasterized=True, aspect='equal')
-            a.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), scale=4000.0, pivot='middle', color='yellow', alpha=0.8)
+            axis.imshow(rgbArray, rasterized=True, aspect='equal')
+            axis.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), scale=4000.0, pivot='middle', color='yellow', alpha=0.8)
             j += 1
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
         plt.close()

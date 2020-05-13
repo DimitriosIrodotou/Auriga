@@ -81,10 +81,10 @@ def set_axis(s, ax, ax2, ylabel, ylim=None):
     ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
     ax2.set_xlabel(r'$\mathrm{z}$', size=6)
     
-    for a in [ax, ax2]:
-        for label in a.xaxis.get_ticklabels():
+    for axis in [ax, ax2]:
+        for label in axis.xaxis.get_ticklabels():
             label.set_size(6)
-        for label in a.yaxis.get_ticklabels():
+        for label in axis.yaxis.get_ticklabels():
             label.set_size(6)
     
     if ylim is not None:
@@ -807,13 +807,13 @@ def AGN_modes_distribution(date, data, read):
         
         ax02.yaxis.set_label_position("right")
         ax02.yaxis.tick_right()
-        for a in [ax00, ax02]:
-            a.grid(True)
-            a.set_xlim(12, 0)
-            a.set_yscale('log')
-            a.set_ylim(1e51, 1e60)
-            a.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-            a.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
+        for axis in [ax00, ax02]:
+            axis.grid(True)
+            axis.set_xlim(12, 0)
+            axis.set_yscale('log')
+            axis.set_ylim(1e51, 1e60)
+            axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
+            axis.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
         ax00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
         ax02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
@@ -841,10 +841,10 @@ def AGN_modes_distribution(date, data, read):
         cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
         cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
-        for a in [axcbar, axcbar2]:
-            a.xaxis.tick_top()
-            a.xaxis.set_label_position("top")
-            a.tick_params(direction='out', which='both', top='on', right='on')
+        for axis in [axcbar, axcbar2]:
+            axis.xaxis.tick_top()
+            axis.xaxis.set_label_position("top")
+            axis.tick_params(direction='out', which='both', top='on', right='on')
         
         # # Calculate and plot the mechanical energy sum #
         # nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
@@ -947,15 +947,15 @@ def AGN_modes_step(date, data, read):
         ax10 = figure.add_subplot(gs[1, 0])
         ax11 = figure.add_subplot(gs[1, 1])
         
-        for a in [ax00, ax10, ax11]:
-            a.grid(True)
-            a.tick_params(direction='out', which='both', right='on', left='on')
+        for axis in [ax00, ax10, ax11]:
+            axis.grid(True)
+            axis.tick_params(direction='out', which='both', right='on', left='on')
         
-        for a in [ax00, ax11]:
-            a.yaxis.set_ticks_position('left')
-            a.xaxis.set_ticks_position('bottom')
-            a.spines['top'].set_visible(False)
-            a.spines['right'].set_visible(False)
+        for axis in [ax00, ax11]:
+            axis.yaxis.set_ticks_position('left')
+            axis.xaxis.set_ticks_position('bottom')
+            axis.spines['top'].set_visible(False)
+            axis.spines['right'].set_visible(False)
         
         ax00.set_xticklabels([])
         ax11.set_yticklabels([])
@@ -1202,9 +1202,9 @@ def gas_stars_sfr_evolution(pdf, data, read):
             ax00 = plt.subplot(gs[0, 0])
             ax10 = plt.subplot(gs[1, 0])
             ax20 = plt.subplot(gs[2, 0])
-            for a in [ax00, ax10, ax20]:
-                a.grid(True)
-                a.tick_params(direction='out', which='both', top='on', right='on')
+            for axis in [ax00, ax10, ax20]:
+                axis.grid(True)
+                axis.tick_params(direction='out', which='both', top='on', right='on')
             ax00.set_ylim(0, 8)
             ax00.set_xticklabels([])
             ax002 = ax00.twinx()

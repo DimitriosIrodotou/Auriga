@@ -9,7 +9,7 @@ from astropy.io import fits
 from matplotlib.patches import Circle
 from scipy.ndimage.filters import gaussian_filter
 
-plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/'
+plots_path = '/Users/Bam/PycharmProjects/Auriga/'
 
 
 def convert_to_grayscale(name):
@@ -117,14 +117,14 @@ def plot_fit_data(name, h=0.0, R_eff=0.0):
     return None
 
 
-names = glob.glob(plots_path + '*edge_on.png')
-names.extend(glob.glob(plots_path + '*face_on.png'))
-names = [re.split('projections/|.png', name)[1] for name in names]
-for name in names:
-    if name + '.fits' in names:
-        continue
-    convert_to_grayscale(name)
-# convert_to_grayscale('Au-18NORadio_face_ong')
+# names = glob.glob(plots_path + '*edge_on.png')
+# names.extend(glob.glob(plots_path + '*face_on.png'))
+# names = [re.split('projections/|.png', name)[1] for name in names]
+# for name in names:
+#     if name + '.fits' in names:
+#         continue
+#     convert_to_grayscale(name)
+convert_to_grayscale('Au-18_face_on')
 
 # image_centre('Au-18_face_on')
 # image_intensity('06N_fg')

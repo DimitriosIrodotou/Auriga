@@ -689,14 +689,14 @@ def delta_sfr_history(pdf, data, redshift, read):
     ax11 = plt.subplot(gs[1, 1])
     ax12 = plt.subplot(gs[1, 2])
     
-    for a in [ax01, ax02, ax11, ax12]:
-        a.set_yticklabels([])
-    for a in [ax00, ax01, ax02]:
-        a.grid(True)
-        a.set_ylim(0, 22)
-    for a in [ax10, ax11, ax12]:
-        a.grid(True)
-        a.set_ylim(-1, 12)
+    for axis in [ax01, ax02, ax11, ax12]:
+        axis.set_yticklabels([])
+    for axis in [ax00, ax01, ax02]:
+        axis.grid(True)
+        axis.set_ylim(0, 22)
+    for axis in [ax10, ax11, ax12]:
+        axis.grid(True)
+        axis.set_ylim(-1, 12)
     ax10.set_ylabel('$\mathrm{(\delta Sfr)_{norm}}$')
     ax00.set_ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
     
