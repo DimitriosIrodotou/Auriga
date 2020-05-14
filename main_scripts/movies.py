@@ -47,7 +47,7 @@ def gas_movie(data, read):
             
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [0, 4]
-            attributes = ['pos', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'vel', 'vol']
+            attributes = ['mass', 'ne', 'pos', 'rho', 'u']
             data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
             
             # Loop over all haloes #
@@ -55,8 +55,8 @@ def gas_movie(data, read):
                 # Check if any of the haloes' data already exists, if not then read and save it #
                 names = glob.glob(path + '/name_3000*')
                 names = [re.split('_|.npy', name)[2] for name in names]
-                # if str(redshift) in names:
-                #     continue
+                if str(redshift) in names:
+                    continue
                 
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
@@ -70,21 +70,14 @@ def gas_movie(data, read):
                 gas_mask, = np.where(s.type == 0)
                 
                 # Get the density-weighted temperature projections #
-                # mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
-                # temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * mean_weight
-                # s.data['temprho'] = temperature
+                mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
+                temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / KB * (1e6 * parsec) ** 2.0 / (1e6 * parsec / 1e5) ** 2 * mean_weight
+                s.data['temprho'] = s.data['rho'] * temperature
+                # s.data['temprho'] = s.data['mass'] * temperature
                 
-                ne = s.data['ne'][gas_mask]
-                metallicity = s.data['gz'][gas_mask]
-                XH = s.data['gmet'][gas_mask, element['H']]
-                yhelium = (1 - XH - metallicity) / (4. * XH)
-                mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-                temperature = GAMMA_MINUS1 * s.data['u'][gas_mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
-                s.data['temprho'] = temperature
-                
-                # vol[:] = s.data['vol'][gas_mask] * 1e9
+                # ne = s.data['ne'][gas_mask]
+                # metallicity = s.data['gz'][gas_mask]
                 # XH = s.data['gmet'][gas_mask, element['H']]
-                # ne, mass, rho[:], metallicity = s.data['ne'][gas_mask], s.data['mass'][gas_mask], s.data['rho'][gas_mask], s.data['gz'][gas_mask]
                 # yhelium = (1 - XH - metallicity) / (4. * XH)
                 # mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
                 # temperature = GAMMA_MINUS1 * s.data['u'][gas_mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
@@ -120,9 +113,9 @@ def gas_movie(data, read):
                 s.data['dens'] = s.rho / (1e6 * parsec) ** 3. * msol * 1e10
                 s.data['Ptherm'] = s.data['dens'] * s.data['T'] / (meanweight * PROTONMASS)
                 
-                pressure_face_on = s.get_Aslice("Ptherm", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                pressure_face_on = s.get_Aslice("Ptherm", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)[
                     "grid"]
-                pressure_edge_on = s.get_Aslice("Ptherm", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                pressure_edge_on = s.get_Aslice("Ptherm", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.05, numthreads=8)[
                     "grid"]
                 
                 # Save data for each halo in numpy arrays #
@@ -157,8 +150,9 @@ def gas_movie(data, read):
         temperature_edge_on = np.load(path + 'temperature_edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         
         # Generate the figure and define its parameters #
+        plt.rcParams['savefig.facecolor'] = 'black'
         figure, ax = plt.subplots(1, figsize=(20, 20))
-        gs = gridspec.GridSpec(2, 2)
+        gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])
         ax10 = plt.subplot(gs[1, 0])
@@ -173,35 +167,37 @@ def gas_movie(data, read):
         x = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         y = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         
-        temperature = ax00.pcolormesh(x, y, temperature_face_on.T, norm=matplotlib.colors.LogNorm(vmin=5e2, vmax=5e8), cmap='bwr', rasterized=True)
-        vrad = ax01.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-1e3, vmax=1e3, rasterized=True)
+        temperature = ax00.pcolormesh(x, y, (temperature_face_on / rho_face_on).T, norm=matplotlib.colors.LogNorm(vmin=3e3, vmax=5e7), cmap='ocean',
+                                      rasterized=True)
+        vrad = ax01.pcolormesh(x, y, vrad_face_on.T, cmap='bwr', vmin=-5e3, vmax=5e3, rasterized=True)
         rho = ax10.pcolormesh(x, y, (rho_face_on * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma',
                               rasterized=True)
-        pressure = ax11.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='cubehelix', rasterized=True)
+        pressure = ax11.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e8), cmap='cubehelix', rasterized=True)
         
         # Add colorbars in each panel #
         axes = [ax00, ax01, ax10, ax11]
-        labels = [r'$\mathrm{T\;[K]}$', r'$\mathrm{v_{rad}/km\,s^{-1}}$', r'$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$',
-                  r'$\mathrm{P\;[K\;cm^{-3}]}$']
-        extends = ['both', 'both', 'neither', 'neither']
+        labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$', r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$',
+                  r'$\mathrm{P\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
-        ticks = [[5e2, 5e5, 5e8], [-1e3, -5e2, 0, 5e2, 1e3], [1e6, 1e8, 1e10], [1e3, 1e5, 1e7]]
-        for axis, attribute, extend, label, ticks in zip(axes, attributes, extends, labels, ticks):
+        ticks = [[5e3, 5e5, 5e7], [-1e4, 0, 1e4], [1e6, 1e8, 1e10], [1e4, 1e6, 1e8]]
+        for axis, attribute, label, tick in zip(axes, attributes, labels, ticks):
             cbaxis = inset_axes(axis, width='30%', height='3%', loc=3)
-            cb = plt.colorbar(attribute, cax=cbaxis, orientation='horizontal', extend=extend)
-            cb.set_label(label, size=18)
+            cb = plt.colorbar(attribute, cax=cbaxis, ticks=tick, orientation='horizontal', extend='both')
+            cb.set_label(label, size=18, color='white')
             cbaxis.xaxis.tick_top()
             cbaxis.xaxis.set_label_position("top")
+            cbaxis.xaxis.set_tick_params(color='white')
+            plt.setp(plt.getp(cbaxis.axes, 'xticklabels'), color='white')
             cbaxis.tick_params(direction='out', which='both', top='on')
         
         figure.tight_layout()
-        figure.text(0.0, 0.97, 'z = %.3f' % float(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        figure.text(0.1, 0.97, 'z = %.3f' % float(redshift), color='w', fontsize=18, transform=ax10.transAxes)
         plt.savefig('/u/di43/Auriga/plots/gm/' + 'gmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
         
         # Generate the figure and define its parameters #
         figure, ax = plt.subplots(1, figsize=(20, 20))
-        gs = gridspec.GridSpec(2, 2)
+        gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])
         ax10 = plt.subplot(gs[1, 0])
@@ -213,29 +209,31 @@ def gas_movie(data, read):
             axis.set_aspect('auto')
         
         # Plot the projections #
-        temperature = ax00.pcolormesh(x, y, temperature_edge_on.T, norm=matplotlib.colors.LogNorm(vmin=5e2, vmax=5e8), cmap='bwr', rasterized=True)
-        vrad = ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-3.5e4, vmax=3.5e4, rasterized=True)
+        temperature = ax00.pcolormesh(x, y, (temperature_edge_on / rho_edge_on).T, norm=matplotlib.colors.LogNorm(vmin=3e3, vmax=5e7), cmap='ocean',
+                                      rasterized=False)
+        vrad = ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='bwr', vmin=-3.5e4, vmax=3.5e4, rasterized=True)
         rho = ax10.pcolormesh(x, y, (rho_edge_on * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma',
                               rasterized=True)
-        pressure = ax11.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='cubehelix', rasterized=True)
+        pressure = ax11.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e8), cmap='cubehelix', rasterized=True)
         
         # Add colorbars in each panel #
         axes = [ax00, ax01, ax10, ax11]
-        labels = [r'$\mathrm{T\;[K]}$', r'$\mathrm{v_{rad}/km\,s^{-1}}$', r'$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$',
-                  r'$\mathrm{P\;[K\;cm^{-3}]}$']
-        extends = ['both', 'both', 'neither', 'neither']
+        labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$', r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$',
+                  r'$\mathrm{P\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
-        ticks = [[5e2, 5e5, 5e8], [-1e3, -5e2, 0, 5e2, 1e3], [1e6, 1e8, 1e10], [1e3, 1e5, 1e7]]
-        for axis, attribute, extend, label, ticks in zip(axes, attributes, extends, labels, ticks):
+        ticks = [[5e3, 5e5, 5e7], [-3.5e4, 0, 3.5e4], [1e6, 1e8, 1e10], [1e4, 1e6, 1e8]]
+        for axis, attribute, label, tick in zip(axes, attributes, labels, ticks):
             cbaxis = inset_axes(axis, width='30%', height='3%', loc=3)
-            cb = plt.colorbar(attribute, cax=cbaxis, orientation='horizontal', extend=extend)
-            cb.set_label(label, size=18)
+            cb = plt.colorbar(attribute, cax=cbaxis, ticks=tick, orientation='horizontal', extend='both')
+            cb.set_label(label, size=18, color='white')
             cbaxis.xaxis.tick_top()
             cbaxis.xaxis.set_label_position("top")
-            cbaxis.tick_params(direction='out', which='both', top='on')
+            cbaxis.xaxis.set_tick_params(color='white')
+            plt.setp(plt.getp(cbaxis.axes, 'xticklabels'), color='white')
+            cbaxis.tick_params(direction='out', which='major', top='on')
         
         figure.tight_layout()
-        figure.text(0.0, 0.97, 'z = %.3f' % float(redshift), color='k', fontsize=16, transform=ax00.transAxes)
+        figure.text(0.1, 0.97, 'z = %.3f' % float(redshift), color='w', fontsize=18, transform=ax10.transAxes)
         plt.savefig('/u/di43/Auriga/plots/gm/' + 'gme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
     

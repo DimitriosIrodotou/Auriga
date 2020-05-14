@@ -42,18 +42,18 @@ def get_names_sorted(names):
         return np.array(names)[isort]
 
 
-def create_axis(f, idx, ncol=5):
+def create_axis(figure, idx, ncol=5):
     ix = idx % ncol
     iy = idx // ncol
     
     s = 1.
     
-    ax = f.iaxes(0.5 + ix * (s + 0.5), 0.3 + s + iy * (s + 0.6), s, s, top=False)
-    ax2 = ax.twiny()
-    return ax, ax2
+    axis = figure.iaxes(0.5 + ix * (s + 0.5), 0.3 + s + iy * (s + 0.6), s, s, top=False)
+    axis2 = axis.twiny()
+    return axis, axis2
 
 
-def set_axis(s, ax, ax2, ylabel, ylim=None):
+def set_axis(s, axis, axis2, ylabel, ylim=None):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
     a = 1. / (1 + z)
     
@@ -71,29 +71,29 @@ def set_axis(s, ax, ax2, ylabel, ylim=None):
             else:
                 lb += ["%.0f" % v]
     
-    ax.set_xlim(0., 13.)
-    ax.invert_xaxis()
-    ax2.set_xlim(ax.get_xlim())
-    ax2.set_xticks(times)
-    ax2.set_xticklabels(lb)
+    axis.set_xlim(0., 13.)
+    axis.invert_xaxis()
+    axis2.set_xlim(axis.get_xlim())
+    axis2.set_xticks(times)
+    axis2.set_xticklabels(lb)
     
-    ax.set_ylabel(ylabel, size=6)
-    ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
-    ax2.set_xlabel(r'$\mathrm{z}$', size=6)
+    axis.set_ylabel(ylabel, size=6)
+    axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
+    axis2.set_xlabel(r'$\mathrm{z}$', size=6)
     
-    for axis in [ax, ax2]:
+    for axis in [axis, axis2]:
         for label in axis.xaxis.get_ticklabels():
             label.set_size(6)
         for label in axis.yaxis.get_ticklabels():
             label.set_size(6)
     
     if ylim is not None:
-        ax.set_ylim(ylim)
+        axis.set_ylim(ylim)
     
     return None
 
 
-def set_axis_evo(ax, ax2, ylabel=None):
+def set_axis_evo(axis, axis2, ylabel=None):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
     times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
     
@@ -107,53 +107,48 @@ def set_axis_evo(ax, ax2, ylabel=None):
             else:
                 lb += ["%.0f" % v]
     
-    ax.set_xlim(0, 13)
-    ax.invert_xaxis()
-    ax.set_ylabel(ylabel, size=16)
-    ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-    ax.tick_params(direction='out', which='both', right='on')
+    axis.set_xlim(13, 0)
+    axis.invert_xaxis()
+    axis.set_ylabel(ylabel, size=16)
+    axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
+    axis.tick_params(direction='out', which='both', right='on')
     
-    ax2.set_xticks(times)
-    ax2.set_xticklabels(lb)
-    ax2.set_xlim(ax.get_xlim())
-    ax2.set_xlabel(r'$\mathrm{z}$', size=16)
-    ax2.tick_params(direction='out', which='both', top='on', right='on')
+    axis2.set_xticks(times)
+    axis2.set_xticklabels(lb)
+    axis2.set_xlim(axis.get_xlim())
+    axis2.set_xlabel(r'$\mathrm{z}$', size=16)
+    axis2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
 
 
-def sfr(pdf, data, levels):
-    nlevels = len(levels)
-    
+def sfr(pdf, data, level):
     nhalos = 0
-    for il in range(nlevels):
-        data.select_haloes(levels[il], 0.)
-        nhalos += data.selected_current_nsnaps
+    data.select_haloes(level, 0.)
+    nhalos += data.selected_current_nsnaps
     
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
+    figure = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
     time_bin = (13 - 0) / 100
     
-    for il in range(nlevels):
-        level = levels[il]
-        data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
-        
-        isnap = 0
-        for s in data:
-            s.centerat(s.subfind.data['fpos'][0, :])
-            
-            mask, = np.where((s.data['age'] > 0.) & (s.r() < 0.005) & (s.pos[:, 2] < 0.003))
-            age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
-            
-            ax, ax2 = create_axis(f, isnap)
-            ax.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / time_bin, histtype='step', bins=100, range=[0, 13])
-            set_axis(s, ax, ax2, r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
-            
-            ax.text(0.05, 0.92, 'Au%s-%d r < 5kpc' % (s.haloname, level), color='k', fontsize=6, transform=ax.transAxes)
-            
-            isnap += 1
+    data.select_haloes(level, 0., loadonlytype=[4], loadonlyhalo=0)
     
-    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    isnap = 0
+    for s in data:
+        s.centerat(s.subfind.data['fpos'][0, :])
+        
+        mask, = np.where((s.data['age'] > 0.) & (s.r() < 0.005) & (s.pos[:, 2] < 0.003))
+        age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
+        
+        axis, axis2 = create_axis(figure, isnap)
+        axis.hist(age, weights=s.data['gima'][mask] * 1e10 / 1e9 / time_bin, histtype='step', bins=100, range=[0, 13])
+        set_axis(s, axis, axis2, r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
+        
+        axis.text(0.05, 0.92, 'Au%s-%d r < 5kpc' % (s.haloname, level), color='k', fontsize=6, transform=axis.transAxes)
+        
+        isnap += 1
+    
+    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None
 
@@ -169,71 +164,62 @@ def compute_bfld_halo(snapid, halo, offset):
     return time, bfld
 
 
-def bfld(pdf, data, levels):
-    nlevels = len(levels)
-    
+def bfld(pdf, data, level):
     nhalos = 0
-    for il in range(nlevels):
-        data.select_haloes(levels[il], 0.)
-        nhalos += data.selected_current_nsnaps
+    data.select_haloes(level, 0.)
+    nhalos += data.selected_current_nsnaps
     
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
+    figure = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
-    for il in range(nlevels):
-        level = levels[il]
-        
-        res = {}
-        rpath = '../plots/data/bfld_%d.npy' % level
-        if os.path.exists(rpath):
-            with open(rpath, 'rb') as ff:
-                res = pickle.load(ff)
-        
-        halos = data.get_haloes(level)
-        for name, halo in halos.items():
-            if name not in res:
-                redshifts = halo.get_redshifts()
-                
-                i, = np.where(redshifts < 10.)
-                snapids = np.array(list(halo.snaps.keys()))[i]
-                
-                dd = np.array(compute_bfld_halo(snapids, halo, snapids.min()))
-                res[name] = {}
-                res[name]["time"] = dd[:, 0]
-                res[name]["bfld"] = dd[:, 1]
-        
-        with open(rpath, 'wb') as ff:
-            pickle.dump(res, ff, pickle.HIGHEST_PROTOCOL)
-        
-        names = get_names_sorted(res.keys())
-        for idx, name in enumerate(names):
-            ax, ax2 = create_axis(f, idx)
+    res = {}
+    rpath = '../plots/data/bfld_%d.npy' % level
+    if os.path.exists(rpath):
+        with open(rpath, 'rb') as ff:
+            res = pickle.load(ff)
+    
+    halos = data.get_haloes(level)
+    for name, halo in halos.items():
+        if name not in res:
+            redshifts = halo.get_redshifts()
             
-            ax.semilogy(res[name]["time"], res[name]["bfld"] * 1e6)
-            set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, "$B_\mathrm{r<1\;kpc}\;\mathrm{[\mu G]}$", [1e-2, 1e2])
-            ax.set_xlim([13., 11.])
+            i, = np.where(redshifts < 10.)
+            snapids = np.array(list(halo.snaps.keys()))[i]
+            
+            dd = np.array(compute_bfld_halo(snapids, halo, snapids.min()))
+            res[name] = {}
+            res[name]["time"] = dd[:, 0]
+            res[name]["bfld"] = dd[:, 1]
     
-    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    with open(rpath, 'wb') as ff:
+        pickle.dump(res, ff, pickle.HIGHEST_PROTOCOL)
+    
+    names = get_names_sorted(res.keys())
+    for idx, name in enumerate(names):
+        axis, axis2 = create_axis(figure, idx)
+        
+        axis.semilogy(res[name]["time"], res[name]["bfld"] * 1e6)
+        set_axis(list(halos[name].snaps.values())[0].loadsnap(), axis, axis2, "$B_\mathrm{r<1\;kpc}\;\mathrm{[\mu G]}$", [1e-2, 1e2])
+        axis.set_xlim([13., 11.])
+    
+    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
     
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
+    figure = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
-    for il in range(nlevels):
-        level = levels[il]
-        
-        res = {}
-        rpath = '../plots/data/bfld_%d.npy' % level
-        if os.path.exists(rpath):
-            with open(rpath, 'rb') as ff:
-                res = pickle.load(ff)
-        
-        names = get_names_sorted(res.keys())
-        for idx, name in enumerate(names):
-            ax, ax2 = create_axis(f, idx)
-            
-            ax.plot(res[name]["time"], res[name]["bfld"] * 1e6)
-            set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, '$B_\mathrm{r<1\;kpc}\;\mathrm{[\mu G]}$', [0., 100.])
+    res = {}
+    rpath = '../plots/data/bfld_%d.npy' % level
+    if os.path.exists(rpath):
+        with open(rpath, 'rb') as ff:
+            res = pickle.load(ff)
     
-    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    names = get_names_sorted(res.keys())
+    for idx, name in enumerate(names):
+        axis, axis2 = create_axis(figure, idx)
+        
+        axis.plot(res[name]["time"], res[name]["bfld"] * 1e6)
+        set_axis(list(halos[name].snaps.values())[0].loadsnap(), axis, axis2, '$B_\mathrm{r<1\;kpc}\;\mathrm{[\mu G]}$', [0., 100.])
+    
+    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None
 
@@ -252,53 +238,47 @@ def get_bh_mass(snapid, halo, bhid):
     return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), mass
 
 
-def bh_mass(pdf, data, levels):
-    nlevels = len(levels)
-    
+def bh_mass(pdf, data, level):
     nhalos = 0
-    for il in range(nlevels):
-        data.select_haloes(levels[il], 0.)
-        nhalos += data.selected_current_nsnaps
+    data.select_haloes(level, 0.)
+    nhalos += data.selected_current_nsnaps
     
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
+    figure = plt.figure(FigureClass=sfig, figsize=(8.2, 1.6 * (((nhalos - 1) // 5) + 1) + 0.3))
     
-    for il in range(nlevels):
-        level = levels[il]
-        
-        res = {}
-        rpath = '../plots/data/bhmass_%d.npy' % level
-        if os.path.exists(rpath):
-            with open(rpath, 'rb') as ff:
-                res = pickle.load(ff)
-        
-        halos = data.get_haloes(level)
-        for name, halo in halos.items():
-            if name not in res:
-                redshifts = halo.get_redshifts()
-                
-                i, = np.where(redshifts < 10.)
-                snapids = np.array(list(halo.snaps.keys()))[i]
-                
-                s = halo.snaps[snapids.argmax()].loadsnap(loadonlytype=[5], loadonlyhalo=0)
-                bhid = s.data['id'][s.mass.argmax()]
-                
-                dd = np.array(get_bh_mass(snapids, halo, bhid))
-                res[name] = {}
-                res[name]["time"] = dd[:, 0]
-                res[name]["mass"] = dd[:, 1]
-        
-        with open(rpath, 'wb') as ff:
-            pickle.dump(res, ff, pickle.HIGHEST_PROTOCOL)
-        
-        names = get_names_sorted(res.keys())
-        for idx, name in enumerate(names):
-            ax, ax2 = create_axis(f, idx)
+    res = {}
+    rpath = '../plots/data/bhmass_%d.npy' % level
+    if os.path.exists(rpath):
+        with open(rpath, 'rb') as ff:
+            res = pickle.load(ff)
+    
+    halos = data.get_haloes(level)
+    for name, halo in halos.items():
+        if name not in res:
+            redshifts = halo.get_redshifts()
             
-            ax.semilogy(res[name]["time"], res[name]["mass"] * 1e10)
-            set_axis(list(halos[name].snaps.values())[0].loadsnap(), ax, ax2, '$M_\mathrm{BH}\;\mathrm{[M_\odot]}$')
-            ax.text(0.05, 0.92, 'Au%s' % name, color='k', fontsize=6, transform=ax.transAxes)
+            i, = np.where(redshifts < 10.)
+            snapids = np.array(list(halo.snaps.keys()))[i]
+            
+            s = halo.snaps[snapids.argmax()].loadsnap(loadonlytype=[5], loadonlyhalo=0)
+            bhid = s.data['id'][s.mass.argmax()]
+            
+            dd = np.array(get_bh_mass(snapids, halo, bhid))
+            res[name] = {}
+            res[name]["time"] = dd[:, 0]
+            res[name]["mass"] = dd[:, 1]
     
-    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    with open(rpath, 'wb') as ff:
+        pickle.dump(res, ff, pickle.HIGHEST_PROTOCOL)
+    
+    names = get_names_sorted(res.keys())
+    for idx, name in enumerate(names):
+        axis, axis2 = create_axis(figure, idx)
+        
+        axis.semilogy(res[name]["time"], res[name]["mass"] * 1e10)
+        set_axis(list(halos[name].snaps.values())[0].loadsnap(), axis, axis2, '$M_\mathrm{BH}\;\mathrm{[M_\odot]}$')
+        axis.text(0.05, 0.92, 'Au%s' % name, color='k', fontsize=6, transform=axis.transAxes)
+    
+    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None
 
@@ -383,27 +363,29 @@ def bar_strength_evolution(pdf, data, read):
                 np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_18*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plt.grid(True)
-        plt.xlim(0, 2)
         plt.ylim(0, 1)
         plt.xlabel(r'$\mathrm{Redshift}$', size=16)
-        plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
+        axis2 = axis.twiny()
+        set_axis_evo(axis, axis2, r'$\mathrm{A_{2}}$')
         
         # Load and plot the data #
         max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        plt.plot(redshifts, max_A2s, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
+        
+        plt.plot(lookback_times, max_A2s, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
         
         # Create the legends and save the figure #
-        ax.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
-        pdf.savefig(f, bbox_inches='tight')
+        axis2.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
+        pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
 
@@ -476,23 +458,26 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         np.save(path + 'redshifts_' + str(s.haloname), redshifts[np.where(redshifts <= redshift_cut)])
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18NOR*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
     for i in range(len(names)):
         # Generate the figure and define its parameters #
-        f, ax = plt.subplots(1, figsize=(10, 7.5))
-        plt.ylim(-0.2, 1.2)
-        plt.xlim(0, 5)
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plt.grid(True)
+        plt.ylim(-0.2, 1.2)
         plt.ylabel(r'$\mathrm{Gas\;fraction}$', size=16)
         plt.xlabel(r'$\mathrm{Redshift}$', size=16)
-        ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
+        axis.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis.transAxes)
+        axis2 = axis.twiny()
+        set_axis_evo(axis, axis2, r'$\mathrm{A_{2}}$')
         
         sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))
+        
         # Uncomment the following lines if you want to make a stacked bar plot #
         # redshifts = np.insert(redshifts, 0, 5.1)
         # sfg_ratios = np.flip(sfg_ratios)
@@ -506,14 +491,14 @@ def gas_temperature_fraction_evolution(pdf, data, read):
         # bottom=np.sum(np.vstack([sfg_ratios[j], wg_ratios[j]]).T),  #               width=redshifts[j + 1] - redshifts[j], alpha=0.6,
         # align='edge', color='red', edgecolor='none')
         
-        b1, = plt.plot(redshifts, sfg_ratios, color='blue')
-        b2, = plt.plot(redshifts, wg_ratios, color='green')
-        b3, = plt.plot(redshifts, hg_ratios, color='red')
+        b1, = plt.plot(lookback_times, sfg_ratios, color='blue')
+        b2, = plt.plot(lookback_times, wg_ratios, color='green')
+        b3, = plt.plot(lookback_times, hg_ratios, color='red')
     
     # Create the legends and save the figure #
     plt.legend([b3, b2, b1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left', fontsize=16, frameon=False,
                numpoints=1)
-    pdf.savefig(f, bbox_inches='tight')
+    pdf.savefig(figure, bbox_inches='tight')
     plt.close()
     return None
 
@@ -574,7 +559,7 @@ def AGN_modes_cumulative(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18NORadio*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
     # Load and plot the data #
@@ -688,19 +673,19 @@ def AGN_modes_histogram(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18NORadio*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
     # Load and plot the data #
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
-        f, ax = plt.subplots(1, figsize=(10, 7.5))
-        ax.grid(True)
-        ax2 = ax.twiny()
-        ax.set_yscale('log')
-        set_axis_evo(ax, ax2, r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
-        ax.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+        axis.grid(True)
+        axis2 = axis.twiny()
+        axis.set_yscale('log')
+        set_axis_evo(axis, axis2, r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
+        axis.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -718,11 +703,11 @@ def AGN_modes_histogram(date, data, read):
         
         # Convert redshifts to lookback times and plot #
         lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # In Gyr.
-        hist0 = ax.hist(lookback_times, weights=thermals, histtype='step', bins=100)
-        hist1 = ax.hist(lookback_times, weights=mechanicals, histtype='step', bins=100)
+        hist0 = axis.hist(lookback_times, weights=thermals, histtype='step', bins=100)
+        hist1 = axis.hist(lookback_times, weights=mechanicals, histtype='step', bins=100)
         
         # Create the legends and save the figure #
-        ax.legend([hist0, hist1], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper right', fontsize=16, frameon=False, numpoints=1)
+        axis.legend([hist0, hist1], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper right', fontsize=16, frameon=False, numpoints=1)
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmh-' + date + '.png', bbox_inches='tight')
         plt.close()
     
@@ -791,7 +776,7 @@ def AGN_modes_distribution(date, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18NORadio.*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
     # Load and plot the data #
@@ -934,7 +919,7 @@ def AGN_modes_step(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18NORadio*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
     # Load and plot the data #
@@ -1004,24 +989,24 @@ def AGN_modes_gas(date):
     path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
     
     # Load and plot the data #
-    names = glob.glob(path_modes + '/name_06*')
+    names = glob.glob(path_modes + '/name_18.*')
     names.sort()
     
     # Load and plot the data #
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
-        f, ax = plt.subplots(1, figsize=(10, 7.5))
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plt.grid(True)
-        ax.set_xlim(12, 0)
-        ax.set_ylim(-0.2, 1.2)
-        ax2 = ax.twinx()
-        ax2.set_yscale('log')
-        ax2.set_ylim(1e56, 1e60)
-        ax.set_ylabel(r'$\mathrm{Gas\;fraction}$', size=16)
-        ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-        ax2.set_ylabel(r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$', size=16)
-        ax.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax.transAxes)
+        axis.set_xlim(12, 0)
+        axis.set_ylim(-0.2, 1.2)
+        axis2 = axis.twinx()
+        axis2.set_yscale('log')
+        axis2.set_ylim(1e56, 1e60)
+        axis.set_ylabel(r'$\mathrm{Gas\;fraction}$', size=16)
+        axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
+        axis2.set_ylabel(r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$', size=16)
+        axis.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
         wg_ratios = np.load(path_gas + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1040,9 +1025,9 @@ def AGN_modes_gas(date):
         lookback_times_gas = satellite_utilities.return_lookbacktime_from_a((redshifts_gas + 1.0) ** (-1.0))
         
         # Plot the gas fractions #
-        plot1, = ax.plot(lookback_times_gas, sfg_ratios, color='blue')
-        plot1, = ax.plot(lookback_times_gas, wg_ratios, color='green')
-        plot3, = ax.plot(lookback_times_gas, hg_ratios, color='red')
+        plot1, = axis.plot(lookback_times_gas, sfg_ratios, color='blue')
+        plot1, = axis.plot(lookback_times_gas, wg_ratios, color='green')
+        plot3, = axis.plot(lookback_times_gas, hg_ratios, color='red')
         
         # Calculate and plot the thermals energy sum #
         nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
@@ -1073,9 +1058,9 @@ def AGN_modes_gas(date):
         sum02, = plt.plot(x_value, sum, color='black', zorder=5)
         
         # Create the legends and save the figure #
-        ax.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left', fontsize=16,
-                  frameon=False, numpoints=1)
-        ax2.legend([sum00, sum02], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False, numpoints=1)
+        axis.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left', fontsize=16,
+                    frameon=False, numpoints=1)
+        axis2.legend([sum00, sum02], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False, numpoints=1)
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmg-' + date + '.png', bbox_inches='tight')
         plt.close()
     
@@ -1182,17 +1167,17 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     hg_ratios.append(np.sum(gas_mass[np.where((temperature >= 5e5))]) / np.sum(gas_mass))
             
             # Save data for each halo in numpy arrays #
-            np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
-            np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
-            np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
             lookback_times = satellite_utilities.return_lookbacktime_from_a(
                 (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
+            np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
+            np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
+            np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
             np.save(path + 'gas_masses_' + str(s.haloname), gas_masses)
             np.save(path + 'stellar_masses_' + str(s.haloname), stellar_masses)
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_18NOR*')
+        names = glob.glob(path + '/name_18.*')
         names.sort()
         
         for i in range(len(names)):
@@ -1201,8 +1186,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
             gs = gridspec.GridSpec(3, 1, hspace=0.06, height_ratios=[1, 0.5, 0.5])
             ax00 = plt.subplot(gs[0, 0])
             ax10 = plt.subplot(gs[1, 0])
-            ax20 = plt.subplot(gs[2, 0])
-            for axis in [ax00, ax10, ax20]:
+            axis20 = plt.subplot(gs[2, 0])
+            for axis in [ax00, ax10, axis20]:
                 axis.grid(True)
                 axis.tick_params(direction='out', which='both', top='on', right='on')
             ax00.set_ylim(0, 8)
@@ -1219,9 +1204,9 @@ def gas_stars_sfr_evolution(pdf, data, read):
             ax10.set_xticklabels([])
             ax10.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
             ax10.set_ylabel(r'$\mathrm{Mass\;[M_{\odot}]}$', size=16)
-            ax20.set_xlim(13, 0)
-            ax20.set_ylim(-0.1, 1.1)
-            ax20.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
+            axis20.set_xlim(13, 0)
+            axis20.set_ylim(-0.1, 1.1)
+            axis20.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
             
             figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{r\;<\;%.0f\;pc}$' % (
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit) * 1e6)), fontsize=16, transform=ax00.transAxes)
@@ -1281,9 +1266,9 @@ def gas_stars_sfr_evolution(pdf, data, read):
             plot101, = ax10.plot(lookback_times, stellar_masses * 1e10, c='r')
             
             # Plot the gas fractions #
-            plot1, = ax20.plot(lookback_times, sfg_ratios, color='blue')
-            plot2, = ax20.plot(lookback_times, wg_ratios, color='green')
-            plot3, = ax20.plot(lookback_times, hg_ratios, color='red')
+            plot1, = axis20.plot(lookback_times, sfg_ratios, color='blue')
+            plot2, = axis20.plot(lookback_times, wg_ratios, color='green')
+            plot3, = axis20.plot(lookback_times, hg_ratios, color='red')
             
             # Create the legends and save the figure #
             ax10.legend([plot100, plot101], [r'$\mathrm{Gas}$', r'$\mathrm{Stars}$'], loc='lower center', fontsize=16, frameon=False, numpoints=1,
@@ -1291,8 +1276,8 @@ def gas_stars_sfr_evolution(pdf, data, read):
             ax002.legend([plot20, plot21], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False,
                          numpoints=1, ncol=2)
             ax00.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, ncol=2)
-            ax20.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
-                        fontsize=16, frameon=False, numpoints=1)
+            axis20.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
+                          fontsize=16, frameon=False, numpoints=1)
             
             pdf.savefig(figure, bbox_inches='tight')
             plt.close()

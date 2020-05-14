@@ -310,10 +310,10 @@ class AurigaPdf:
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)
         # time_evolution.bar_strength_evolution(pdf, self, read=False)
-        # main.time_evolution.bfld(pdf, self, level)
-        # time_evolution.bh_mass(pdf, self, [level])
+        # time_evolution.bfld(pdf, self, level)
+        # time_evolution.bh_mass(pdf, self, level)
         # time_evolution.gas_temperature_fraction_evolution(pdf, self, read=False)
-        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
+        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=False)
         #  AGN modes #
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
@@ -322,7 +322,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_gas(date)
         
         # Movies #
-        movies.gas_movie(self, read=True)
+        # movies.gas_movie(self, read=True)
         
         # Global galactic relations #
         # galaxy.sfr_history(pdf, self, redshift, read=True)
@@ -338,7 +338,7 @@ class AurigaPdf:
         # galaxy.bar_strength(pdf, self, read=False)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
-        # galaxy.gas_temperature_histogram(pdf, self, read=True)
+        galaxy.gas_temperature_histogram(pdf, self, read=True)
         # galaxy.gas_distance_temperature(pdf, self, redshift, read=True)
         
         # Metallicities #
