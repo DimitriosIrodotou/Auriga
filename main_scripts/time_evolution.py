@@ -107,7 +107,7 @@ def set_axis_evo(axis, axis2, ylabel=None):
             else:
                 lb += ["%.0f" % v]
     
-    axis.set_xlim(13, 0)
+    axis.set_xlim(0, 13)
     axis.invert_xaxis()
     axis.set_ylabel(ylabel, size=16)
     axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
@@ -1092,12 +1092,6 @@ def gas_stars_sfr_evolution(pdf, data, read):
             
             # Loop over all haloes #
             for s in data:
-                # Check if any of the haloes' data already exists, if not then read and save it #
-                names = glob.glob(path + '/name_*')
-                names = [re.split('_|.npy', name)[1] for name in names]
-                # if str(s.haloname) in names:
-                #     continue
-                
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -1130,12 +1124,6 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 
                 # Loop over all haloes #
                 for s in data:
-                    # Check if any of the haloes' data already exists, if not then read and save it #
-                    names = glob.glob(path + '/name_*')
-                    names = [re.split('_|.npy', name)[1] for name in names]
-                    if str(s.haloname) in names:
-                        continue
-                    
                     # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                     s.calc_sf_indizes(s.subfind)
                     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -1177,7 +1165,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_18.*')
+        names = glob.glob(path + '/name_18NOR*')
         names.sort()
         
         for i in range(len(names)):
@@ -1247,19 +1235,19 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 x_low += 0.05
             plot20, = ax002.plot(x_value, sum, color='orange', zorder=5)
             
-            # Calculate and plot the mechanical energy sum #
-            nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
-            x_value = np.empty(nbin)
-            sum = np.empty(nbin)
-            x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
-            for j in range(nbin):
-                index = np.where(
-                    (lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low + 0.05))[0]
-                x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
-                if len(index) > 0:
-                    sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-                x_low += 0.05
-            plot21, = ax002.plot(x_value, sum, color='magenta', zorder=5)
+            # # Calculate and plot the mechanical energy sum #
+            # nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
+            # x_value = np.empty(nbin)
+            # sum = np.empty(nbin)
+            # x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
+            # for j in range(nbin):
+            #     index = np.where(
+            #         (lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+            #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
+            #     if len(index) > 0:
+            #         sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
+            #     x_low += 0.05
+            # plot21, = ax002.plot(x_value, sum, color='magenta', zorder=5)
             
             # Plot the stellar and gaseous masses #
             plot100, = ax10.plot(lookback_times, gas_masses * 1e10, c='b')
@@ -1273,7 +1261,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             # Create the legends and save the figure #
             ax10.legend([plot100, plot101], [r'$\mathrm{Gas}$', r'$\mathrm{Stars}$'], loc='lower center', fontsize=16, frameon=False, numpoints=1,
                         ncol=2)
-            ax002.legend([plot20, plot21], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False,
+            ax002.legend([plot20], [r'$\mathrm{Thermal}$'], loc='upper center', fontsize=16, frameon=False,
                          numpoints=1, ncol=2)
             ax00.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, ncol=2)
             axis20.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
