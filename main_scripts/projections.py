@@ -261,8 +261,8 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
         boxx = boxy
         xres = yres
         proj = np.zeros((xres, yres, 3))
-        for k in range(1):
-            iband = [5][k]  # bands = ['U', 'B', 'V', 'K', 'g', 'r', 'i', 'z']
+        for k in range(3):
+            iband = [3, 1, 0][k]  # bands = ['U', 'B', 'V', 'K', 'g', 'r', 'i', 'z']
             band = 10 ** (-2.0 * data[:, iband] / 5.0)
             grid = calcGrid.calcGrid(pos, hsml, band, rho, rho, xres, yres, 256, boxx, boxy, boxz, 0., 0., 0., 1, 1, numthreads=8)
             
@@ -299,7 +299,7 @@ def stellar_light(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -371,7 +371,7 @@ def stellar_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['mass', 'pos']
-        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -474,7 +474,7 @@ def gas_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'rho']
-        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -547,7 +547,7 @@ def gas_temperature(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -627,7 +627,7 @@ def gas_metallicity(pdf, data, level, redshift):
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'pos', 'gz']
-    data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+    data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -676,7 +676,7 @@ def gas_slice(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['pos', 'vel', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'vol']
-        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -893,7 +893,7 @@ def dm_mass(pdf, data, level, redshift):
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [1, 4]
     attributes = ['mass', 'pos']
-    data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+    data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Loop over all haloes #
     for s in data:
@@ -992,7 +992,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -1070,7 +1070,7 @@ def stellar_light_fit(data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(level, redshift,  loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all haloes #
         for s in data:
@@ -1101,7 +1101,7 @@ def stellar_light_fit(data, redshift, read):
             np.save(path + 'edge_on_' + str(s.haloname), edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_18.*')
+    names = glob.glob(path + '/name_*')
     names.sort()
     
     # Loop over all available haloes #
