@@ -293,7 +293,7 @@ def tully_fisher(pdf, data, levels):
             vtot[ihalo] = vel[np.abs(smcum - 0.8 * mstars).argmin()]
             
             axis.semilogx(mstar[ihalo] * 1e10, np.log10(vtot[ihalo]), color=next(colors), linestyle="None", marker='*', ms=15.0,
-                        label="Au%s" % s.haloname)
+                          label="Au%s" % s.haloname)
             axis.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             axis.add_artist(l1)
             ihalo += 1
@@ -363,7 +363,8 @@ def stellar_vs_total(pdf, data, levels):
             iall, = np.where(s.r() < s.subfind.data['frc2'][0])
             mhalo[ihalo] = s.mass[iall].sum()
             
-            axis.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s" % s.haloname)
+            axis.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0,
+                        label="Au%s" % s.haloname)
             axis.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             axis.add_artist(l1)
             
@@ -374,8 +375,13 @@ def stellar_vs_total(pdf, data, levels):
     return None
 
 
-# for this formula see Appendix of Windhorst+ 1991
 def convert_rband_to_Rband_mag(r, g):
+    """
+    Convert Gunn r-band to Mould R-band magnitude using formula A8 from Windhorst+ 1991.
+    :param r: Gunn r band magnitude.
+    :param g: Gunn g band magnitude.
+    :return: Mould R-band magnitude.
+    """
     R = r - 0.51 - 0.15 * (g - r)
     return R
 
@@ -408,6 +414,7 @@ def gas_fraction(pdf, data, levels):
             age = np.zeros(s.npartall)
             age[s.type == 4] = s.data['age']
             istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
+            # Calculate the bolometric R-band magnitude in units of the bolometric magnitude of the Sun #
             Rband = convert_rband_to_Rband_mag(s.data['gsph'][istars, 5], s.data['gsph'][istars, 4])
             MR[ihalo] = -2.5 * np.log10((10. ** (- 2.0 * Rband / 5.0)).sum())
             
@@ -459,7 +466,7 @@ def central_bfld(pdf, data, levels):
             mstar[ihalo] = s.mass[istars].sum()
             
             axis.loglog(mstar[ihalo] * 1e10, bfld[ihalo] * 1e6, color=next(colors), linestyle="None", marker='*', ms=15.0,
-                      label="Au%s-%d" % (s.haloname, levels[0]))
+                        label="Au%s-%d" % (s.haloname, levels[0]))
             axis.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
             
             ihalo += 1
@@ -620,7 +627,7 @@ def sfr_history(pdf, data, redshift, read):
         age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         axis.hist(age, weights=weights, color=next(colors), histtype='step', bins=nbins, range=[tmin, tmax],
-                label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+                  label="Au-" + (str(re.split('_|.npy', names[i])[1])))
         
         ax2 = axis.twiny()
         set_axis_evo(axis, ax2)

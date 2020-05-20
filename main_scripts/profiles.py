@@ -186,7 +186,7 @@ def radial_profiles(pdf, data, level, redshift):
 
 def vertical_profiles(pdf, data, level, redshift):
     """
-        Plot radial gas density, gas metallicity, gas energy density, magnetic field strength and gas velocity dispersion profiles for Auriga halo(
+        Plot vertical gas density, gas metallicity, gas energy density, magnetic field strength and gas velocity dispersion profiles for Auriga halo(
         es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf

@@ -151,7 +151,7 @@ def gas_movie(data, read):
         
         # Generate the figure and define its parameters #
         plt.rcParams['savefig.facecolor'] = 'black'
-        figure, ax = plt.subplots(1, figsize=(20, 20))
+        figure, axis = plt.subplots(1, figsize=(20, 20))
         gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])
@@ -196,7 +196,7 @@ def gas_movie(data, read):
         plt.close()
         
         # Generate the figure and define its parameters #
-        figure, ax = plt.subplots(1, figsize=(20, 20))
+        figure, axis = plt.subplots(1, figsize=(20, 20))
         gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
         ax00 = plt.subplot(gs[0, 0])
         ax01 = plt.subplot(gs[0, 1])

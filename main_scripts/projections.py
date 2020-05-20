@@ -128,17 +128,17 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return ax00, ax10, x, y, y2, area
 
 
-def create_colorbar(ax, pcm, label, orientation='vertical'):
+def create_colorbar(axis, pcm, label, orientation='vertical'):
     """
     Generate a colorbar.
-    :param ax: colorbar axis from create_axes
+    :param axis: colorbar axis from create_axes
     :param pcm: pseudocolor plot
     :param label: colorbar label
     :param orientation: colorbar orientation
     :return: None
     """
     # Set the colorbar axes #
-    cb = plt.colorbar(pcm, cax=ax, orientation=orientation)
+    cb = plt.colorbar(pcm, cax=axis, orientation=orientation)
     
     # Set the colorbar parameters #
     cb.set_label(label, size=12)
@@ -1110,12 +1110,81 @@ def stellar_light_fit(data, redshift, read):
         projections = ['face_on', 'edge_on']
         for projection in projections:
             # Generate the figure and define its parameters #
-            figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+            figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
             plt.axis('off')
-            ax.set_aspect('equal')
+            axis.set_aspect('equal')
             
             # Load and save the data #
             proj = np.load(path + projection + '_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             plt.imsave('/u/di43/Auriga/plots/slf/' + 'Au-' + str(re.split('_|.npy', names[i])[1]) + '_' + str(projection) + '.png', proj, cmap='gray')
             plt.close()
+    return None
+
+
+def r_band_magnitude(data, redshift, read):
+    """
+    Plot the 2D distribution of the r-band magnitude.
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'rbm/' + str(redshift) + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [4]
+        attributes = ['age', 'gsph', 'mass', 'pos']
+        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        
+        # Loop over all haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            # if str(s.haloname) in names:
+            #     continue
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            # Mask and rotate the data and plot the projections #
+            mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in kpc.
+            z_rotated, y_rotated, x_rotated = rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3, s.pos[mask, 2] * 1e3)  # Distances are in kpc.
+            s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
+            
+            band = 10 ** (-2.0 * s.data['gsph'][mask, 5] / 5.0)  # r-band magnitude.
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'band_' + str(s.haloname), band)
+            np.save(path + 'pos_' + str(s.haloname), s.pos)
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 10))
+        axis.set_aspect('equal')
+        axis.set_facecolor('k')
+        axis.set_xticklabels([])
+        axis.set_yticklabels([])
+        plt.rcParams['savefig.facecolor'] = 'black'
+        
+        # Load and save the data #
+        pos = np.load(path + 'pos_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        band = np.load(path + 'band_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        plt.hist2d(pos[:, 2], pos[:, 1], weights=band, bins=300, norm=matplotlib.colors.LogNorm(), cmap='gray', range=[[-0.03, 0.03], [-0.03, 0.03]])
+        
+        plt.savefig('/u/di43/Auriga/plots/' + 'Test.png', bbox_inches='tight')  # Save the figure.
+        plt.close()
     return None

@@ -30,9 +30,9 @@ def convert_to_grayscale(name):
     array = np.asarray(image)
     
     # Generate the figure and define its parameters #
-    figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
-    ax.set_aspect('equal')
+    axis.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
     plt.imsave(plots_path + str(name) + 'g.png', array, cmap='gray')
@@ -54,9 +54,9 @@ def plot_fits_image(name):
     image_data = fits.getdata(str(name) + '.fits', ext=0)
     
     # Generate the figure and define its parameters #
-    figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
-    ax.set_aspect('equal')
+    axis.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
     plt.imsave(plots_path + str(name) + '.png', image_data, cmap='gray')
@@ -104,16 +104,16 @@ def plot_fit_data(name, h=0.0, R_eff=0.0):
     image_data = fits.getdata(plots_path + str(name) + '.fits', ext=0)
     
     # Generate the figure and define its parameters #
-    figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
-    ax.set_aspect('equal')
+    axis.set_aspect('equal')
     
-    ax.imshow(image_data, cmap='gray')
+    axis.imshow(image_data, cmap='gray')
     centre = image_centre(name)
     # Plot the scale length
     for radius in [h, R_eff]:
         circle = Circle((centre[0], centre[1]), radius, color='tab:red', fill=False)
-        ax.add_patch(circle)
+        axis.add_patch(circle)
     
     # Create and save a gray scaled version of the image #
     plt.savefig(plots_path + str(name) + '2.png', cmap='gray', bbox_inches='tight')
@@ -132,11 +132,11 @@ def fit_isophotal_ellipses(name):
     centre = image_centre(name)
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=20, eps=0.5, pa=0)
     aper = EllipticalAperture((geometry.x0, geometry.y0), geometry.sma, geometry.sma * (1 - geometry.eps), geometry.pa)
-
+    
     # Generate the figure and define its parameters #
-    figure, ax = plt.subplots(1, figsize=(10, 10), frameon=False)
+    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
-    ax.set_aspect('equal')
+    axis.set_aspect('equal')
     
     plt.imshow(image_data, origin='lower')
     aper.plot(color='white')
@@ -162,6 +162,7 @@ def fit_isophotal_ellipses(name):
 # if name + '.fits' in names:
 #     continue
 # convert_to_grayscale(name)
+convert_to_grayscale('Test')
 
 # image_centre('Au-18_face_on')
 # image_intensity('06N_fg')
@@ -169,4 +170,4 @@ def fit_isophotal_ellipses(name):
 # plot_fits_image('resid_E_06N_fg')
 # plot_fit_data('Au-06_edge_ong', h=79.8589, R_eff=128.589)
 
-fit_isophotal_ellipses('Au-06_face_ong')
+# fit_isophotal_ellipses('Au-06_face_ong')
