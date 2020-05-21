@@ -354,7 +354,7 @@ class AurigaPdf:
         pdf.close()
         # file_name = 'Auriga-' + date + '.pdf'
         # file_name = 'gm/'
-        file_name = 'Test.png'
+        file_name = 'rbm*'
         # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None

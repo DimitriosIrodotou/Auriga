@@ -1185,6 +1185,6 @@ def r_band_magnitude(data, redshift, read):
         
         plt.hist2d(pos[:, 2], pos[:, 1], weights=band, bins=300, norm=matplotlib.colors.LogNorm(), cmap='gray', range=[[-0.03, 0.03], [-0.03, 0.03]])
         
-        plt.savefig('/u/di43/Auriga/plots/' + 'Test.png', bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/' + 'rbm-' + str(re.split('_|.npy', names[i])[1]), bbox_inches='tight')  # Save the figure.
         plt.close()
     return None
