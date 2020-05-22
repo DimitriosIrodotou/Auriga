@@ -1070,7 +1070,7 @@ def gas_temperature_histogram(pdf, data, read):
 
 def gas_distance_temperature(pdf, data, redshift, read):
     """
-    Mass- and volume-weighted histograms of gas temperature
+    Temperature as a function of distance of gas cells.
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param read: boolean to read new data.
