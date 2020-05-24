@@ -1,5 +1,6 @@
 import re
 import PIL
+import cv2
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
@@ -213,6 +214,38 @@ def exponential_profile(x, I_0, R_d):
     return I_0 * np.exp(-x / R_d)
 
 
+def add_Gaussian_noise(run):
+    img = fits.getdata(run + '_ctg.fits', ext=0) / 255
+    noise = np.random.normal(loc=0, scale=1, size=img.shape)
+    
+    # noise overlaid over image
+    noisy = np.clip((img + noise * 0.1), 0, 1)
+    noisy2 = np.clip((img + noise * 0.4), 0, 1)
+
+    # noise multiplied by image:
+    # whites can go to black but blacks cannot go to white
+    noisy2mul = np.clip((img * (1 + noise * 0.2)), 0, 1)
+    noisy4mul = np.clip((img * (1 + noise * 0.4)), 0, 1)
+
+    noisy2mul = np.clip((img * (1 + noise * 0.2)), 0, 1)
+    noisy4mul = np.clip((img * (1 + noise * 0.4)), 0, 1)
+    noise2 = (noise - noise.min()) / (noise.max() - noise.min())
+    # noise multiplied by bottom and top half images,
+    # whites stay white blacks black, noise is added to center
+    img2 = img * 2
+    n2 = np.clip(np.where(img2 <= 1, (img2 * (1 + noise * 0.2)), (1 - img2 + 1) * (1 + noise * 0.2) * -1 + 2) / 2, 0, 1)
+    n4 = np.clip(np.where(img2 <= 1, (img2 * (1 + noise * 0.4)), (1 - img2 + 1) * (1 + noise * 0.4) * -1 + 2) / 2, 0, 1)
+    
+    plt.figure(figsize=(10, 10))
+    plt.imshow(np.vstack((np.hstack((img, noise2)), np.hstack((noisy, noisy2)), np.hstack((noisy2mul, noisy4mul)), np.hstack((n2, n4)))),
+               origin='lower', cmap='gray')
+    # plt.imshow(noisy, origin='lower', cmap='gray')
+    plt.show()
+
+
+
+
+
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/'
 output_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 run = plots_path + str('06NOAGN')
@@ -225,7 +258,33 @@ run = plots_path + str('06NOAGN')
 #     name = re.split('rbm-|.png', name)[1]
 #     fit_isophotal_ellipses(plots_path + name)
 
-fit_isophotal_ellipses(run)
+# fit_isophotal_ellipses(run)
+# add_Gaussian_noise(run)
 
 # plot_fits_image(run)
 # plot_fit_data('Au-06_edge_ong', h=79.8589, R_eff=128.589)
+
+import skimage
+def plotnoise(img, mode, r, c, i):
+    plt.subplot(r,c,i)
+    if mode is not None:
+        gimg = skimage.util.random_noise(img, mode=mode)
+        plt.imshow(gimg, origin='lower', cmap='gray')
+    else:
+        plt.imshow(img, origin='lower', cmap='gray')
+    plt.title(mode)
+    plt.axis("off")
+
+plt.figure(figsize=(18,24))
+r=4
+c=2
+img = fits.getdata(run + '_ctg.fits', ext=0) / 255
+plotnoise(img, "gaussian", r,c,1)
+plotnoise(img, "localvar", r,c,2)
+plotnoise(img, "poisson", r,c,3)
+plotnoise(img, "salt", r,c,4)
+# plotnoise(img, "pepper", r,c,5)
+# plotnoise(img, "s&p", r,c,6)
+plotnoise(img, "speckle", r,c,4)
+# plotnoise(img, None, r,c,8)
+plt.savefig(run + "poisson", bbox_inches='tight')  # Save the figure.

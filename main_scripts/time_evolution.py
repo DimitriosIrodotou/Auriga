@@ -148,7 +148,7 @@ def sfr(pdf, data, level):
         
         isnap += 1
     
-    pdf.savefig(figure, bbox_inches='tight')§
+    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
     return None
 
