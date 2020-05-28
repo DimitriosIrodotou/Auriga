@@ -22,6 +22,7 @@ from parse_particledata import parse_particledata
 from scripts.gigagalaxy.util import satellite_utilities
 
 level = 4
+colors = ['k', 'tab:red', 'tab:green']
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
@@ -638,12 +639,13 @@ def sfr_history(pdf, data, redshift, read):
     return None
 
 
-def delta_sfr_history(pdf, data, redshift, read):
+def delta_sfr_history(pdf, data, redshift, region, read):
     """
     Plot star formation rate history difference between Auriga haloes for three different spatial regimes (<1, 1<5 and 5<15 kpc).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
+    :param region: inner or outer.
     :param read: boolean to read new data.
     :return: None
     """
@@ -652,7 +654,13 @@ def delta_sfr_history(pdf, data, redshift, read):
     nbins = 100
     timebin = (tmax - tmin) / nbins
     
-    radial_limits_min, radial_limits_max = (0.0, 1e-3, 5e-3), (1e-3, 5e-3, 15e-3)
+    if region == 'outer':
+        radial_limits_min, radial_limits_max = (7.5e-4, 1e-3, 5e-3), (1e-3, 5e-3, 15e-3)
+        texts = [r'$\mathrm{0<r/kpc<1}$', r'$\mathrm{1<r/kpc<5}$', r'$\mathrm{5<r/kpc<15}$']
+    elif region == 'inner':
+        radial_limits_min, radial_limits_max = (0.0, 2.5e-4, 5e-4), (2.5e-4, 5e-4, 7.5e-4)
+        texts = [r'$\mathrm{0.00<r/kpc<0.25}$', r'$\mathrm{0.25<r/kpc<0.50}$', r'$\mathrm{0.50<r/kpc<0.75}$']
+    
     for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
         # Check if a folder to save the data exists, if not create one #
         path = '/u/di43/Auriga/plots/data/' + 'dsh/' + str(radial_limit_max) + '/'
@@ -671,8 +679,8 @@ def delta_sfr_history(pdf, data, redshift, read):
                 # Check if any of the haloes' data already exists, if not then read and save it #
                 names = glob.glob(path + '/name_*')
                 names = [re.split('_|.npy', name)[1] for name in names]
-                if str(s.haloname) in names:
-                    continue
+                # if str(s.haloname) in names:
+                #     continue
                 
                 s.centerat(s.subfind.data['fpos'][0, :])  # Centre halo at the potential minimum.
                 
@@ -687,8 +695,8 @@ def delta_sfr_history(pdf, data, redshift, read):
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
     
     # Generate the figure and define its parameters #
-    f = plt.figure(figsize=(10, 10))
-    gs = gridspec.GridSpec(3, 3, hspace=0.5, wspace=0.05)
+    figure = plt.figure(figsize=(16, 9))
+    gs = gridspec.GridSpec(2, 3, hspace=0.3, wspace=0.05)
     ax00 = plt.subplot(gs[0, 0])
     ax01 = plt.subplot(gs[0, 1])
     ax02 = plt.subplot(gs[0, 2])
@@ -699,20 +707,19 @@ def delta_sfr_history(pdf, data, redshift, read):
     for axis in [ax01, ax02, ax11, ax12]:
         axis.set_yticklabels([])
     for axis in [ax00, ax01, ax02]:
-        axis.grid(True)
+        axis.grid(True, color='gray', linestyle='-')
         axis.set_ylim(0, 22)
     for axis in [ax10, ax11, ax12]:
-        axis.grid(True)
-        axis.set_ylim(-1, 12)
+        axis.grid(True, color='gray', linestyle='-')
+        axis.set_ylim(-1, 15)
     ax10.set_ylabel('$\mathrm{(\delta Sfr)_{norm}}$')
     ax00.set_ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
     
-    texts = [r'$\mathrm{r/kpc<1}$', r'$\mathrm{1<r/kpc<5}$', r'$\mathrm{5<r/kpc<15}$']
     top_axes, bottom_axes = [ax00, ax01, ax02], [ax10, ax11, ax12]
-    for radial_limit_min, radial_limit_max, top_axis, bottom_axis, text in zip(radial_limits_min, radial_limits_max, top_axes, bottom_axes, texts):
+    for radial_limit_max, top_axis, bottom_axis, text in zip(radial_limits_max, top_axes, bottom_axes, texts):
         # Get the names and sort them #
         path = '/u/di43/Auriga/plots/data/' + 'dsh/' + str(radial_limit_max) + '/'
-        names = glob.glob(path + '/name_18*')
+        names = glob.glob(path + '/name_06*')
         names.sort()
         
         # Load and plot the data #
@@ -720,21 +727,20 @@ def delta_sfr_history(pdf, data, redshift, read):
             age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             
-            counts, bins, bars = top_axis.hist(age, weights=weights, histtype='step', bins=nbins, range=[tmin, tmax],
+            counts, bins, bars = top_axis.hist(age, weights=weights, histtype='step', bins=nbins, range=[tmin, tmax], color=colors[i],
                                                label="Au-" + (str(re.split('_|.npy', names[i])[1])))
             
             ax2 = top_axis.twiny()
             set_axis_evo(top_axis, ax2)
-            top_axis.legend(loc='upper right', fontsize=8, frameon=False, numpoints=1)
-            top_axis.text(0.05, 0.92, text, color='k', fontsize=8, transform=top_axis.transAxes)
+            top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+            top_axis.text(0.05, 0.92, text, color='k', fontsize=12, transform=top_axis.transAxes)
             
             if i == 0:
                 original_bins, original_counts = bins, counts
             else:
-                bottom_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)))
+                bottom_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)), color=colors[i], )
                 ax2 = bottom_axis.twiny()
                 set_axis_evo(bottom_axis, ax2)
-                bottom_axis.text(0.05, 0.92, text, color='k', fontsize=8, transform=bottom_axis.transAxes)
     
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
@@ -801,7 +807,7 @@ def gas_temperature_fraction(pdf, data, read):
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.4)
     plt.ylabel(r'Gas fraction', size=16)

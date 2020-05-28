@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_" % self.directory)
+        haloes = glob.glob("%s/halo_06" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -286,9 +286,9 @@ class AurigaPdf:
         # Projections #
         # Stars #
         # projections.stellar_light_fit(self, redshift, read=False)
-        projections.r_band_magnitude(self, redshift, read=False)
+        # projections.r_band_magnitude(self, redshift, read=True)
         # projections.stellar_light(pdf, self, redshift, read=True)
-        # projections.stellar_density(pdf, self, redshift, read=True)
+        projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
         # projections.gas_slice(pdf, self, redshift, read=True)
         # projections.gas_metallicity(pdf, self, level, redshift)
@@ -327,7 +327,8 @@ class AurigaPdf:
         
         # Global galactic relations #
         # galaxy.sfr_history(pdf, self, redshift, read=True)
-        # galaxy.delta_sfr_history(pdf, self, redshift, read=False)
+        # galaxy.delta_sfr_history(pdf, self, redshift, region='outer', read=True)
+        # galaxy.delta_sfr_history(pdf, self, redshift, region='inner', read=True)
         # galaxy.gas_temperature_fraction(pdf, self, read=False)
         # for redshift in np.linspace(0.0, 1.0, 11):
         #     print(redshift)
@@ -352,9 +353,9 @@ class AurigaPdf:
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()
-        # file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'Auriga-' + date + '.pdf'
         # file_name = 'gm/'
-        file_name = 'rbm*'
+        # file_name = 'rbm-06N*'
         # file_name = 'AGNmd-' + date + '.png'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None

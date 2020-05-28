@@ -1,7 +1,7 @@
 import re
 import PIL
-import cv2
 import glob
+import skimage
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -17,19 +17,32 @@ from scipy.ndimage.filters import gaussian_filter
 from photutils.isophote import build_ellipse_model
 
 
-def convert_to_grayscale(run):
+def convert_for_fit(run):
     """
-    Convert a png image to gray scale and save it along with a fits version of it.
-    :param run: name of the file.
-    :return: None
+    Add Gaussian noise, Gaussian blur, convert to gray scale and save an image in 512x512 along with its fits version.
+    :param run:
+    :return:
     """
-    # Load png image and convert to a 512x512 grayscale Gaussian blurred array #
-    image = Image.open(run + '.png').convert("L")
-    image = image.resize((512, 512), PIL.Image.NEAREST)
-    FWHM = 2
+    # Load a png image and convert to 512x512 #
+    image_png = Image.open(run + '.png').convert("L")
+    image_png = image_png.resize((512, 512), PIL.Image.NEAREST)
+    
+    # Create and save a fits version of the gray scaled image #
+    name = re.split('rbm-|.png', run)[1]
+    hdu = fits.PrimaryHDU(image_png)
+    hdu.writeto(plots_path + str(name) + '_ctf.fits', overwrite=True)
+    
+    # Add flat background noise, with specified local variance at each point #
+    image_fits = fits.getdata(plots_path + str(name) + '_ctf.fits', ext=0)
+    image_fits = image_fits + 61 / 255
+    # image_fits = skimage.util.random_noise(image_fits, mode='gaussian', seed=10, clip=True)
+    plt.imsave(plots_path + str(name) + '_an.png', image_fits, cmap='gray')
+    
+    # Add Gaussian blur #
+    FWHM = 3
     sigma = FWHM / np.sqrt(8 * np.log(2))
-    image = gaussian_filter(image, sigma=sigma)
-    array = np.asarray(image)
+    image_fits = gaussian_filter(image_fits, sigma=sigma)
+    array = np.asarray(image_fits)
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
@@ -37,24 +50,22 @@ def convert_to_grayscale(run):
     axis.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
-    name = re.split('rbm-|.png', run)[1]
-    plt.imsave(plots_path + str(name) + '_ctg.png', array, cmap='gray')
+    plt.imsave(plots_path + str(name) + '_ctf.png', array, cmap='gray')
     plt.close()
     
-    # Create and save a fits version of the gray scaled image #
+    # Create and save a fits version of the image #
     hdu = fits.PrimaryHDU(array)
-    hdu.writeto(plots_path + str(name) + '_ctg.fits', overwrite=True)
+    hdu.writeto(plots_path + str(name) + '_ctf.fits', overwrite=True)
     return None
 
 
-def plot_fits_image(run):
+def plot_fits_image():
     """
     Load and show a fits image.
-    :param run: name of the file.
     :return: None
     """
     # Load the fits image and show it #
-    image_data = fits.getdata(run + '_ctg.fits', ext=0)
+    image_fits = fits.getdata(run + '_ctf.fits', ext=0)
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
@@ -62,19 +73,18 @@ def plot_fits_image(run):
     axis.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
-    plt.imsave(run + '_pfi.png', image_data, cmap='gray')
+    plt.imsave(run + '_pfi.png', image_fits, cmap='gray')
     plt.close()
     return None
 
 
-def image_centre(run):
+def image_centre():
     """
     Get the centre of the image in pixels.
-    :param run: name of the file.
     :return: centre
     """
     # Load the png image and calculate the centre #
-    im = Image.open(run + '_ctg.png')
+    im = Image.open(run + '_ctf.png')
     
     (X, Y) = im.size
     centre = X / 2, Y / 2
@@ -97,22 +107,21 @@ def image_intensity(name):
     return None
 
 
-def plot_fit_data(run, h=0.0, R_eff=0.0):
+def plot_fit_data(h=0.0, R_eff=0.0):
     """
     Over-plot the scale length and effective radius on the fits image.
-    :param run: name of the file.
     :return: None
     """
     # Load the fits image and show it #
-    image_data = fits.getdata(run + '.fits', ext=0)
+    image_fits = fits.getdata(run + '.fits', ext=0)
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
     axis.set_aspect('equal')
     
-    axis.imshow(image_data, cmap='gray')
-    centre = image_centre(run)
+    axis.imshow(image_fits, cmap='gray')
+    centre = image_centre()
     # Plot the scale length
     for radius in [h, R_eff]:
         circle = Circle((centre[0], centre[1]), radius, color='tab:red', fill=False)
@@ -124,20 +133,20 @@ def plot_fit_data(run, h=0.0, R_eff=0.0):
     return None
 
 
-def fit_isophotal_ellipses(run):
+def fit_isophotal_ellipses():
     """
     Use the photutils package to fit isophotal ellipses on fits images.
-    :param run: name of the file.
     :return: None
     """
     # Load the fits image and calculate the centre #
     name = re.split('Auriga/|/', run)[-1]
-    image_data = fits.getdata(run + '_ctg.fits', ext=0)
-    centre = image_centre(run)
+    image_fits = fits.getdata(run + '_ctf.fits', ext=0)
+    array = np.asarray(image_fits)
+    centre = image_centre()
     
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array. #
-    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=0.6, pa=0.0)
-    ellipse = Ellipse(image_data, geometry)
+    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=0.5, pa=0.0)
+    ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
     print(isolist.to_table())  # Print the isophote values as a table sorted by the semi-major axis length.
     
@@ -156,7 +165,7 @@ def fit_isophotal_ellipses(run):
     y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA\;[\deg]}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$', r'$\mathrm{x_{0}\;[pix]}$',
                 r'$\mathrm{y_{0}\;[pix]}$', r'$\mathrm{Mean\,intensity}$']
     y_values = [isolist.eps, isolist.pa / np.pi * 180., isolist.tflux_e, isolist.x0, isolist.y0, isolist.intens]
-    y_lims = [(0, 1), (-20, 200), (1e2, 1e7), (250, 260), (250, 260), (50, 260)]
+    y_lims = [(0, 1), (-20, 200), (1e0, 1e7), (250, 260), (250, 260), (50, 260)]
     y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.x0_err, isolist.y0_err, isolist.int_err]
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.set_ylim(y_lim)
@@ -173,8 +182,8 @@ def fit_isophotal_ellipses(run):
     plt.savefig(run + '_fie_isolist.png', bbox_inches='tight')  # Save the figure.
     
     # Build an elliptical model #
-    # model_image = build_ellipse_model(image_data.shape, isolist)
-    # residual = image_data - model_image
+    # model_image = build_ellipse_model(image_fits.shape, isolist)
+    # residual = image_fits - model_image
     
     # Plot the original data with some of the isophotes, the elliptical model image, and the residual image #
     # Generate the figure and define its parameters #
@@ -187,12 +196,12 @@ def fit_isophotal_ellipses(run):
     
     axes = [ax00, ax01]  # , ax10, ax11]
     titles = [r'$\mathrm{Auriga-}$' + str(name), r'$\mathrm{Sample\;of\;isophotes}$']  # , r'$\mathrm{Ellipse\;model}$', r'$\mathrm{Residual}$']
-    images = [image_data, image_data]  # , model_image, residual]
+    images = [image_fits, image_fits]  # , model_image, residual]
     for axis, title, image in zip(axes, titles, images):
         axis.set_title(title)
         axis.imshow(image, origin='lower', cmap='gray')
     
-    smas = np.linspace(10, centre[0], 10)
+    smas = np.linspace(centre[0] / 10, centre[0], 10)
     for sma in smas:
         iso = isolist.get_closest(sma)
         x, y, = iso.sampled_coordinates()
@@ -214,77 +223,20 @@ def exponential_profile(x, I_0, R_d):
     return I_0 * np.exp(-x / R_d)
 
 
-def add_Gaussian_noise(run):
-    img = fits.getdata(run + '_ctg.fits', ext=0) / 255
-    noise = np.random.normal(loc=0, scale=1, size=img.shape)
-    
-    # noise overlaid over image
-    noisy = np.clip((img + noise * 0.1), 0, 1)
-    noisy2 = np.clip((img + noise * 0.4), 0, 1)
-
-    # noise multiplied by image:
-    # whites can go to black but blacks cannot go to white
-    noisy2mul = np.clip((img * (1 + noise * 0.2)), 0, 1)
-    noisy4mul = np.clip((img * (1 + noise * 0.4)), 0, 1)
-
-    noisy2mul = np.clip((img * (1 + noise * 0.2)), 0, 1)
-    noisy4mul = np.clip((img * (1 + noise * 0.4)), 0, 1)
-    noise2 = (noise - noise.min()) / (noise.max() - noise.min())
-    # noise multiplied by bottom and top half images,
-    # whites stay white blacks black, noise is added to center
-    img2 = img * 2
-    n2 = np.clip(np.where(img2 <= 1, (img2 * (1 + noise * 0.2)), (1 - img2 + 1) * (1 + noise * 0.2) * -1 + 2) / 2, 0, 1)
-    n4 = np.clip(np.where(img2 <= 1, (img2 * (1 + noise * 0.4)), (1 - img2 + 1) * (1 + noise * 0.4) * -1 + 2) / 2, 0, 1)
-    
-    plt.figure(figsize=(10, 10))
-    plt.imshow(np.vstack((np.hstack((img, noise2)), np.hstack((noisy, noisy2)), np.hstack((noisy2mul, noisy4mul)), np.hstack((n2, n4)))),
-               origin='lower', cmap='gray')
-    # plt.imshow(noisy, origin='lower', cmap='gray')
-    plt.show()
-
-
-
-
-
-plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/'
+# Define the paths to the images #
+name = 'rbm-06NOAGN'
 output_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
-run = plots_path + str('06NOAGN')
-#
+plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/'
+run = plots_path + re.split('rbm-|.png', name)[1]
+
+# Loop over all Auriga rbm images, convert them to the appropriate fit format and fit isophotal ellipses #
 # names = glob.glob(plots_path + 'rbm*')
 # names = [re.split('projections/|.png', name)[1] for name in names]
 # for name in names:
-#     convert_to_grayscale(plots_path + name)
+#     convert_for_fit(plots_path + name)
 #
 #     name = re.split('rbm-|.png', name)[1]
 #     fit_isophotal_ellipses(plots_path + name)
 
-# fit_isophotal_ellipses(run)
-# add_Gaussian_noise(run)
-
-# plot_fits_image(run)
-# plot_fit_data('Au-06_edge_ong', h=79.8589, R_eff=128.589)
-
-import skimage
-def plotnoise(img, mode, r, c, i):
-    plt.subplot(r,c,i)
-    if mode is not None:
-        gimg = skimage.util.random_noise(img, mode=mode)
-        plt.imshow(gimg, origin='lower', cmap='gray')
-    else:
-        plt.imshow(img, origin='lower', cmap='gray')
-    plt.title(mode)
-    plt.axis("off")
-
-plt.figure(figsize=(18,24))
-r=4
-c=2
-img = fits.getdata(run + '_ctg.fits', ext=0) / 255
-plotnoise(img, "gaussian", r,c,1)
-plotnoise(img, "localvar", r,c,2)
-plotnoise(img, "poisson", r,c,3)
-plotnoise(img, "salt", r,c,4)
-# plotnoise(img, "pepper", r,c,5)
-# plotnoise(img, "s&p", r,c,6)
-plotnoise(img, "speckle", r,c,4)
-# plotnoise(img, None, r,c,8)
-plt.savefig(run + "poisson", bbox_inches='tight')  # Save the figure.
+convert_for_fit(plots_path + name)
+fit_isophotal_ellipses()
