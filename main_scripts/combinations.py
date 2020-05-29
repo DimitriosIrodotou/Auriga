@@ -240,7 +240,7 @@ def AGN_modes_distribution(date, data):
     ax02.yaxis.set_label_position("right")
     ax02.yaxis.tick_right()
     for axis in [ax00, ax02]:
-        axis.grid(True)
+        axis.grid(True, color='gray', linestyle='-')
         axis.set_xlim(12, 0)
         axis.set_yscale('log')
         axis.set_ylim(1e51, 1e60)
@@ -390,8 +390,8 @@ def central_combination(pdf, data, redshift, read):
             
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
-            meanweight = np.sum(s.gmet[s.type == 0, 0:9], axis=1) / (
-                np.sum(s.gmet[s.type == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.type == 0, 0])
+            meanweight = np.sum(s.gmet[s.data['type'] == 0, 0:9], axis=1) / (
+                np.sum(s.gmet[s.data['type'] == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.data['type'] == 0, 0])
             Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
             
             # Un megabars (10**12dyne/cm**2)
@@ -403,10 +403,10 @@ def central_combination(pdf, data, redshift, read):
             pressure_edge_on = s.get_Aslice("Ptherm", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
             
             # Get the radial velocity projections #
-            gas_mask, = np.where(s.type == 0)
-            spherical_radius = np.sqrt(np.sum(s.pos[gas_mask, :] ** 2, axis=1))
-            CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.mass[gas_mask][:, None], axis=0) / np.sum(s.mass[gas_mask])
-            s.data['vrad'] = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.pos[gas_mask], axis=1) / spherical_radius
+            gas_mask, = np.where(s.data['type'] == 0)
+            spherical_radius = np.sqrt(np.sum(s.data['pos'][gas_mask, :] ** 2, axis=1))
+            CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0) / np.sum(s.data['mass'][gas_mask])
+            s.data['vrad'] = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask], axis=1) / spherical_radius
             
             vrad_face_on = s.get_Aslice("vrad", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]
             vrad_edge_on = s.get_Aslice("vrad", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)["grid"]

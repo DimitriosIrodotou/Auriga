@@ -67,7 +67,7 @@ def gas_movie(data, read):
                     s.data['pos'] = rotate_value(s.data['pos'], rot)
                     s.data['vel'] = rotate_value(s.data['vel'], rot)
                 
-                gas_mask, = np.where(s.type == 0)
+                gas_mask, = np.where(s.data['type'] == 0)
                 
                 # Get the density-weighted temperature projections #
                 mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
@@ -104,8 +104,8 @@ def gas_movie(data, read):
                 
                 # Get the gas total pressure projections #
                 elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
-                meanweight = np.sum(s.gmet[s.type == 0, 0:9], axis=1) / (
-                    np.sum(s.gmet[s.type == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.type == 0, 0])
+                meanweight = np.sum(s.gmet[s.data['type'] == 0, 0:9], axis=1) / (
+                    np.sum(s.gmet[s.data['type'] == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.data['type'] == 0, 0])
                 Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
                 
                 # Un megabars (10**12dyne/cm**2)

@@ -84,16 +84,16 @@ def radial_profiles(pdf, data, level, redshift):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         ngas = s.nparticlesall[0]  # Number of gas particles.
-        z = np.abs(s.pos[:, 0]) * 1e3  # Convert z direction to kpc.
-        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
+        z = np.abs(s.data['pos'][:, 0]) * 1e3  # Convert z direction to kpc.
+        rxy = np.sqrt((s.data['pos'][:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
         bfld = np.sqrt((s.data['bfld'] ** 2).sum(axis=1)) * bfac * 1e6
-        mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40.0], weights=s.mass.astype('f8'))
+        mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40.0], weights=s.data['mass'].astype('f8'))
         for i in range(1, 60):
             mcum[i] += mcum[i - 1]
         
         # Calculate the required quantities for the gas energy densities #
         e_phi = np.zeros((ngas, 3))
-        phi = np.arctan2(s.pos[:ngas, 2], s.pos[:ngas, 1])
+        phi = np.arctan2(s.data['pos'][:ngas, 2], s.data['pos'][:ngas, 1])
         e_phi[:, 1] = -np.sin(phi)
         e_phi[:, 2] = +np.cos(phi)
         center = 0.5 * (edges[1:] + edges[:-1])
@@ -103,11 +103,11 @@ def radial_profiles(pdf, data, level, redshift):
         
         # Mask the data and calculate the radial velocities #
         i, = np.where(s.r() < 0.1 * s.subfind.data['frc2'][0])
-        vel = (s.data['vel'][i, :].astype('f8') * s.mass[i][:, None]).sum(axis=0) / s.mass[i].astype('f8').sum()
-        vrad = ((s.data['vel'][:, 1:] - vel[1:]) * s.pos[:, 1:] * 1e3).sum(axis=1) / rxy
+        vel = (s.data['vel'][i, :].astype('f8') * s.data['mass'][i][:, None]).sum(axis=0) / s.data['mass'][i].astype('f8').sum()
+        vrad = ((s.data['vel'][:, 1:] - vel[1:]) * s.data['pos'][:, 1:] * 1e3).sum(axis=1) / rxy
         
         # Mask the data and calculate the mass and volume weighted distances for gas particles #
-        i, = np.where((rxy < 30.0) & (z < 1.0) & (s.type == 0))
+        i, = np.where((rxy < 30.0) & (z < 1.0) & (s.data['type'] == 0))
         mass, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['mass'][i].astype('f8'))
         vol, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['vol'][i].astype('f8'))
         center = 0.5 * (edges[1:] + edges[:-1])
@@ -125,15 +125,15 @@ def radial_profiles(pdf, data, level, redshift):
             
             elif ipanel == 2:  # Plot gas energy densities.
                 eB = (s.data['bfld'] ** 2).sum(axis=1) / (8.0 * np.pi)
-                eK = 0.5 * (((s.data['vel'][:ngas, :] - vel) ** 2).sum(axis=1) * s.mass[:ngas]) / s.data['vol']
-                eT = 0.5 * (((s.data['vel'][:ngas, :] - vel - vkep[:ngas, None] * e_phi) ** 2).sum(axis=1) * s.mass[:ngas]) / s.data['vol']
+                eK = 0.5 * (((s.data['vel'][:ngas, :] - vel) ** 2).sum(axis=1) * s.data['mass'][:ngas]) / s.data['vol']
+                eT = 0.5 * (((s.data['vel'][:ngas, :] - vel - vkep[:ngas, None] * e_phi) ** 2).sum(axis=1) * s.data['mass'][:ngas]) / s.data['vol']
                 
                 u = s.data['u'].astype('f8')
                 j, = np.where(s.data['sfr'] == 0.0)
                 rad = (s.data['vol'].astype('f8') * 3.0 / (4.0 * np.pi)) ** (1.0 / 3.0)
-                u_jeans = 2.0 * 43.0187 * s.mass[:ngas] / np.maximum(5e-4, 2.8 * rad)
+                u_jeans = 2.0 * 43.0187 * s.data['mass'][:ngas] / np.maximum(5e-4, 2.8 * rad)
                 u[j] = np.maximum(u[j], u_jeans[j])
-                eU = u * s.mass[:ngas] / s.data['vol']
+                eU = u * s.data['mass'][:ngas] / s.data['vol']
                 
                 efac = 1e10 * msol * 1e5 ** 2 / 1e18  # Convert to erg / pc^3
                 
@@ -210,16 +210,16 @@ def vertical_profiles(pdf, data, level, redshift):
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
         ngas = s.nparticlesall[0]  # Number of gas particles.
-        z = np.abs(s.pos[:, 0]) * 1e3  # Convert z direction to kpc.
-        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
+        z = np.abs(s.data['pos'][:, 0]) * 1e3  # Convert z direction to kpc.
+        rxy = np.sqrt((s.data['pos'][:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
         bfld = np.sqrt((s.data['bfld'] ** 2).sum(axis=1)) * bfac * 1e6
-        mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40], weights=s.mass.astype('f8'))
+        mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40], weights=s.data['mass'].astype('f8'))
         for i in range(1, 60):
             mcum[i] += mcum[i - 1]
         
         # Calculate the required quantities for the gas energy densities #
         e_phi = np.zeros((ngas, 3))
-        phi = np.arctan2(s.pos[:ngas, 2], s.pos[:ngas, 1])
+        phi = np.arctan2(s.data['pos'][:ngas, 2], s.data['pos'][:ngas, 1])
         e_phi[:, 1] = -np.sin(phi)
         e_phi[:, 2] = +np.cos(phi)
         center = 0.5 * (edges[1:] + edges[:-1])
@@ -229,11 +229,11 @@ def vertical_profiles(pdf, data, level, redshift):
         
         # Mask the data and calculate the radial velocities #
         i, = np.where(s.r() < 0.1 * s.subfind.data['frc2'][0])
-        vel = (s.data['vel'][i, :].astype('f8') * s.mass[i][:, None]).sum(axis=0) / s.mass[i].astype('f8').sum()
-        vrad = ((s.data['vel'][:, 1:] - vel[1:]) * s.pos[:, 1:] * 1e3).sum(axis=1) / rxy
+        vel = (s.data['vel'][i, :].astype('f8') * s.data['mass'][i][:, None]).sum(axis=0) / s.data['mass'][i].astype('f8').sum()
+        vrad = ((s.data['vel'][:, 1:] - vel[1:]) * s.data['pos'][:, 1:] * 1e3).sum(axis=1) / rxy
         
         # Mask the data and calculate the mass weighted distances for stellar particles #
-        i, = np.where((rxy < 30.0) & (z < 10.) & (s.type == 0))
+        i, = np.where((rxy < 30.0) & (z < 10.) & (s.data['type'] == 0))
         mass, edges = np.histogram(z[i], bins=30, range=[0.0, 10.0], weights=s.data['mass'][i].astype('f8'))
         vol, edges = np.histogram(z[i], bins=30, range=[0.0, 10.0], weights=s.data['vol'][i].astype('f8'))
         center = 0.5 * (edges[1:] + edges[:-1])
@@ -251,15 +251,15 @@ def vertical_profiles(pdf, data, level, redshift):
             
             elif ipanel == 2:  # Plot gas energy densities.
                 eB = (s.data['bfld'] ** 2).sum(axis=1) / (8.0 * np.pi)
-                eK = 0.5 * (((s.data['vel'][:ngas, :] - vel) ** 2).sum(axis=1) * s.mass[:ngas]) / s.data['vol']
-                eT = 0.5 * (((s.data['vel'][:ngas, :] - vel - vkep[:ngas, None] * e_phi) ** 2).sum(axis=1) * s.mass[:ngas]) / s.data['vol']
+                eK = 0.5 * (((s.data['vel'][:ngas, :] - vel) ** 2).sum(axis=1) * s.data['mass'][:ngas]) / s.data['vol']
+                eT = 0.5 * (((s.data['vel'][:ngas, :] - vel - vkep[:ngas, None] * e_phi) ** 2).sum(axis=1) * s.data['mass'][:ngas]) / s.data['vol']
                 
                 u = s.data['u'].astype('f8')
                 j, = np.where(s.data['sfr'] == 0.0)
                 rad = (s.data['vol'].astype('f8') * 3.0 / (4.0 * np.pi)) ** (1.0 / 3.0)
-                u_jeans = 2.0 * 43.0187 * s.mass[:ngas] / np.maximum(5e-4, 2.8 * rad)
+                u_jeans = 2.0 * 43.0187 * s.data['mass'][:ngas] / np.maximum(5e-4, 2.8 * rad)
                 u[j] = np.maximum(u[j], u_jeans[j])
-                eU = u * s.mass[:ngas] / s.data['vol']
+                eU = u * s.data['mass'][:ngas] / s.data['vol']
                 
                 efac = 1e10 * msol * 1e5 ** 2 / 1e18  # conversion to erg / pc^3
                 
@@ -343,16 +343,16 @@ def stellar_profiles(pdf, data, level, redshift):
         s.calc_sf_indizes(s.subfind)
         s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
         
-        z = np.abs(s.pos[:, 0]) * 1e3  # Convert z direction to kpc.
-        rxy = np.sqrt((s.pos[:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
-        mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40.0], weights=s.mass.astype('f8'))
+        z = np.abs(s.data['pos'][:, 0]) * 1e3  # Convert z direction to kpc.
+        rxy = np.sqrt((s.data['pos'][:, 1:] ** 2).sum(axis=1)) * 1e3  # Distance on the xy plane in kpc.
+        mcum, edges = np.histogram(s.r() * 1e3, bins=60, range=[0, 40.0], weights=s.data['mass'].astype('f8'))
         for i in range(1, 60):
             mcum[i] += mcum[i - 1]
         
         # Mask the data and calculate the mass weighted distances for stellar particles #
         nr = 10
         nz = 10
-        mask, = np.where((rxy < 30.0) & (z < 1.0) & (s.type == 4))
+        mask, = np.where((rxy < 30.0) & (z < 1.0) & (s.data['type'] == 4))
         mass, edges = np.histogram(rxy[mask], bins=(nr, nz), range=[0, 30.0], weights=s.data['mass'][mask])
         center = 0.5 * (edges[1:] + edges[:-1])
         

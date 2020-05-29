@@ -102,7 +102,7 @@ class AurigaHalo:
         snaps.sort()
         self.nsnaps = len(snaps)
         
-        print("Found %d snapshots for halo %s" % (self.nsnaps, self.directory))
+        print("Found %d snapshots for %s" % (self.nsnaps, self.directory))
         
         # Store the names of the snapshots for each Auriga halo and analyse each one's output individually #
         snapids = []
@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%s/halo_06" % self.directory)
+        haloes = glob.glob("%shalo_18NOR*" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -288,7 +288,7 @@ class AurigaPdf:
         # projections.stellar_light_fit(self, redshift, read=False)
         # projections.r_band_magnitude(self, redshift, read=True)
         # projections.stellar_light(pdf, self, redshift, read=True)
-        projections.stellar_density(pdf, self, redshift, read=True)
+        # projections.stellar_density(pdf, self, redshift, read=True)
         # Gas #
         # projections.gas_slice(pdf, self, redshift, read=True)
         # projections.gas_metallicity(pdf, self, level, redshift)
@@ -321,6 +321,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=True)
         # time_evolution.AGN_modes_gas(date)
+        time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=True)
         
         # Movies #
         # movies.gas_movie(self, read=True)

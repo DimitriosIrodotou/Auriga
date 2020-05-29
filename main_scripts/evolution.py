@@ -69,21 +69,21 @@ def circularity(pdf, data, levels, z):
             s.select_halo(s.subfind, do_rotation=True)
             
             age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
+            age[s.data['type'] == 4] = s.data['age']
             
             galrad = 0.1 * s.subfind.data['frc2'][0]
             iall, = np.where((s.r() < galrad) & (s.r() > 0.))
-            istars, = np.where((s.r() < galrad) & (s.r() > 0.) & (s.type == 4) & (age > 0.))
+            istars, = np.where((s.r() < galrad) & (s.r() > 0.) & (s.data['type'] == 4) & (age > 0.))
             nall = np.size(iall)
             nstars = np.size(istars)
             
             rsort = s.r()[iall].argsort()
             msum = np.zeros(nall)
-            msum[rsort] = np.cumsum(s.mass[iall][rsort])
+            msum[rsort] = np.cumsum(s.data['mass'][iall][rsort])
             
-            nn, = np.where((s.type[iall] == 4) & (age[iall] > 0.))
-            smass = s.mass[iall][nn]
-            jz = np.cross(s.pos[iall, :][nn, :].astype('f8'), s.data['vel'][iall, :][nn, :])[:, 0]
+            nn, = np.where((s.data['type'][iall] == 4) & (age[iall] > 0.))
+            smass = s.data['mass'][iall][nn]
+            jz = np.cross(s.data['pos'][iall, :][nn, :].astype('f8'), s.data['vel'][iall, :][nn, :])[:, 0]
             ene = 0.5 * (s.vel[iall, :][nn, :].astype('f8') ** 2.).sum(axis=1) + s.data['pot'][iall][nn].astype('f8')
             esort = ene.argsort()
             

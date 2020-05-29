@@ -99,7 +99,7 @@ def circularity(pdf, data, levels, redshift):
     colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     plt.xlabel(r'$\mathrm{\epsilon}$', size=16)
     plt.ylabel(r'$\mathrm{f(\epsilon )}$', size=16)
     plt.ylim(0, 3.0)
@@ -115,21 +115,21 @@ def circularity(pdf, data, levels, redshift):
             s.select_halo(s.subfind, do_rotation=True)
             
             age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
+            age[s.data['type'] == 4] = s.data['age']
             
             galrad = 0.1 * s.subfind.data['frc2'][0]
             iall, = np.where((s.r() < galrad) & (s.r() > 0.))
-            istars, = np.where((s.r() < galrad) & (s.r() > 0.) & (s.type == 4) & (age > 0.))
+            istars, = np.where((s.r() < galrad) & (s.r() > 0.) & (s.data['type'] == 4) & (age > 0.))
             nall = np.size(iall)
             nstars = np.size(istars)
             
             rsort = s.r()[iall].argsort()
             msum = np.zeros(nall)
-            msum[rsort] = np.cumsum(s.mass[iall][rsort])
+            msum[rsort] = np.cumsum(s.data['mass'][iall][rsort])
             
-            nn, = np.where((s.type[iall] == 4) & (age[iall] > 0.))
-            smass = s.mass[iall][nn]
-            jz = np.cross(s.pos[iall, :][nn, :].astype('f8'), s.data['vel'][iall, :][nn, :])[:, 0]
+            nn, = np.where((s.data['type'][iall] == 4) & (age[iall] > 0.))
+            smass = s.data['mass'][iall][nn]
+            jz = np.cross(s.data['pos'][iall, :][nn, :].astype('f8'), s.data['vel'][iall, :][nn, :])[:, 0]
             ene = 0.5 * (s.vel[iall, :][nn, :].astype('f8') ** 2.).sum(axis=1) + s.data['pot'][iall][nn].astype('f8')
             esort = ene.argsort()
             
@@ -220,7 +220,7 @@ def tully_fisher(pdf, data, levels):
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     plt.xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$", size=16)
     plt.ylabel("$\\rm{log_{10}\\,\\,v\\,[km\\,\\,s^{-1}]}$", size=16)
     
@@ -279,15 +279,15 @@ def tully_fisher(pdf, data, levels):
             s.select_halo(s.subfind, rotate_disk=False)
             
             age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age >= 0.))
-            mstars = s.mass[istars].sum()
+            age[s.data['type'] == 4] = s.data['age']
+            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age >= 0.))
+            mstars = s.data['mass'][istars].sum()
             
-            mass, edges = np.histogram(s.r(), weights=s.mass, bins=100, range=[0., 0.025])
+            mass, edges = np.histogram(s.r(), weights=s.data['mass'], bins=100, range=[0., 0.025])
             mcum = np.cumsum(mass)
             vel = np.sqrt(G * mcum * 1e10 * msol / (edges[1:] * 1e6 * parsec)) / 1e5
             
-            smass, edges = np.histogram(s.r()[istars], weights=s.mass[istars], bins=100, range=[0., 0.025])
+            smass, edges = np.histogram(s.r()[istars], weights=s.data['mass'][istars], bins=100, range=[0., 0.025])
             smcum = np.cumsum(smass)
             
             mstar[ihalo] = mstars
@@ -321,7 +321,7 @@ def stellar_vs_total(pdf, data, levels):
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     plt.xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
     plt.ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     
@@ -357,12 +357,12 @@ def stellar_vs_total(pdf, data, levels):
             s.centerat(s.subfind.data['fpos'][0, :])
             
             age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.))
-            mstar[ihalo] = s.mass[istars].sum()
+            age[s.data['type'] == 4] = s.data['age']
+            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.))
+            mstar[ihalo] = s.data['mass'][istars].sum()
             
             iall, = np.where(s.r() < s.subfind.data['frc2'][0])
-            mhalo[ihalo] = s.mass[iall].sum()
+            mhalo[ihalo] = s.data['mass'][iall].sum()
             
             axis.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0,
                         label="Au%s" % s.haloname)
@@ -392,7 +392,7 @@ def gas_fraction(pdf, data, levels):
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     plt.xlabel("$\\rm{M_{R}\\,[mag]}$", size=16)
     plt.ylabel("$\\rm{f_{gas}}$", size=16)
     
@@ -413,15 +413,15 @@ def gas_fraction(pdf, data, levels):
             s.centerat(s.subfind.data['fpos'][0, :])
             
             age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
+            age[s.data['type'] == 4] = s.data['age']
+            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
             # Calculate the bolometric R-band magnitude in units of the bolometric magnitude of the Sun #
             Rband = convert_rband_to_Rband_mag(s.data['gsph'][istars, 5], s.data['gsph'][istars, 4])
             MR[ihalo] = -2.5 * np.log10((10. ** (- 2.0 * Rband / 5.0)).sum())
             
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.))
-            mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 0))
-            fgas[ihalo] = s.mass[mask].sum() / (s.mass[mask].sum() + s.mass[istars].sum())
+            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.))
+            mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 0))
+            fgas[ihalo] = s.data['mass'][mask].sum() / (s.data['mass'][mask].sum() + s.data['mass'][istars].sum())
             
             axis.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s" % s.haloname)
             axis.legend(loc='lower right', fontsize=12, frameon=False, numpoints=1)
@@ -437,7 +437,7 @@ def central_bfld(pdf, data, levels):
     nlevels = len(levels)
     
     f = plt.figure(figsize=(8.2, 8.2))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     axis = figure.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     axis.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
     axis.set_ylabel("$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$")
@@ -458,13 +458,13 @@ def central_bfld(pdf, data, levels):
         for s in data:
             s.centerat(s.subfind.data['fpos'][0, :])
             
-            i, = np.where((s.r() < 0.001) & (s.type == 0))
+            i, = np.where((s.r() < 0.001) & (s.data['type'] == 0))
             bfld[ihalo] = np.sqrt(((s.data['bfld'][i, :] ** 2.).sum(axis=1) * s.data['vol'][i]).sum() / s.data['vol'][i].sum()) * bfac
             
             age = np.zeros(s.npartall)
-            age[s.type == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.type == 4) & (age > 0.))
-            mstar[ihalo] = s.mass[istars].sum()
+            age[s.data['type'] == 4] = s.data['age']
+            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.))
+            mstar[ihalo] = s.data['mass'][istars].sum()
             
             axis.loglog(mstar[ihalo] * 1e10, bfld[ihalo] * 1e6, color=next(colors), linestyle="None", marker='*', ms=15.0,
                         label="Au%s-%d" % (s.haloname, levels[0]))
@@ -505,10 +505,10 @@ def bar_strength(pdf, data, read):
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
             mask, = np.where(s.data['age'] > 0.)  # Mask the data: select stellar particles.
-            z_rotated, y_rotated, x_rotated = projections.rotate_bar(s.pos[mask, 0] * 1e3, s.pos[mask, 1] * 1e3,
-                                                                     s.pos[mask, 2] * 1e3)  # Distances are in Mpc.
-            s.pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.pos attribute in kpc.
-            x, y = s.pos[:, 2] * 1e3, s.pos[:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
+            z_rotated, y_rotated, x_rotated = projections.rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
+                                                                     s.data['pos'][mask, 2] * 1e3)  # Distances are in Mpc.
+            s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
+            x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
             
             # Split up galaxy in radius bins and calculate the Fourier components #
             nbins = 40  # Number of radial bins.
@@ -543,7 +543,7 @@ def bar_strength(pdf, data, read):
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     plt.ylim(-0.2, 1.2)
     plt.xlim(0, 10)
     plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
@@ -619,7 +619,7 @@ def sfr_history(pdf, data, redshift, read):
     
     # Generate the figure and define its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True)
+    plt.grid(True, color='gray', linestyle='-')
     plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
     plt.ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$', size=16)
     
@@ -685,7 +685,7 @@ def delta_sfr_history(pdf, data, redshift, region, read):
                 s.centerat(s.subfind.data['fpos'][0, :])  # Centre halo at the potential minimum.
                 
                 # Mask the data and calculate the age and sfr for stellar particles within different spatial regimes #
-                mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_limit_min) & (s.r() < radial_limit_max) & (s.pos[:, 2] < 0.003))
+                mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_limit_min) & (s.r() < radial_limit_max) & (s.data['pos'][:, 2] < 0.003))
                 weights = s.data['gima'][mask] * 1e10 / 1e9 / timebin
                 age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
                 
@@ -779,7 +779,8 @@ def gas_temperature_fraction(pdf, data, read):
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
-            mask, = np.where((s.r() < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
+            mask, = np.where(
+                (s.r() < s.subfind.data['frc2'][0]) & (s.data['type'] == 0))  # Mask the data: select gas cells within the virial radius R200 #
             
             # Calculate the temperature of the gas cells #
             ne = s.data['ne'][mask]
@@ -839,7 +840,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
         f = plt.figure(0, figsize=(10, 7.5))
         plt.ylim(1e0, 1e6)
         plt.xlim(0.0, 30.0)
-        plt.grid(True)
+        plt.grid(True, color='gray', linestyle='-')
         plt.xlabel("$\mathrm{R [kpc]}$", size=16)
         plt.ylabel("$\mathrm{\Sigma [M_{\odot} pc^{-2}]}$", size=16)
         plt.tick_params(direction='out', which='both', top='on', right='on')
@@ -912,7 +913,7 @@ def circular_velocity_curves(pdf, data, redshift):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plt.xlim(0.0, 24.0)
         plt.ylim(0.0, 700.0)
-        plt.grid(True)
+        plt.grid(True, color='gray', linestyle='-')
         plt.xlabel("$\mathrm{R [kpc]}$", size=16)
         plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$", size=16)
         plt.tick_params(direction='out', which='both', top='on', right='on')
@@ -939,7 +940,7 @@ def circular_velocity_curves(pdf, data, redshift):
         shmass = np.zeros((nshells, 6))
         shvel = np.zeros((nshells, 6))
         for i in range(6):
-            rp = calcGrid.calcRadialProfile(s.pos[start[i]:end[i], :].astype('float64'), s.data['mass'][start[i]:end[i]].astype('float64'), 0,
+            rp = calcGrid.calcRadialProfile(s.data['pos'][start[i]:end[i], :].astype('float64'), s.data['mass'][start[i]:end[i]].astype('float64'), 0,
                                             nshells, dr, s.center[0], s.center[1], s.center[2])
             
             radius = rp[1, :]
@@ -948,7 +949,7 @@ def circular_velocity_curves(pdf, data, redshift):
                 shmass[j, i] += shmass[j - 1, i]
             shvel[:, i] = np.sqrt(G * shmass[:, i] * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
         
-        rp = calcGrid.calcRadialProfile(s.pos.astype('float64'), s.data['mass'].astype('float64'), 0, nshells, dr, s.center[0], s.center[1],
+        rp = calcGrid.calcRadialProfile(s.data['pos'].astype('float64'), s.data['mass'].astype('float64'), 0, nshells, dr, s.center[0], s.center[1],
                                         s.center[2])
         radius = rp[1, :]
         mtot = rp[0, :]
@@ -1011,14 +1012,8 @@ def gas_temperature_histogram(pdf, data, read):
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
                 # Mask the data: select gas cells within the virial radius R200 #
-                spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-                mask, = np.where((spherical_distance < s.subfind.data['frc2'][0]) & (s.type == 0))
-                
-                plt.figure()
-                weights = s.data['mass'][mask]
-                count, xedges, yedges = np.histogram2d(s.data['pos'][mask, 2], s.data['pos'][mask, 1], weights=weights, bins=500)
-                plt.imshow(count.T, origin='lower', cmap='nipy_spectral_r', interpolation='gaussian', aspect='equal')
-                plt.show()
+                spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
+                mask, = np.where((spherical_distance < s.subfind.data['frc2'][0]) & (s.data['type'] == 0))
                 
                 # Calculate the temperature of the gas cells #
                 ne = s.data['ne'][mask]
@@ -1040,8 +1035,8 @@ def gas_temperature_histogram(pdf, data, read):
         np.save(path + 'temperatures_' + str(s.haloname), temperatures)
     
     # Generate the figure and define its parameters #
-    f = plt.figure(figsize=(10, 7.5))
-    plt.grid(True)
+    figure = plt.figure(figsize=(10, 7.5))
+    plt.grid(True, color='gray', linestyle='-')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel(r'Temperature [K]')
@@ -1056,14 +1051,14 @@ def gas_temperature_histogram(pdf, data, read):
         volumes = np.load(path + 'volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         
-        for i in range(len(masses)):
-            print(len(masses[i]))
-        average_masses = np.sum(masses,
-                                axis=0) / 10  # average_volumes = np.sum(volumes, axis=0) / 10  # average_temperatures = np.sum(temperatures,
-        # axis=0) / 10
+        # for i in range(len(masses)):
+        #     print(len(masses[i]))
+        # average_masses = np.sum(masses, axis=0) / 10
+        # average_volumes = np.sum(volumes, axis=0) / 10
+        # average_temperatures = np.sum(temperatures,axis=0) / 10
         
-        # ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)  # plt.plot(0.5 * (edges[1:]
-        # + edges[:-1]), ydata, label='Mass-weighted')
+        ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
+        plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Mass-weighted')
         
         # ydata, edges = np.histogram(temperature[0], weights=vol[0] / np.sum(vol[0]), bins=100)  # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata,
         # label='Volume-weighted')
@@ -1079,6 +1074,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
     Temperature as a function of distance of gas cells.
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.
     :return: None
     """
@@ -1105,9 +1101,9 @@ def gas_distance_temperature(pdf, data, redshift, read):
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            spherical_distance = np.max(np.abs(s.pos - s.center[None, :]), axis=1)
-            mask, = np.where(
-                (spherical_distance < s.subfind.data['frc2'][0]) & (s.type == 0))  # Mask the data: select gas cells within the virial radius R200 #
+            spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
+            mask, = np.where((spherical_distance < s.subfind.data['frc2'][0]) & (
+                s.data['type'] == 0))  # Mask the data: select gas cells within the virial radius R200 #
             
             # Calculate the temperature of the gas cells #
             ne = s.data['ne'][mask]
@@ -1129,7 +1125,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plt.grid(True)
+        plt.grid(True, color='gray', linestyle='-')
         plt.xscale('log')
         plt.yscale('log')
         plt.ylim(1e1, 1e8)

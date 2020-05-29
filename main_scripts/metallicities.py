@@ -84,7 +84,7 @@ def ratios(pdf, data, levels, z):
 
                     iax = (ele - 2) * rows_per_element * 5 + ihalo
                     ax = create_axis(f, iax)
-                    ax.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 1.0]), weights=s.mass[istars], normed=False, rasterized=True,
+                    ax.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 1.0]), weights=s.data['mass'][istars], normed=False, rasterized=True,
                               norm=matplotlib.colors.LogNorm(), cmap=matplotlib.cm.viridis)
 
                     set_axis(iax, ax, "$\mathrm{[Fe/H]}$", "$\mathrm{[%s/Fe]}$" % elements[ele])
@@ -114,7 +114,7 @@ def ratios(pdf, data, levels, z):
 
                     iax = (nelements - 2 + ele) * rows_per_element * 5 + ihalo
                     ax = create_axis(f, iax)
-                    ax.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 2.0]), weights=s.mass[istars], normed=False, rasterized=True,
+                    ax.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 2.0]), weights=s.data['mass'][istars], normed=False, rasterized=True,
                               norm=matplotlib.colors.LogNorm(), cmap=matplotlib.cm.viridis)
 
                     set_axis(iax, ax, "$\mathrm{[Fe/H]}$", "$\mathrm{[Eu_{%d}/Fe]}$" % ele)

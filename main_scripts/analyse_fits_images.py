@@ -144,7 +144,7 @@ def fit_isophotal_ellipses():
     array = np.asarray(image_fits)
     centre = image_centre()
     
-    # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array. #
+    # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=0.5, pa=0.0)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
