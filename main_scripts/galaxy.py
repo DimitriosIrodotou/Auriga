@@ -22,7 +22,7 @@ from parse_particledata import parse_particledata
 from scripts.gigagalaxy.util import satellite_utilities
 
 level = 4
-colors = ['k', 'tab:red', 'tab:green']
+colors = ['black', 'tab:red', 'tab:green', 'tab:blue']
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
@@ -1013,13 +1013,13 @@ def gas_temperature_histogram(pdf, data, read):
                 
                 # Mask the data: select gas cells within the virial radius R200 #
                 spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
-                mask, = np.where((spherical_distance < s.subfind.data['frc2'][0]) & (s.data['type'] == 0))
+                mask, = np.where((s.data['type'] == 0) & (spherical_distance < s.subfind.data['frc2'][0]))
                 
                 # Calculate the temperature of the gas cells #
                 ne = s.data['ne'][mask]
                 metallicity = s.data['gz'][mask]
                 XH = s.data['gmet'][mask, element['H']]
-                yhelium = (1 - XH - metallicity) / (4. * XH)
+                yhelium = (1 - XH - metallicity) / (4 * XH)
                 mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
                 temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
                 
@@ -1043,7 +1043,7 @@ def gas_temperature_histogram(pdf, data, read):
     plt.tick_params(direction='out', which='both', top='on', right='on')
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18NOR*')
+    names = glob.glob(path + '/name_06*')
     names.sort()
     
     for i in range(len(names)):
@@ -1057,11 +1057,20 @@ def gas_temperature_histogram(pdf, data, read):
         # average_volumes = np.sum(volumes, axis=0) / 10
         # average_temperatures = np.sum(temperatures,axis=0) / 10
         
-        ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
-        plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Mass-weighted')
+        # ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
+        # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Mass-weighted')
         
-        # ydata, edges = np.histogram(temperature[0], weights=vol[0] / np.sum(vol[0]), bins=100)  # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata,
-        # label='Volume-weighted')
+        # Convert bin centres to log space and plot #
+        l = np.sort(temperatures)
+        print(l[0,:100])
+        ydata, edges = np.histogram(temperatures, weights=masses / np.sum(masses), bins=100)
+        print(np.sort(edges))
+        bin_centres = 10 ** (0.5 * (np.log10(edges[1:]) + np.log10(edges[:-1])))
+        plt.plot(bin_centres, ydata, label='Mass-weighted', color=colors[3])
+        
+        ydata, edges = np.histogram(temperatures, weights=volumes / np.sum(volumes), bins=100)
+        bin_centres = 10 ** (0.5 * (np.log10(edges[1:]) + np.log10(edges[:-1])))
+        plt.plot(bin_centres, ydata, label='Volume-weighted', color=colors[2])
     
     plt.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.

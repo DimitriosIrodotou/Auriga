@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_18NOR*" % self.directory)
+        haloes = glob.glob("%shalo_06" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -314,22 +314,22 @@ class AurigaPdf:
         # time_evolution.bfld(pdf, self, level)
         # time_evolution.bh_mass(pdf, self, level)
         # time_evolution.gas_temperature_fraction_evolution(pdf, self, read=False)
-        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=True)
+        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=False)
         #  AGN modes #
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=True)
         # time_evolution.AGN_modes_gas(date)
-        time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=True)
+        # time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=True)
         
         # Movies #
         # movies.gas_movie(self, read=True)
         
         # Global galactic relations #
         # galaxy.sfr_history(pdf, self, redshift, read=True)
-        # galaxy.delta_sfr_history(pdf, self, redshift, region='outer', read=True)
-        # galaxy.delta_sfr_history(pdf, self, redshift, region='inner', read=True)
+        # galaxy.delta_sfr_history(pdf, self, redshift, region='outer', read=False)
+        # galaxy.delta_sfr_history(pdf, self, redshift, region='inner', read=False)
         # galaxy.gas_temperature_fraction(pdf, self, read=False)
         # for redshift in np.linspace(0.0, 1.0, 11):
         #     print(redshift)
@@ -341,7 +341,7 @@ class AurigaPdf:
         # galaxy.bar_strength(pdf, self, read=False)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
-        # galaxy.gas_temperature_histogram(pdf, self, read=True)
+        galaxy.gas_temperature_histogram(pdf, self, read=False)
         # galaxy.gas_distance_temperature(pdf, self, redshift, read=True)
         
         # Metallicities #

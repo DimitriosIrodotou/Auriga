@@ -238,5 +238,7 @@ run = plots_path + re.split('rbm-|.png', name)[1]
 #     name = re.split('rbm-|.png', name)[1]
 #     fit_isophotal_ellipses(plots_path + name)
 
-convert_for_fit(plots_path + name)
-fit_isophotal_ellipses()
+# convert_for_fit(plots_path + name)
+# fit_isophotal_ellipses()
+
+plot_fits_image()

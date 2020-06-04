@@ -1076,25 +1076,27 @@ def gas_stars_sfr_evolution(pdf, data, read):
     :return: None
     """
     radial_limits = (5e-4, 7.5e-4, 1e-3)
+    # Check if a folder to save the data exists, if not create one #
     for radial_limit in radial_limits:
-        # Check if a folder to save the data exists, if not create one #
         path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
-        path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
-        
         if not os.path.exists(path):
             os.makedirs(path)
+    
+    # Read the data #
+    if read is True:
+        particle_type = [4]
+        attributes = ['age', 'mass', 'pos']
+        data.select_haloes(level, 0, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
-        # Read the data #
-        if read is True:
-            particle_type = [4]
-            attributes = ['age', 'mass', 'pos']
-            data.select_haloes(level, 0, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+        # Loop over all haloes #
+        for s in data:
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
-            # Loop over all haloes #
-            for s in data:
-                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
-                s.calc_sf_indizes(s.subfind)
-                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            # Loop over different radial limits #
+            for radial_limit in radial_limits:
+                path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
                 
                 spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
                 stellar_mask, = np.where((spherical_distance < radial_limit) & (
@@ -1108,25 +1110,29 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 np.save(path + 'age_' + str(s.haloname), age)
                 np.save(path + 'weights_' + str(s.haloname), weights)
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
+        
+        redshift_cut = 7.0
+        gas_masses, stellar_masses, sfg_ratios, wg_ratios, hg_ratios = [], [], [], [], []  # Declare lists to store the data.
+        # Get all available redshifts #
+        haloes = data.get_haloes(level)
+        for name, halo in haloes.items():
+            redshifts = halo.get_redshifts()
+        
+        for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
+            # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+            particle_type = [0, 4]
+            attributes = ['age', 'mass', 'pos']
+            data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
             
-            redshift_cut = 7.0
-            gas_masses, stellar_masses, sfg_ratios, wg_ratios, hg_ratios = [], [], [], [], []  # Declare lists to store the data.
-            # Get all available redshifts #
-            haloes = data.get_haloes(level)
-            for name, halo in haloes.items():
-                redshifts = halo.get_redshifts()
-            
-            for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
-                # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-                particle_type = [0, 4]
-                attributes = ['age', 'mass', 'pos']
-                data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
+            # Loop over all haloes #
+            for s in data:
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+                s.calc_sf_indizes(s.subfind)
+                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
-                # Loop over all haloes #
-                for s in data:
-                    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
-                    s.calc_sf_indizes(s.subfind)
-                    s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+                # Loop over different radial limits #
+                for radial_limit in radial_limits:
+                    path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
                     
                     # Mask the data: select stellar particles and gas cells within a 500pc radius sphere #
                     age = np.zeros(s.npartall)
@@ -1153,19 +1159,24 @@ def gas_stars_sfr_evolution(pdf, data, read):
                     sfg_ratios.append(np.sum(gas_mass[np.where((temperature < 2e4))]) / np.sum(gas_mass))
                     wg_ratios.append(np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass))
                     hg_ratios.append(np.sum(gas_mass[np.where((temperature >= 5e5))]) / np.sum(gas_mass))
-            
-            # Save data for each halo in numpy arrays #
-            lookback_times = satellite_utilities.return_lookbacktime_from_a(
-                (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
-            np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
-            np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
-            np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
-            np.save(path + 'gas_masses_' + str(s.haloname), gas_masses)
-            np.save(path + 'stellar_masses_' + str(s.haloname), stellar_masses)
-            np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
+        
+        # Save data for each halo in numpy arrays #
+        lookback_times = satellite_utilities.return_lookbacktime_from_a(
+            (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
+        np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
+        np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
+        np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
+        np.save(path + 'gas_masses_' + str(s.haloname), gas_masses)
+        np.save(path + 'stellar_masses_' + str(s.haloname), stellar_masses)
+        np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
+    
+    radial_limits = (5e-4, 7.5e-4, 1e-3)
+    for radial_limit in radial_limits:
+        path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
+        path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_18NOR*')
+        names = glob.glob(path + '/name_18NOA*')
         names.sort()
         
         for i in range(len(names)):
@@ -1178,7 +1189,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             for axis in [ax00, ax10, axis20]:
                 axis.grid(True, color='gray', linestyle='-')
                 axis.tick_params(direction='out', which='both', top='on', right='on')
-            ax00.set_ylim(0, 8)
+            ax00.set_ylim(0, 15)
             ax00.set_xticklabels([])
             ax002 = ax00.twinx()
             ax002.set_yscale('log')
@@ -1200,9 +1211,9 @@ def gas_stars_sfr_evolution(pdf, data, read):
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit) * 1e6)), fontsize=16, transform=ax00.transAxes)
             
             # Load and plot the data #
-            thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            # thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            # mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            # lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             gas_masses = np.load(path + 'gas_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1213,27 +1224,28 @@ def gas_stars_sfr_evolution(pdf, data, read):
             sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             
             # Transform the arrays to comma separated strings and convert each element to float #
-            thermals = ','.join(thermals)
-            mechanicals = ','.join(mechanicals)
-            thermals = np.fromstring(thermals, dtype=np.float, sep=',')
-            mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+            # thermals = ','.join(thermals)
+            # mechanicals = ','.join(mechanicals)
+            # thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+            # mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
             
             ax00.hist(age, weights=weights, histtype='step', bins=100, range=[0, 13], edgecolor='k')  # Plot the sfr history.
             
             # Calculate and plot the thermals energy sum #
-            nbin = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
-            x_value = np.empty(nbin)
-            sum = np.empty(nbin)
-            x_low = min(lookback_times_modes[np.where(thermals > 0)])
-            for j in range(nbin):
-                index = \
-                    np.where((lookback_times_modes[np.where(thermals > 0)] >= x_low) & (lookback_times_modes[np.where(thermals > 0)] < x_low + 0.05))[
-                        0]
-                x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(thermals > 0)])[index])
-                if len(index) > 0:
-                    sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
-                x_low += 0.05
-            plot20, = ax002.plot(x_value, sum, color='orange', zorder=5)
+            # nbin = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
+            # x_value = np.empty(nbin)
+            # sum = np.empty(nbin)
+            # x_low = min(lookback_times_modes[np.where(thermals > 0)])
+            # for j in range(nbin):
+            #     index = \
+            #         np.where((lookback_times_modes[np.where(thermals > 0)] >= x_low) & (lookback_times_modes[np.where(thermals > 0)] < x_low +
+            #         0.05))[
+            #             0]
+            #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(thermals > 0)])[index])
+            #     if len(index) > 0:
+            #         sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
+            #     x_low += 0.05
+            # plot20, = ax002.plot(x_value, sum, color='orange', zorder=5)
             
             # # Calculate and plot the mechanical energy sum #
             # nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
@@ -1262,7 +1274,7 @@ def gas_stars_sfr_evolution(pdf, data, read):
             # Create the legends and save the figure #
             ax10.legend([plot100, plot101], [r'$\mathrm{Gas}$', r'$\mathrm{Stars}$'], loc='lower center', fontsize=16, frameon=False, numpoints=1,
                         ncol=2)
-            ax002.legend([plot20], [r'$\mathrm{Thermal}$'], loc='upper center', fontsize=16, frameon=False, numpoints=1, ncol=2)
+            # ax002.legend([plot20], [r'$\mathrm{Thermal}$'], loc='upper center', fontsize=16, frameon=False, numpoints=1, ncol=2)
             ax00.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, ncol=2)
             axis20.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
                           fontsize=16, frameon=False, numpoints=1)

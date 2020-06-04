@@ -310,13 +310,14 @@ def stellar_light(pdf, data, redshift, read):
             # Mask and rotate the data and plot the projections #
             mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in kpc.
             
-            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3, s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
+            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
+                                                         s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             
-            face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
-                                     maxHsml=True)
-            edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
-                                     maxHsml=True)
+            face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res,
+                                     boxsize, 'light', maxHsml=True)
+            edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res,
+                                     boxsize, 'light', maxHsml=True)
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -390,13 +391,14 @@ def stellar_density(pdf, data, redshift, read):
             
             # Mask and rotate the data and get the projections #
             mask, = np.where((s.data['age'] > 0.0) & (s.r() < 2.0 * boxsize))
-            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3, s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
+            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
+                                                         s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             
-            face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
-                                     'mass') / area * 1e10
-            edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
-                0.5 * area) * 1e10
+            face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res,
+                                     boxsize, 'mass') / area * 1e10
+            edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res,
+                                     boxsize, 'mass') / (0.5 * area) * 1e10
             
             # Get the contour lines #
             face_on_count, face_on_xedges, face_on_yedges = np.histogram2d(s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3, bins=70,
@@ -908,10 +910,10 @@ def dm_mass(pdf, data, level, redshift):
         
         # Mask the data and plot the projections #
         mask, = np.where((s.r() < 2.0 * boxsize) & (s.data['type'] == 1))
-        face_on = get_projection(s.data['pos'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res, boxsize,
-                                 'mass') / area * 1e10
-        edge_on = get_projection(s.data['pos'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res, boxsize, 'mass') / (
-            0.5 * area) * 1e10
+        face_on = get_projection(s.data['pos'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 0, res,
+                                 boxsize, 'mass') / area * 1e10
+        edge_on = get_projection(s.data['pos'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['mass'][mask].astype('f8'), 1, res,
+                                 boxsize, 'mass') / (0.5 * area) * 1e10
         pcm = ax00.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         ax10.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), cmap='Greys', rasterized=True)
         create_colorbar(axcbar, pcm, "$\Sigma_\mathrm{DM}\;\mathrm{[M_\odot\;kpc^{-2}]}$")
@@ -1087,13 +1089,14 @@ def stellar_light_fit(data, redshift, read):
             # Mask and rotate the data and plot the projections #
             mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in kpc.
             
-            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3, s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
+            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
+                                                         s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             
-            face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res, boxsize, 'light',
-                                     maxHsml=True)
-            edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res, boxsize, 'light',
-                                     maxHsml=True)
+            face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 0, res,
+                                     boxsize, 'light', maxHsml=True)
+            edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][mask].astype('f8'), s.data['gsph'][mask].astype('f8'), 1, res,
+                                     boxsize, 'light', maxHsml=True)
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -1155,7 +1158,8 @@ def r_band_magnitude(data, redshift, read):
             
             # Mask and rotate the data and plot the projections #
             mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Distances are in kpc.
-            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3, s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
+            z_rotated, y_rotated, x_rotated = rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
+                                                         s.data['pos'][mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             
             band = 10 ** (-2.0 * s.data['gsph'][mask, 5] / 5.0)  # r-band magnitude.
