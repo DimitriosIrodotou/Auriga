@@ -13,37 +13,37 @@ from const import *
 from sfigure import *
 
 
-def create_axis(f, idx, ncol=6):
+def create_axis(figure, idx, ncol=6):
     ix = idx % ncol
     iy = idx // ncol
     
     s = 1.
     
-    ax = f.iaxes(0.5 + ix * (s + 0.5), 0.2 + s + iy * (s + 0.4), s, s, top=False)
-    return ax
+    axis = figure.iaxes(0.5 + ix * (s + 0.5), 0.2 + s + iy * (s + 0.4), s, s, top=False)
+    return axis
 
 
-def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None):
+def set_axis(isnap, axis, xlabel=None, ylabel=None, title=None, ylim=None):
     if ylabel is None:
-        ax.set_yticks([])
+        axis.set_yticks([])
     else:
-        ax.set_ylabel(ylabel, size=6)
+        axis.set_ylabel(ylabel, size=6)
     
     if xlabel is None:
-        ax.set_xticks([])
+        axis.set_xticks([])
     else:
-        ax.set_xlabel(xlabel, size=6)
+        axis.set_xlabel(xlabel, size=6)
     
-    for label in ax.xaxis.get_ticklabels():
+    for label in axis.xaxis.get_ticklabels():
         label.set_size(6)
-    for label in ax.yaxis.get_ticklabels():
+    for label in axis.yaxis.get_ticklabels():
         label.set_size(6)
     
     # if ylim is not None:
-    ax.set_ylim(0, 4.5)
+    axis.set_ylim(0, 4.5)
     
     if isnap == 0 and title is not None:
-        ax.set_title(title, size=7)
+        axis.set_title(title, size=7)
     
     return None
 
@@ -57,7 +57,7 @@ def circularity(pdf, data, levels, z):
         nhalos += data.selected_current_nsnaps
     
     plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
+    figure = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * ((nhalos - 1) // 5 + 1) + 0.7))
     
     for il in range(nlevels):
         level = levels[il]
@@ -110,18 +110,18 @@ def circularity(pdf, data, levels, z):
             ll, = np.where((eps > -1.7) & (eps < 1.7))
             disc_frac = smass[jj].sum() / smass[ll].sum()
             
-            ax = create_axis(f, isnap)
+            axis = create_axis(figure, isnap)
             ydata, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
             ydata /= edges[1:] - edges[:-1]
-            ax.plot(0.5 * (edges[1:] + edges[:-1]), ydata, 'k')
+            axis.plot(0.5 * (edges[1:] + edges[:-1]), ydata, 'k')
             
-            set_axis(isnap, ax, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
-            ax.text(0.0, 1.01, "Au-%s z = %.1f " % (s.haloname, z), color='k', fontsize=6, transform=ax.transAxes)
-            ax.text(0.05, 0.8, "D/T = %.2f" % disc_frac, color='k', fontsize=6, transform=ax.transAxes)
-            ax.set_xlim(-2., 2.)
-            ax.set_xticks([-1.5, 0., 1.5])
+            set_axis(isnap, axis, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
+            axis.text(0.0, 1.01, "Au-%s z = %.1f " % (s.haloname, z), color='k', fontsize=6, transform=axis.transAxes)
+            axis.text(0.05, 0.8, "D/T = %.2f" % disc_frac, color='k', fontsize=6, transform=axis.transAxes)
+            axis.set_xlim(-2., 2.)
+            axis.set_xticks([-1.5, 0., 1.5])
             
             isnap += 1
     
-    pdf.savefig(f, bbox_inches='tight')  # Save the figure.
+    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     return None

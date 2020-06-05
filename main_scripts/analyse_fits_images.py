@@ -154,14 +154,14 @@ def fit_isophotal_ellipses():
     # Generate the figure and define its parameters #
     plt.figure(figsize=(10, 7.5))
     gs = gridspec.GridSpec(2, 3, hspace=0.35, wspace=0.35)
-    ax00 = plt.subplot(gs[0, 0])
-    ax01 = plt.subplot(gs[0, 1])
-    ax02 = plt.subplot(gs[0, 2])
-    ax10 = plt.subplot(gs[1, 0])
-    ax11 = plt.subplot(gs[1, 1])
-    ax12 = plt.subplot(gs[1, 2])
+    axis00 = plt.subplot(gs[0, 0])
+    axis01 = plt.subplot(gs[0, 1])
+    axis02 = plt.subplot(gs[0, 2])
+    axis10 = plt.subplot(gs[1, 0])
+    axis11 = plt.subplot(gs[1, 1])
+    axis12 = plt.subplot(gs[1, 2])
     
-    axes = [ax00, ax01, ax02, ax10, ax11, ax12]
+    axes = [axis00, axis01, axis02, axis10, axis11, axis12]
     y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA\;[\deg]}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$', r'$\mathrm{x_{0}\;[pix]}$',
                 r'$\mathrm{y_{0}\;[pix]}$', r'$\mathrm{Mean\,intensity}$']
     y_values = [isolist.eps, isolist.pa / np.pi * 180., isolist.tflux_e, isolist.x0, isolist.y0, isolist.intens]
@@ -175,10 +175,10 @@ def fit_isophotal_ellipses():
         axis.set_xlabel(r'$\mathrm{Semi-major\;axis\;length\;[pix]}$')
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', markersize=3)
     
-    ax02.set_yscale('log')
-    ax12.set_xscale('linear')
+    axis02.set_yscale('log')
+    axis12.set_xscale('linear')
     popt, pcov = curve_fit(exponential_profile, isolist.sma, isolist.intens, p0=[isolist.intens[0], 1])
-    ax12.plot(isolist.sma, exponential_profile(isolist.sma, popt[0], popt[1]), 'b-')
+    axis12.plot(isolist.sma, exponential_profile(isolist.sma, popt[0], popt[1]), 'b-')
     plt.savefig(run + '_fie_isolist.png', bbox_inches='tight')  # Save the figure.
     
     # Build an elliptical model #
@@ -189,12 +189,12 @@ def fit_isophotal_ellipses():
     # Generate the figure and define its parameters #
     plt.figure(figsize=(10, 10))
     gs = gridspec.GridSpec(1, 2, hspace=0.2, wspace=0.2)
-    ax00 = plt.subplot(gs[0, 0])
-    ax01 = plt.subplot(gs[0, 1])
-    # ax10 = plt.subplot(gs[1, 0])
-    # ax11 = plt.subplot(gs[1, 1])
+    axis00 = plt.subplot(gs[0, 0])
+    axis01 = plt.subplot(gs[0, 1])
+    # axis10 = plt.subplot(gs[1, 0])
+    # axis11 = plt.subplot(gs[1, 1])
     
-    axes = [ax00, ax01]  # , ax10, ax11]
+    axes = [axis00, axis01]  # , axis10, axis11]
     titles = [r'$\mathrm{Auriga-}$' + str(name), r'$\mathrm{Sample\;of\;isophotes}$']  # , r'$\mathrm{Ellipse\;model}$', r'$\mathrm{Residual}$']
     images = [image_fits, image_fits]  # , model_image, residual]
     for axis, title, image in zip(axes, titles, images):
@@ -205,7 +205,7 @@ def fit_isophotal_ellipses():
     for sma in smas:
         iso = isolist.get_closest(sma)
         x, y, = iso.sampled_coordinates()
-        ax01.plot(x, y, color='tab:red')
+        axis01.plot(x, y, color='tab:red')
     
     plt.savefig(run + '_fie_model.png', bbox_inches='tight')  # Save the figure.
     

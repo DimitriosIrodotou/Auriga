@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_06" % self.directory)
+        haloes = glob.glob("%shalo_18" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -310,11 +310,11 @@ class AurigaPdf:
         # for redshift in np.linspace(0.0, 2, 21):
         #     print(redshift)
         #     evolution.circularity(pdf, self, [level], redshift)
-        # time_evolution.bar_strength_evolution(pdf, self, read=False)
+        # time_evolution.bar_strength(pdf, self, read=False)
         # time_evolution.bfld(pdf, self, level)
-        # time_evolution.bh_mass(pdf, self, level)
-        # time_evolution.gas_temperature_fraction_evolution(pdf, self, read=False)
-        # time_evolution.gas_stars_sfr_evolution(pdf, self, read=False)
+        time_evolution.blackhole_masses(pdf, self, read=False)
+        # time_evolution.gas_temperature_fraction(pdf, self, read=False)
+        # time_evolution.gas_stars_sfr(pdf, self, read=False)
         #  AGN modes #
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
@@ -341,7 +341,7 @@ class AurigaPdf:
         # galaxy.bar_strength(pdf, self, read=False)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
-        galaxy.gas_temperature_histogram(pdf, self, read=False)
+        # galaxy.gas_temperature_histogram(pdf, self, read=False)
         # galaxy.gas_distance_temperature(pdf, self, redshift, read=True)
         
         # Metallicities #

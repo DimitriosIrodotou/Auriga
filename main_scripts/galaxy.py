@@ -61,7 +61,7 @@ def set_axis(isnap, axis, xlabel=None, ylabel=None, title=None, ylim=None, ncol=
     return None
 
 
-def set_axis_evo(axis, ax2):
+def set_axis_evo(axis, axis2):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
     times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
     
@@ -80,11 +80,11 @@ def set_axis_evo(axis, ax2):
     axis.set_xlabel('$t_\mathrm{look}\,\mathrm{[Gyr]}$', size=12)
     axis.tick_params(direction='out', which='both', top='on', right='on')
     
-    ax2.set_xticks(times)
-    ax2.set_xticklabels(lb)
-    ax2.set_xlim(axis.get_xlim())
-    ax2.set_xlabel('$z$', size=12)
-    ax2.tick_params(direction='out', which='both', top='on', right='on')
+    axis2.set_xticks(times)
+    axis2.set_xticklabels(lb)
+    axis2.set_xlim(axis.get_xlim())
+    axis2.set_xlabel('$z$', size=12)
+    axis2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
 
@@ -101,7 +101,7 @@ def circularity(pdf, data, levels, redshift):
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.xlabel(r'$\mathrm{\epsilon}$', size=16)
-    plt.ylabel(r'$\mathrm{f(\epsilon )}$', size=16)
+    plt.ylabel(r'$\mathrm{figure(\epsilon )}$', size=16)
     plt.ylim(0, 3.0)
     
     for il in range(nlevels):
@@ -436,7 +436,7 @@ def gas_fraction(pdf, data, levels):
 def central_bfld(pdf, data, levels):
     nlevels = len(levels)
     
-    f = plt.figure(figsize=(8.2, 8.2))
+    figure = plt.figure(figsize=(8.2, 8.2))
     plt.grid(True, color='gray', linestyle='-')
     axis = figure.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
     axis.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
@@ -630,8 +630,8 @@ def sfr_history(pdf, data, redshift, read):
         axis.hist(age, weights=weights, color=next(colors), histtype='step', bins=nbins, range=[tmin, tmax],
                   label="Au-" + (str(re.split('_|.npy', names[i])[1])))
         
-        ax2 = axis.twiny()
-        set_axis_evo(axis, ax2)
+        axis2 = axis.twiny()
+        set_axis_evo(axis, axis2)
         axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
     
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
@@ -697,29 +697,30 @@ def delta_sfr_history(pdf, data, redshift, region, read):
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(16, 9))
     gs = gridspec.GridSpec(2, 3, hspace=0.3, wspace=0.05)
-    ax00 = plt.subplot(gs[0, 0])
-    ax01 = plt.subplot(gs[0, 1])
-    ax02 = plt.subplot(gs[0, 2])
-    ax10 = plt.subplot(gs[1, 0])
-    ax11 = plt.subplot(gs[1, 1])
-    ax12 = plt.subplot(gs[1, 2])
+    axis00 = plt.subplot(gs[0, 0])
+    axis01 = plt.subplot(gs[0, 1])
+    axis02 = plt.subplot(gs[0, 2])
+    axis10 = plt.subplot(gs[1, 0])
+    axis11 = plt.subplot(gs[1, 1])
+    axis12 = plt.subplot(gs[1, 2])
     
-    for axis in [ax01, ax02, ax11, ax12]:
-        axis.set_yticklabels([])
-    for axis in [ax00, ax01, ax02]:
-        axis.grid(True, color='gray', linestyle='-')
+    for axis in [axis00, axis01, axis02]:
         axis.set_ylim(0, 22)
-    for axis in [ax10, ax11, ax12]:
         axis.grid(True, color='gray', linestyle='-')
-        axis.set_ylim(-1, 15)
-    ax10.set_ylabel('$\mathrm{(\delta Sfr)_{norm}}$')
-    ax00.set_ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
+    for axis in [axis10, axis11, axis12]:
+        axis.set_ylim(-1.1, 5e1)
+        axis.grid(True, color='gray', linestyle='-')
+        axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1)
+    for axis in [axis01, axis02, axis11, axis12]:
+        axis.set_yticklabels([])
+    axis10.set_ylabel('$\mathrm{(\delta Sfr)_{norm}}$')
+    axis00.set_ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$')
     
-    top_axes, bottom_axes = [ax00, ax01, ax02], [ax10, ax11, ax12]
+    top_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12]
     for radial_limit_max, top_axis, bottom_axis, text in zip(radial_limits_max, top_axes, bottom_axes, texts):
         # Get the names and sort them #
         path = '/u/di43/Auriga/plots/data/' + 'dsh/' + str(radial_limit_max) + '/'
-        names = glob.glob(path + '/name_06*')
+        names = glob.glob(path + '/name_18*')
         names.sort()
         
         # Load and plot the data #
@@ -730,8 +731,8 @@ def delta_sfr_history(pdf, data, redshift, region, read):
             counts, bins, bars = top_axis.hist(age, weights=weights, histtype='step', bins=nbins, range=[tmin, tmax], color=colors[i],
                                                label="Au-" + (str(re.split('_|.npy', names[i])[1])))
             
-            ax2 = top_axis.twiny()
-            set_axis_evo(top_axis, ax2)
+            axis2 = top_axis.twiny()
+            set_axis_evo(top_axis, axis2)
             top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
             top_axis.text(0.05, 0.92, text, color='k', fontsize=12, transform=top_axis.transAxes)
             
@@ -739,8 +740,8 @@ def delta_sfr_history(pdf, data, redshift, region, read):
                 original_bins, original_counts = bins, counts
             else:
                 bottom_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)), color=colors[i], )
-                ax2 = bottom_axis.twiny()
-                set_axis_evo(bottom_axis, ax2)
+                axis2 = bottom_axis.twiny()
+                set_axis_evo(bottom_axis, axis2)
     
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
@@ -837,7 +838,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
     # Loop over all haloes #
     for s in data:
         # Generate the figure and define its parameters #
-        f = plt.figure(0, figsize=(10, 7.5))
+        figure = plt.figure(0, figsize=(10, 7.5))
         plt.ylim(1e0, 1e6)
         plt.xlim(0.0, 30.0)
         plt.grid(True, color='gray', linestyle='-')
@@ -1062,7 +1063,7 @@ def gas_temperature_histogram(pdf, data, read):
         
         # Convert bin centres to log space and plot #
         l = np.sort(temperatures)
-        print(l[0,:100])
+        print(l[0, :100])
         ydata, edges = np.histogram(temperatures, weights=masses / np.sum(masses), bins=100)
         print(np.sort(edges))
         bin_centres = 10 ** (0.5 * (np.log10(edges[1:]) + np.log10(edges[:-1])))

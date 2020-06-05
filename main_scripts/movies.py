@@ -153,11 +153,11 @@ def gas_movie(data, read):
         plt.rcParams['savefig.facecolor'] = 'black'
         figure, axis = plt.subplots(1, figsize=(20, 20))
         gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
-        ax00 = plt.subplot(gs[0, 0])
-        ax01 = plt.subplot(gs[0, 1])
-        ax10 = plt.subplot(gs[1, 0])
-        ax11 = plt.subplot(gs[1, 1])
-        for axis in [ax00, ax01, ax10, ax11]:
+        axis00 = plt.subplot(gs[0, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axis10 = plt.subplot(gs[1, 0])
+        axis11 = plt.subplot(gs[1, 1])
+        for axis in [axis00, axis01, axis10, axis11]:
             axis.axis('off')
             axis.set_xlim(-50, 50)
             axis.set_ylim(-50, 50)
@@ -167,15 +167,15 @@ def gas_movie(data, read):
         x = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         y = np.linspace(-0.5 * boxsize * 1e3, +0.5 * boxsize * 1e3, res + 1)
         
-        temperature = ax00.pcolormesh(x, y, (temperature_face_on / rho_face_on).T, norm=matplotlib.colors.LogNorm(vmin=3e3, vmax=5e7), cmap='ocean',
+        temperature = axis00.pcolormesh(x, y, (temperature_face_on / rho_face_on).T, norm=matplotlib.colors.LogNorm(vmin=3e3, vmax=5e7), cmap='ocean',
                                       rasterized=True)
-        vrad = ax01.pcolormesh(x, y, vrad_face_on.T, cmap='bwr', vmin=-5e3, vmax=5e3, rasterized=True)
-        rho = ax10.pcolormesh(x, y, (rho_face_on * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma',
+        vrad = axis01.pcolormesh(x, y, vrad_face_on.T, cmap='bwr', vmin=-5e3, vmax=5e3, rasterized=True)
+        rho = axis10.pcolormesh(x, y, (rho_face_on * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma',
                               rasterized=True)
-        pressure = ax11.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e8), cmap='cubehelix', rasterized=True)
+        pressure = axis11.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e8), cmap='cubehelix', rasterized=True)
         
         # Add colorbars in each panel #
-        axes = [ax00, ax01, ax10, ax11]
+        axes = [axis00, axis01, axis10, axis11]
         labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$', r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$',
                   r'$\mathrm{P\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
@@ -191,33 +191,33 @@ def gas_movie(data, read):
             cbaxis.tick_params(direction='out', which='both', top='on')
         
         figure.tight_layout()
-        figure.text(0.1, 0.97, 'z = %.3f' % float(redshift), color='w', fontsize=18, transform=ax10.transAxes)
+        figure.text(0.1, 0.97, 'z = %.3f' % float(redshift), color='w', fontsize=18, transform=axis10.transAxes)
         plt.savefig('/u/di43/Auriga/plots/gm/' + 'gmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
         
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(20, 20))
         gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
-        ax00 = plt.subplot(gs[0, 0])
-        ax01 = plt.subplot(gs[0, 1])
-        ax10 = plt.subplot(gs[1, 0])
-        ax11 = plt.subplot(gs[1, 1])
-        for axis in [ax00, ax01, ax10, ax11]:
+        axis00 = plt.subplot(gs[0, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axis10 = plt.subplot(gs[1, 0])
+        axis11 = plt.subplot(gs[1, 1])
+        for axis in [axis00, axis01, axis10, axis11]:
             axis.axis('off')
             axis.set_xlim(-100, 100)
             axis.set_ylim(-100, 100)
             axis.set_aspect('auto')
         
         # Plot the projections #
-        temperature = ax00.pcolormesh(x, y, (temperature_edge_on / rho_edge_on).T, norm=matplotlib.colors.LogNorm(vmin=3e3, vmax=5e7), cmap='ocean',
+        temperature = axis00.pcolormesh(x, y, (temperature_edge_on / rho_edge_on).T, norm=matplotlib.colors.LogNorm(vmin=3e3, vmax=5e7), cmap='ocean',
                                       rasterized=False)
-        vrad = ax01.pcolormesh(x, y, vrad_edge_on.T, cmap='bwr', vmin=-3.5e4, vmax=3.5e4, rasterized=True)
-        rho = ax10.pcolormesh(x, y, (rho_edge_on * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma',
+        vrad = axis01.pcolormesh(x, y, vrad_edge_on.T, cmap='bwr', vmin=-3.5e4, vmax=3.5e4, rasterized=True)
+        rho = axis10.pcolormesh(x, y, (rho_edge_on * boxsize * 1e3).T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma',
                               rasterized=True)
-        pressure = ax11.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e8), cmap='cubehelix', rasterized=True)
+        pressure = axis11.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e8), cmap='cubehelix', rasterized=True)
         
         # Add colorbars in each panel #
-        axes = [ax00, ax01, ax10, ax11]
+        axes = [axis00, axis01, axis10, axis11]
         labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$', r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$',
                   r'$\mathrm{P\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
@@ -233,7 +233,7 @@ def gas_movie(data, read):
             cbaxis.tick_params(direction='out', which='major', top='on')
         
         figure.tight_layout()
-        figure.text(0.1, 0.97, 'z = %.3f' % float(redshift), color='w', fontsize=18, transform=ax10.transAxes)
+        figure.text(0.1, 0.97, 'z = %.3f' % float(redshift), color='w', fontsize=18, transform=axis10.transAxes)
         plt.savefig('/u/di43/Auriga/plots/gm/' + 'gme_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
     

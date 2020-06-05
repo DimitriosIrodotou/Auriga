@@ -7,37 +7,37 @@ from const import *
 from sfigure import *
 
 
-def create_axis(f, idx, ncol=5):
+def create_axis(figure, idx, ncol=5):
     ix = idx % ncol
     iy = idx // ncol
 
     s = 1.
 
-    ax = f.iaxes(0.5 + ix * (s + 0.5), 0.2 + s + iy * (s + 0.4), s, s, top=False)
-    return ax
+    axis = figure.iaxes(0.5 + ix * (s + 0.5), 0.2 + s + iy * (s + 0.4), s, s, top=False)
+    return axis
 
 
-def set_axis(isnap, ax, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5):
+def set_axis(isnap, axis, xlabel=None, ylabel=None, title=None, ylim=None, ncol=5):
     if ylabel is None:
-        ax.set_yticks([])
+        axis.set_yticks([])
     else:
-        ax.set_ylabel(ylabel, size=6)
+        axis.set_ylabel(ylabel, size=6)
 
     if xlabel is None:
-        ax.set_xticks([])
+        axis.set_xticks([])
     else:
-        ax.set_xlabel(xlabel, size=6)
+        axis.set_xlabel(xlabel, size=6)
 
-    for label in ax.xaxis.get_ticklabels():
+    for label in axis.xaxis.get_ticklabels():
         label.set_size(6)
-    for label in ax.yaxis.get_ticklabels():
+    for label in axis.yaxis.get_ticklabels():
         label.set_size(6)
 
     if ylim is not None:
-        ax.set_ylim(ylim)
+        axis.set_ylim(ylim)
 
     if isnap == 0 and title is not None:
-        ax.set_title(title, size=7)
+        axis.set_title(title, size=7)
 
     return None
 
@@ -62,7 +62,7 @@ def ratios(pdf, data, levels, z):
     rows_per_element = (nhalos - 1) // 5 + 1
 
     plt.close()
-    f = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * (12 + nelements - 2) * rows_per_element + 0.7))
+    figure = plt.figure(FigureClass=sfig, figsize=(8.2, 1.4 * (12 + nelements - 2) * rows_per_element + 0.7))
 
     for il in range(nlevels):
         level = levels[il]
@@ -83,12 +83,12 @@ def ratios(pdf, data, levels, z):
                     nele -= elements_solar[ele] - elements_solar[8]
 
                     iax = (ele - 2) * rows_per_element * 5 + ihalo
-                    ax = create_axis(f, iax)
-                    ax.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 1.0]), weights=s.data['mass'][istars], normed=False, rasterized=True,
+                    axis = create_axis(figure, iax)
+                    axis.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 1.0]), weights=s.data['mass'][istars], normed=False, rasterized=True,
                               norm=matplotlib.colors.LogNorm(), cmap=matplotlib.cm.viridis)
 
-                    set_axis(iax, ax, "$\mathrm{[Fe/H]}$", "$\mathrm{[%s/Fe]}$" % elements[ele])
-                    ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, level), color='w', fontsize=6, transform=ax.transAxes)
+                    set_axis(iax, axis, "$\mathrm{[Fe/H]}$", "$\mathrm{[%s/Fe]}$" % elements[ele])
+                    axis.text(0.05, 0.92, "Au%s-%d" % (s.haloname, level), color='w', fontsize=6, transform=axis.transAxes)
 
                 ihalo += 1
 
@@ -113,14 +113,14 @@ def ratios(pdf, data, levels, z):
                     nele -= nele[i].sum() / np.size(i)
 
                     iax = (nelements - 2 + ele) * rows_per_element * 5 + ihalo
-                    ax = create_axis(f, iax)
-                    ax.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 2.0]), weights=s.data['mass'][istars], normed=False, rasterized=True,
+                    axis = create_axis(figure, iax)
+                    axis.hist2d(nfe, nele, bins=(160, 80), range=([-2.5, 1.1], [-1.0, 2.0]), weights=s.data['mass'][istars], normed=False, rasterized=True,
                               norm=matplotlib.colors.LogNorm(), cmap=matplotlib.cm.viridis)
 
-                    set_axis(iax, ax, "$\mathrm{[Fe/H]}$", "$\mathrm{[Eu_{%d}/Fe]}$" % ele)
-                    ax.text(0.05, 0.92, "Au%s-%d" % (s.haloname, level), color='w', fontsize=6, transform=ax.transAxes)
+                    set_axis(iax, axis, "$\mathrm{[Fe/H]}$", "$\mathrm{[Eu_{%d}/Fe]}$" % ele)
+                    axis.text(0.05, 0.92, "Au%s-%d" % (s.haloname, level), color='w', fontsize=6, transform=axis.transAxes)
 
                 ihalo += 1
 
-    pdf.savefig(f)
+    pdf.savefig(figure)
     return None

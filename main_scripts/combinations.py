@@ -41,104 +41,104 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
     # Generate the panels #
     if contour is True:
         gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 1, 0.05])
-        ax00 = plt.subplot(gs[0, 0])
-        ax01 = plt.subplot(gs[0, 1])
-        ax10 = plt.subplot(gs[1, 0])
-        ax11 = plt.subplot(gs[1, 1])
-        axcbar = plt.subplot(gs[:, 2])
+        axis00 = plt.subplot(gs[0, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axis10 = plt.subplot(gs[1, 0])
+        axis11 = plt.subplot(gs[1, 1])
+        axiscbar = plt.subplot(gs[:, 2])
         
-        return ax00, ax01, ax10, ax11, axcbar, x, y, y2, area
+        return axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area
     
     elif colorbar is True:
         gs = gridspec.GridSpec(2, 2, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 0.05])
-        ax00 = plt.subplot(gs[0, 0])
-        ax10 = plt.subplot(gs[1, 0])
-        axcbar = plt.subplot(gs[:, 1])
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
+        axiscbar = plt.subplot(gs[:, 1])
         
-        return ax00, ax10, axcbar, x, y, y2, area
+        return axis00, axis10, axiscbar, x, y, y2, area
     
     elif velocity_vectors is True:
         gs = gridspec.GridSpec(2, 1, hspace=0.05)
-        ax00 = plt.subplot(gs[0, 0])
-        ax10 = plt.subplot(gs[1, 0])
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
         
-        return ax00, ax10, x, y, y2, area
+        return axis00, axis10, x, y, y2, area
     
     elif multiple is True:
         gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
-        ax00 = plt.subplot(gs[0, 0])
-        axcbar = plt.subplot(gs[1, 0])
-        ax20 = plt.subplot(gs[2, 0])
-        ax01 = plt.subplot(gs[0, 1])
-        axcbar1 = plt.subplot(gs[1, 1])
-        ax21 = plt.subplot(gs[2, 1])
-        ax02 = plt.subplot(gs[0, 2])
-        axcbar2 = plt.subplot(gs[1, 2])
-        ax22 = plt.subplot(gs[2, 2])
-        ax03 = plt.subplot(gs[0, 3])
-        axcbar3 = plt.subplot(gs[1, 3])
-        ax23 = plt.subplot(gs[2, 3])
-        ax04 = plt.subplot(gs[0, 4])
-        axcbar4 = plt.subplot(gs[1, 4])
-        ax24 = plt.subplot(gs[2, 4])
-        ax05 = plt.subplot(gs[0, 5])
-        axcbar5 = plt.subplot(gs[1, 5])
-        ax25 = plt.subplot(gs[2, 5])
+        axis00 = plt.subplot(gs[0, 0])
+        axiscbar = plt.subplot(gs[1, 0])
+        axis20 = plt.subplot(gs[2, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axiscbar1 = plt.subplot(gs[1, 1])
+        axis21 = plt.subplot(gs[2, 1])
+        axis02 = plt.subplot(gs[0, 2])
+        axiscbar2 = plt.subplot(gs[1, 2])
+        axis22 = plt.subplot(gs[2, 2])
+        axis03 = plt.subplot(gs[0, 3])
+        axiscbar3 = plt.subplot(gs[1, 3])
+        axis23 = plt.subplot(gs[2, 3])
+        axis04 = plt.subplot(gs[0, 4])
+        axiscbar4 = plt.subplot(gs[1, 4])
+        axis24 = plt.subplot(gs[2, 4])
+        axis05 = plt.subplot(gs[0, 5])
+        axiscbar5 = plt.subplot(gs[1, 5])
+        axis25 = plt.subplot(gs[2, 5])
         
-        return ax00, axcbar, ax20, ax01, axcbar1, ax21, ax02, axcbar2, ax22, ax03, axcbar3, ax23, ax04, axcbar4, ax24, ax05, axcbar5, ax25, x, y, area
+        return axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, axis24, axis05, axiscbar5, axis25, x, y, area
     
     elif multiple2 is True:
         gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
-        ax00 = plt.subplot(gs[0, 0])
-        ax10 = plt.subplot(gs[1, 0])
-        ax20 = plt.subplot(gs[2, 0])
-        ax30 = plt.subplot(gs[3, 0])
-        ax01 = plt.subplot(gs[0, 1])
-        ax11 = plt.subplot(gs[1, 1])
-        ax21 = plt.subplot(gs[2, 1])
-        ax31 = plt.subplot(gs[3, 1])
-        ax02 = plt.subplot(gs[0, 2])
-        ax12 = plt.subplot(gs[1, 2])
-        ax22 = plt.subplot(gs[2, 2])
-        ax32 = plt.subplot(gs[3, 2])
-        return ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32, x, y, y2, area
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
+        axis20 = plt.subplot(gs[2, 0])
+        axis30 = plt.subplot(gs[3, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axis11 = plt.subplot(gs[1, 1])
+        axis21 = plt.subplot(gs[2, 1])
+        axis31 = plt.subplot(gs[3, 1])
+        axis02 = plt.subplot(gs[0, 2])
+        axis12 = plt.subplot(gs[1, 2])
+        axis22 = plt.subplot(gs[2, 2])
+        axis32 = plt.subplot(gs[3, 2])
+        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area
     
     elif multiple3 is True:
         gs = gridspec.GridSpec(4, 4, hspace=0.05, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
-        ax00 = plt.subplot(gs[0, 0])
-        ax10 = plt.subplot(gs[1, 0])
-        ax20 = plt.subplot(gs[2, 0])
-        ax30 = plt.subplot(gs[3, 0])
-        ax01 = plt.subplot(gs[0, 1])
-        ax11 = plt.subplot(gs[1, 1])
-        ax21 = plt.subplot(gs[2, 1])
-        ax31 = plt.subplot(gs[3, 1])
-        ax02 = plt.subplot(gs[0, 2])
-        ax12 = plt.subplot(gs[1, 2])
-        ax22 = plt.subplot(gs[2, 2])
-        ax32 = plt.subplot(gs[3, 2])
-        axcbar = plt.subplot(gs[:, 3])
-        return ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32, axcbar, x, y, y2, area
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
+        axis20 = plt.subplot(gs[2, 0])
+        axis30 = plt.subplot(gs[3, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axis11 = plt.subplot(gs[1, 1])
+        axis21 = plt.subplot(gs[2, 1])
+        axis31 = plt.subplot(gs[3, 1])
+        axis02 = plt.subplot(gs[0, 2])
+        axis12 = plt.subplot(gs[1, 2])
+        axis22 = plt.subplot(gs[2, 2])
+        axis32 = plt.subplot(gs[3, 2])
+        axiscbar = plt.subplot(gs[:, 3])
+        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area
     
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
-        ax00 = plt.subplot(gs[0, 0])
-        ax10 = plt.subplot(gs[1, 0])
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
         
-        return ax00, ax10, x, y, y2, area
+        return axis00, axis10, x, y, y2, area
 
 
-def create_colorbar(ax, pcm, label, orientation='vertical'):
+def create_colorbar(axis, pcm, label, orientation='vertical'):
     """
     Generate a colorbar.
-    :param ax: colorbar axis from create_axes
+    :param axis: colorbar axis from create_axes
     :param pcm: pseudocolor plot
     :param label: colorbar label
     :param orientation: colorbar orientation
     :return: None
     """
     # Set the colorbar axes #
-    cb = plt.colorbar(pcm, cax=ax, orientation=orientation)
+    cb = plt.colorbar(pcm, cax=axis, orientation=orientation)
     
     # Set the colorbar parameters #
     cb.set_label(label, size=12)
@@ -166,18 +166,18 @@ def get_names_sorted(names):
         return np.array(names)[isort]
 
 
-def create_axis(f, idx, ncol=5):
+def create_axis(figure, idx, ncol=5):
     ix = idx % ncol
     iy = idx // ncol
     
     s = 1.
     
-    ax = f.iaxes(0.5 + ix * (s + 0.5), 0.3 + s + iy * (s + 0.6), s, s, top=False)
-    ax2 = ax.twiny()
-    return ax, ax2
+    axis = figure.iaxes(0.5 + ix * (s + 0.5), 0.3 + s + iy * (s + 0.6), s, s, top=False)
+    axis2 = axis.twiny()
+    return axis, axis2
 
 
-def set_axis(s, ax, ax2, ylabel, ylim=None):
+def set_axis(s, axis, axis2, ylabel, ylim=None):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
     a = 1. / (1 + z)
     
@@ -195,24 +195,24 @@ def set_axis(s, ax, ax2, ylabel, ylim=None):
             else:
                 lb += ["%.0f" % v]
     
-    ax.set_xlim(0., 13.)
-    ax.invert_xaxis()
-    ax2.set_xlim(ax.get_xlim())
-    ax2.set_xticks(times)
-    ax2.set_xticklabels(lb)
+    axis.set_xlim(0., 13.)
+    axis.invert_xaxis()
+    axis2.set_xlim(axis.get_xlim())
+    axis2.set_xticks(times)
+    axis2.set_xticklabels(lb)
     
-    ax.set_ylabel(ylabel, size=6)
-    ax.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
-    ax2.set_xlabel(r'$\mathrm{z}$', size=6)
+    axis.set_ylabel(ylabel, size=6)
+    axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
+    axis2.set_xlabel(r'$\mathrm{z}$', size=6)
     
-    for axis in [ax, ax2]:
+    for axis in [axis, axis2]:
         for label in axis.xaxis.get_ticklabels():
             label.set_size(6)
         for label in axis.yaxis.get_ticklabels():
             label.set_size(6)
     
     if ylim is not None:
-        ax.set_ylim(ylim)
+        axis.set_ylim(ylim)
     
     return None
 
@@ -232,22 +232,22 @@ def AGN_modes_distribution(date, data):
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(16, 9))
     gs = gridspec.GridSpec(2, 2, wspace=0.05, hspace=0.1, height_ratios=[0.05, 1])
-    axcbar = plt.subplot(gs[0, 0])
-    ax00 = plt.subplot(gs[1, 0])
-    axcbar2 = plt.subplot(gs[0, 1])
-    ax02 = plt.subplot(gs[1, 1])
+    axiscbar = plt.subplot(gs[0, 0])
+    axis00 = plt.subplot(gs[1, 0])
+    axiscbar2 = plt.subplot(gs[0, 1])
+    axis02 = plt.subplot(gs[1, 1])
     
-    ax02.yaxis.set_label_position("right")
-    ax02.yaxis.tick_right()
-    for axis in [ax00, ax02]:
+    axis02.yaxis.set_label_position("right")
+    axis02.yaxis.tick_right()
+    for axis in [axis00, axis02]:
         axis.grid(True, color='gray', linestyle='-')
         axis.set_xlim(12, 0)
         axis.set_yscale('log')
         axis.set_ylim(1e51, 1e60)
         axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
         axis.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
-    ax00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
-    ax02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
+    axis00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
+    axis02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
     
     # Load and plot the data #
     names = glob.glob(path + '/name_18.*')
@@ -267,18 +267,18 @@ def AGN_modes_distribution(date, data):
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         
         # Plot hexbins #
-        hb = ax00.hexbin(lookback_times[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='gist_heat_r',
+        hb = axis00.hexbin(lookback_times[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='gist_heat_r',
                          gridsize=(100, 50))
-        cb = plt.colorbar(hb, cax=axcbar, orientation='horizontal')
+        cb = plt.colorbar(hb, cax=axiscbar, orientation='horizontal')
         cb.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
-        hb = ax02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r',
+        hb = axis02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r',
                          gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
         
-        cb2 = plt.colorbar(hb, cax=axcbar2, orientation='horizontal')
+        cb2 = plt.colorbar(hb, cax=axiscbar2, orientation='horizontal')
         cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
-        for axis in [axcbar, axcbar2]:
+        for axis in [axiscbar, axiscbar2]:
             axis.xaxis.tick_top()
             axis.xaxis.set_label_position("top")
             axis.tick_params(direction='out', which='both', top='on', right='on')
@@ -295,7 +295,7 @@ def AGN_modes_distribution(date, data):
                 sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
             x_low += 0.05
         
-        sum00, = ax00.plot(x_value, sum, color='black', zorder=5)
+        sum00, = axis00.plot(x_value, sum, color='black', zorder=5)
         
         # Calculate and plot the mechanical energy sum #
         nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
@@ -310,13 +310,13 @@ def AGN_modes_distribution(date, data):
             x_low += 0.05
         
         # Plot sum #
-        sum02, = ax02.plot(x_value, sum, color='black', zorder=5)
+        sum02, = axis02.plot(x_value, sum, color='black', zorder=5)
         
         # Create the legends and save the figure #
-        ax00.legend([sum00], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
-        ax02.legend([sum02], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
+        axis00.legend([sum00], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
+        axis02.legend([sum02], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')
-        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=ax00.transAxes)
+        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis00.transAxes)
         plt.close()
     
     return None
@@ -436,17 +436,17 @@ def central_combination(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(16, 9))
-        ax00, axcbar, ax20, ax01, axcbar1, ax21, ax02, axcbar2, ax22, ax03, axcbar3, ax23, ax04, axcbar4, ax24, ax05, axcbar5, ax25, x, y, \
+        axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, axis24, axis05, axiscbar5, axis25, x, y, \
         area = create_axes(
             res=res, boxsize=boxsize * 1e3, multiple=True)
         tick_labels = np.array(['', '-1.5', '', '', '0', '', '', '1.5', ''])
-        for axis in [ax00, ax01, ax02, ax03, ax04, ax05]:
+        for axis in [axis00, axis01, axis02, axis03, axis04, axis05]:
             axis.set_xlim(-2, 2)
             axis.set_ylim(-2, 2)
             axis.set_aspect('equal')
             axis.set_xticklabels([])
             axis.tick_params(direction='out', which='both', top='on', right='on')
-        for axis in [ax20, ax21, ax22, ax23, ax24, ax25]:
+        for axis in [axis20, axis21, axis22, axis23, axis24, axis25]:
             axis.set_xlim(-2, 2)
             axis.set_ylim(-2, 2)
             axis.set_aspect('equal')
@@ -455,12 +455,12 @@ def central_combination(pdf, data, redshift, read):
             axis.tick_params(direction='out', which='both', top='on', right='on')
             for label in axis.xaxis.get_ticklabels():
                 label.set_size(12)
-        for axis in [ax01, ax21, ax02, ax22, ax03, ax23, ax04, ax24, ax05, ax25]:
+        for axis in [axis01, axis21, axis02, axis22, axis03, axis23, axis04, axis24, axis05, axis25]:
             axis.set_yticklabels([])
         
-        ax00.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=12)
-        ax20.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=12)
-        for axis in [ax00, ax20]:
+        axis00.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=12)
+        axis20.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=12)
+        for axis in [axis00, axis20]:
             for label in axis.yaxis.get_ticklabels():
                 label.set_size(12)
                 axis.set_yticklabels(tick_labels)
@@ -482,42 +482,42 @@ def central_combination(pdf, data, redshift, read):
         vrad_edge_on = np.load(path + 'vrad_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Plot the gas density projections #
-        pcm = ax00.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
-        ax20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
-        create_colorbar(axcbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$", orientation='horizontal')
+        pcm = axis00.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
+        axis20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
+        create_colorbar(axiscbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$", orientation='horizontal')
         
         # Plot the gas temperature projections #
-        pcm = ax01.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
+        pcm = axis01.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
                               rasterized=True)
-        ax21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
-        create_colorbar(axcbar1, pcm, "$\mathrm{T\;[K]}$", orientation='horizontal')
+        axis21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
+        create_colorbar(axiscbar1, pcm, "$\mathrm{T\;[K]}$", orientation='horizontal')
         
         # Plot the magnetic field projections #
-        pcm = ax02.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
-        ax22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
-        create_colorbar(axcbar2, pcm, "$\mathrm{B\;[\mu G]}$", orientation='horizontal')
+        pcm = axis02.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
+        axis22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
+        create_colorbar(axiscbar2, pcm, "$\mathrm{B\;[\mu G]}$", orientation='horizontal')
         
         # Plot the sfr projections #
-        pcm = ax03.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
-        ax23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
-        create_colorbar(axcbar3, pcm, "$\mathrm{SFR\;[M_\odot\;yr^{-1}]}$", orientation='horizontal')
+        pcm = axis03.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
+        axis23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
+        create_colorbar(axiscbar3, pcm, "$\mathrm{SFR\;[M_\odot\;yr^{-1}]}$", orientation='horizontal')
         
         # Plot the gas total pressure projections #
-        pcm = ax04.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
-        ax24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
-        create_colorbar(axcbar4, pcm, "$\mathrm{P\;[K\;cm^{-3}]}$", orientation='horizontal')
+        pcm = axis04.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
+        axis24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
+        create_colorbar(axiscbar4, pcm, "$\mathrm{P\;[K\;cm^{-3}]}$", orientation='horizontal')
         
-        pcm = ax05.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
-        ax25.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
-        create_colorbar(axcbar5, pcm, "$\mathrm{Velocity\;[km\;s^{-1}]}$", orientation='horizontal')
+        pcm = axis05.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
+        axis25.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
+        create_colorbar(axiscbar5, pcm, "$\mathrm{Velocity\;[km\;s^{-1}]}$", orientation='horizontal')
         
-        for axis in [axcbar, axcbar1, axcbar2, axcbar3, axcbar4, axcbar5]:
+        for axis in [axiscbar, axiscbar1, axiscbar2, axiscbar3, axiscbar4, axiscbar5]:
             axis.xaxis.tick_top()
             for label in axis.xaxis.get_ticklabels():
                 label.set_size(12)
             axis.tick_params(direction='out', which='both', top='on', right='on')
         
-        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), fontsize=12, transform=ax00.transAxes)
+        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), fontsize=12, transform=axis00.transAxes)
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
         plt.close()
     return None
@@ -537,15 +537,15 @@ def stellar_light_combination(pdf, redshift):
     
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(10, 10))
-    ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3,
+    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3,
                                                                                                          multiple2=True)
-    axes_face_on = [ax00, ax20, ax01, ax21, ax02, ax22]
-    axes_edge_on = [ax10, ax30, ax11, ax31, ax12, ax32]
+    axes_face_on = [axis00, axis20, axis01, axis21, axis02, axis22]
+    axes_edge_on = [axis10, axis30, axis11, axis31, axis12, axis32]
     # Loop over all available haloes #
     for i, a, a2 in zip(range(len(names)), axes_face_on, axes_edge_on):
-        for ax in [a, a2]:
-            ax.set_yticklabels([])
-            ax.set_xticklabels([])
+        for axis in [a, a2]:
+            axis.set_yticklabels([])
+            axis.set_xticklabels([])
         
         # Load and plot the data #
         face_on = np.load(path + 'sl/' + str(redshift) + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -574,22 +574,22 @@ def gas_density_combination(pdf, redshift):
     
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(10, 10))
-    ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32, axcbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3,
+    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3,
                                                                                                                  multiple3=True)
-    axes_face_on = [ax00, ax20, ax01, ax21, ax02, ax22]
-    axes_edge_on = [ax10, ax30, ax11, ax31, ax12, ax32]
-    for axis in [ax00, ax10, ax20, ax30, ax01, ax11, ax21, ax31, ax02, ax12, ax22, ax32]:
+    axes_face_on = [axis00, axis20, axis01, axis21, axis02, axis22]
+    axes_edge_on = [axis10, axis30, axis11, axis31, axis12, axis32]
+    for axis in [axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32]:
         axis.tick_params(direction='out', which='both', top='on', right='on')
-    for axis in [ax01, ax11, ax21, ax02, ax12, ax22]:
+    for axis in [axis01, axis11, axis21, axis02, axis12, axis22]:
         axis.set_xticklabels([])
         axis.set_yticklabels([])
-    for axis in [ax00, ax10, ax20]:
+    for axis in [axis00, axis10, axis20]:
         axis.set_xticklabels([])
-    for axis in [ax30, ax31, ax32]:
+    for axis in [axis30, axis31, axis32]:
         axis.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
-    for axis in [ax00, ax20]:
+    for axis in [axis00, axis20]:
         axis.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=16)
-    for axis in [ax10, ax30]:
+    for axis in [axis10, axis30]:
         axis.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=16)
     
     # Loop over all available haloes #
@@ -602,7 +602,7 @@ def gas_density_combination(pdf, redshift):
         # Plot the projections #
         pcm = axis.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
         a2.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
-        create_colorbar(axcbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$")
+        create_colorbar(axiscbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$")
         
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=axis.transAxes)
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
