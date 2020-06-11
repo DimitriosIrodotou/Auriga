@@ -305,6 +305,7 @@ def blackhole_masses(pdf, data, read):
     names = glob.glob(path + '/name_18.*')
     names.sort()
     
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 10))
@@ -462,6 +463,7 @@ def bar_strength(pdf, data, read):
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
@@ -556,6 +558,7 @@ def gas_temperature_fraction(pdf, data, read):
     names = glob.glob(path + '/name_18.*')
     names.sort()
     
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
@@ -657,7 +660,7 @@ def AGN_modes_cumulative(date, data, read):
     names = glob.glob(path + '/name_18.*')
     names.sort()
     
-    # Load and plot the data #
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 7.5))
@@ -771,7 +774,7 @@ def AGN_modes_histogram(date, data, read):
     names = glob.glob(path + '/name_18.*')
     names.sort()
     
-    # Load and plot the data #
+    # Loop over all available haloes #
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
@@ -874,7 +877,7 @@ def AGN_modes_distribution(date, data, read):
     names = glob.glob(path + '/name_18.*')
     names.sort()
     
-    # Load and plot the data #
+    # Loop over all available haloes #
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
@@ -1017,7 +1020,7 @@ def AGN_modes_step(date, data, read):
     names = glob.glob(path + '/name_18.*')
     names.sort()
     
-    # Load and plot the data #
+    # Loop over all available haloes #
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
@@ -1087,7 +1090,7 @@ def AGN_modes_gas(date):
     names = glob.glob(path_modes + '/name_18.*')
     names.sort()
     
-    # Load and plot the data #
+    # Loop over all available haloes #
     for i in range(len(names)):
         
         # Generate the figure and define its parameters #
@@ -1274,6 +1277,7 @@ def gas_stars_sfr(pdf, data, read):
         names = glob.glob(path + '/name_18NOA*')
         names.sort()
         
+        # Loop over all available haloes #
         for i in range(len(names)):
             # Generate the figure and define its parameters #
             figure = plt.figure(figsize=(10, 7.5))
@@ -1395,8 +1399,8 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
     
     # Read the data #
     if read is True:
-        redshift_cut = 1.28
-        gas_volumes, sf_gas_volumes, nsf_gas_volumes, redshifts_mask = [], [], [], []  # Declare lists to store the data.
+        redshift_cut = 7
+        gas_volumes, sf_gas_volumes, nsf_gas_volumes, redshifts_mask, blackhole_hsmls = [], [], [], [], []  # Declare lists to store the data.
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
@@ -1428,15 +1432,11 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
                 # Check that only one (the closest) black hole is selected #
                 if len(blackhole_mask) == 1:
                     blackhole_hsml = s.data['bhhs'][0]
-                
                 # In mergers select the most massive black hole #
                 elif len(blackhole_mask) > 1:
                     blackhole_id = s.data['id'][s.data['type'] == 5]
-                    print(blackhole_id)
-                    id_mask, = np.where(s.data['id'] == blackhole_id)
+                    id_mask, = np.where(blackhole_id == s.data['id'][s.data['mass'].argmax()])
                     blackhole_hsml = s.data['bhhs'][id_mask[0]]
-                    
-                    raise ValueError("More than one black holes inside 0.1*R200 !")
                 else:
                     continue
                 
@@ -1447,6 +1447,7 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
                 
                 # Compute the total volume of cells with SFR == 0 and compare it to the total volume of all cells within this
                 redshifts_mask.append(redshift)
+                blackhole_hsmls.append(blackhole_hsml)
                 gas_volumes.append(s.data['vol'][gas_mask].sum() * 1e9)  # In kpc^-3.
                 sf_gas_volumes.append(s.data['vol'][sf_gas_mask].sum() * 1e9)  # In kpc^-3.
                 nsf_gas_volumes.append(s.data['vol'][nsf_gas_mask].sum() * 1e9)  # In kpc^-3.
@@ -1457,34 +1458,48 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
         np.save(path + 'name_' + str(s.haloname), s.haloname)
         np.save(path + 'gas_volumes_' + str(s.haloname), gas_volumes)
         np.save(path + 'sf_gas_volumes_' + str(s.haloname), sf_gas_volumes)
-        np.save(path + 'nsf_gas_volumes_' + str(s.haloname), nsf_gas_volumes)
         np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
+        np.save(path + 'nsf_gas_volumes_' + str(s.haloname), nsf_gas_volumes)
+        np.save(path + 'blackhole_hsmls_' + str(s.haloname), blackhole_hsmls)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18NOR*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plt.grid(True, color='gray', linestyle='-')
-        plt.ylim(-0.2, 1.2)
         plt.xlabel(r'$\mathrm{Redshift}$', size=16)
+        
+        plt.ylim(-0.2, 1.2)
         axis2 = axis.twiny()
+        axis3 = axis.twinx()
+        axis3.yaxis.label.set_color('red')
+        axis3.spines['right'].set_color('red')
+        axis3.set_ylabel(r'$\mathrm{BH_{sml}}$', size=16)
+        axis3.tick_params(axis='y', direction='out', colors='red')
         set_axis_evo(axis, axis2, r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
         figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
         
+        # Load and plot the data #
         gas_volumes = np.load(path + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        sf_gas_volumes = np.load(path + 'sf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        plt.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[3], edgecolor='None')
+        plt.scatter(lookback_times, blackhole_hsmls * 1e3, c=colors[1], edgecolor='None')
+        plt.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[0], edgecolor='None')
         
         # Plot median and 1-sigma lines #
-        x_value, median, shigh, slow = median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, 1.5, log=False)
-        axis2.plot(x_value, median, color='black', linewidth=3, zorder=5)
-        axis2.fill_between(x_value, shigh, slow, color='black', alpha='0.3', zorder=5)
+        x_value, median, shigh, slow = median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, 1, log=False)
+        plt.plot(x_value, median, color=colors[0], linewidth=3, zorder=5)
+        plt.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3', zorder=5)
+        
+        x_value, median, shigh, slow = median_1sigma(lookback_times, blackhole_hsmls * 1e3, 1, log=False)
+        plt.plot(x_value, median, color=colors[1], linewidth=3, zorder=5)
+        plt.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3', zorder=5)
         
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
         plt.close()

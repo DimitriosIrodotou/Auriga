@@ -554,6 +554,7 @@ def bar_strength(pdf, data, read):
     names.sort()
     colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     
+    # Loop over all available haloes #
     for i in range(len(names)):
         A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         r_m = np.load(path + 'r_m_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -622,7 +623,8 @@ def sfr_history(pdf, data, redshift, read):
     plt.grid(True, color='gray', linestyle='-')
     plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
     plt.ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$', size=16)
-    
+
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Load and plot the data #
         age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -723,7 +725,7 @@ def delta_sfr_history(pdf, data, redshift, region, read):
         names = glob.glob(path + '/name_18*')
         names.sort()
         
-        # Load and plot the data #
+        # Loop over all available haloes #
         for i in range(len(names)):
             age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -813,7 +815,8 @@ def gas_temperature_fraction(pdf, data, read):
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.4)
     plt.ylabel(r'Gas fraction', size=16)
-    
+
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Load and plot the data #
         sfg_ratio = np.load(path + 'sfg_ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1046,7 +1049,8 @@ def gas_temperature_histogram(pdf, data, read):
     # Load and plot the data #
     names = glob.glob(path + '/name_06*')
     names.sort()
-    
+
+    # Loop over all available haloes #
     for i in range(len(names)):
         masses = np.load(path + 'masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         volumes = np.load(path + 'volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
@@ -1131,7 +1135,8 @@ def gas_distance_temperature(pdf, data, redshift, read):
     # Load and plot the data #
     names = glob.glob(path + '/name_18N*')
     names.sort()
-    
+
+    # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))

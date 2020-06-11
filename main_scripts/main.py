@@ -312,7 +312,7 @@ class AurigaPdf:
         #     evolution.circularity(pdf, self, [level], redshift)
         # time_evolution.bar_strength(pdf, self, read=False)
         # time_evolution.bfld(pdf, self, level)
-        time_evolution.blackhole_masses(pdf, self, read=False)
+        # time_evolution.blackhole_masses(pdf, self, read=False)
         # time_evolution.gas_temperature_fraction(pdf, self, read=False)
         # time_evolution.gas_stars_sfr(pdf, self, read=False)
         #  AGN modes #
@@ -321,7 +321,7 @@ class AurigaPdf:
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=True)
         # time_evolution.AGN_modes_gas(date)
-        # time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=True)
+        time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=False)
         
         # Movies #
         # movies.gas_movie(self, read=True)

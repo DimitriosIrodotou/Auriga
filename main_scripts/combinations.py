@@ -85,7 +85,8 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         axiscbar5 = plt.subplot(gs[1, 5])
         axis25 = plt.subplot(gs[2, 5])
         
-        return axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, axis24, axis05, axiscbar5, axis25, x, y, area
+        return axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, \
+               axis24, axis05, axiscbar5, axis25, x, y, area
     
     elif multiple2 is True:
         gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
@@ -252,7 +253,8 @@ def AGN_modes_distribution(date, data):
     # Load and plot the data #
     names = glob.glob(path + '/name_18.*')
     names.sort()
-    # Load and plot the data #
+    
+    # Loop over all available haloes #
     for i in range(len(names)):
         
         # Load and plot the data #
@@ -268,12 +270,12 @@ def AGN_modes_distribution(date, data):
         
         # Plot hexbins #
         hb = axis00.hexbin(lookback_times[np.where(mechanicals > 0)], mechanicals[np.where(mechanicals > 0)], yscale='log', cmap='gist_heat_r',
-                         gridsize=(100, 50))
+                           gridsize=(100, 50))
         cb = plt.colorbar(hb, cax=axiscbar, orientation='horizontal')
         cb.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
         
         hb = axis02.hexbin(lookback_times[np.where(thermals > 0)], thermals[np.where(thermals > 0)], yscale='log', cmap='gist_heat_r',
-                         gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
+                           gridsize=(100, 50 * np.int(len(np.where(thermals > 0)[0]) / len(np.where(mechanicals > 0)[0]))))
         
         cb2 = plt.colorbar(hb, cax=axiscbar2, orientation='horizontal')
         cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
@@ -436,8 +438,8 @@ def central_combination(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(16, 9))
-        axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, axis24, axis05, axiscbar5, axis25, x, y, \
-        area = create_axes(
+        axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, axis24, \
+        axis05, axiscbar5, axis25, x, y, area = create_axes(
             res=res, boxsize=boxsize * 1e3, multiple=True)
         tick_labels = np.array(['', '-1.5', '', '', '0', '', '', '1.5', ''])
         for axis in [axis00, axis01, axis02, axis03, axis04, axis05]:
@@ -488,7 +490,7 @@ def central_combination(pdf, data, redshift, read):
         
         # Plot the gas temperature projections #
         pcm = axis01.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
-                              rasterized=True)
+                                rasterized=True)
         axis21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
         create_colorbar(axiscbar1, pcm, "$\mathrm{T\;[K]}$", orientation='horizontal')
         
@@ -537,8 +539,10 @@ def stellar_light_combination(pdf, redshift):
     
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(10, 10))
-    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3,
-                                                                                                         multiple2=True)
+    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area = create_axes(res=res,
+                                                                                                                                 boxsize=boxsize *
+                                                                                                                                         1e3,
+                                                                                                                                 multiple2=True)
     axes_face_on = [axis00, axis20, axis01, axis21, axis02, axis22]
     axes_edge_on = [axis10, axis30, axis11, axis31, axis12, axis32]
     # Loop over all available haloes #
@@ -574,8 +578,9 @@ def gas_density_combination(pdf, redshift):
     
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(10, 10))
-    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3,
-                                                                                                                 multiple3=True)
+    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area = create_axes(res=res,
+                                                                                                                                           boxsize=boxsize * 1e3,
+                                                                                                                                           multiple3=True)
     axes_face_on = [axis00, axis20, axis01, axis21, axis02, axis22]
     axes_edge_on = [axis10, axis30, axis11, axis31, axis12, axis32]
     for axis in [axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32]:
