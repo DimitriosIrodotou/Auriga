@@ -121,7 +121,7 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
         return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area
     
     else:
-        gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
+        gs = gridspec.GridSpec(2, 1, hspace=0.05)
         axis00 = plt.subplot(gs[0, 0])
         axis10 = plt.subplot(gs[1, 0])
         
@@ -303,6 +303,12 @@ def stellar_light(pdf, data, redshift, read):
         
         # Loop over all haloes #
         for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
@@ -325,7 +331,7 @@ def stellar_light(pdf, data, redshift, read):
             np.save(path + 'edge_on_' + str(s.haloname), edge_on)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_18*')
+    names = glob.glob(path + '/name_*')
     names.sort()
     
     # Loop over all available haloes #
@@ -379,8 +385,8 @@ def stellar_density(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
             
             # Generate the axes #
             axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
@@ -414,7 +420,7 @@ def stellar_density(pdf, data, redshift, read):
             np.save(path + 'edge_on_count_' + str(s.haloname), edge_on_count)
     
     # Get the names and sort them #
-    names = glob.glob(path + '/name_18NOR*')
+    names = glob.glob(path + '/name_*')
     names.sort()
     
     # Loop over all available haloes #
@@ -430,10 +436,10 @@ def stellar_density(pdf, data, redshift, read):
         axis01.set_xticklabels([])
         axis01.set_yticklabels([])
         axis11.set_yticklabels([])
-        axis10.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
-        axis11.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
-        axis00.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=16)
-        axis10.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=16)
+        axis10.set_xlabel(r'$\mathrm{x/kpc}$', size=16)
+        axis11.set_xlabel(r'$\mathrm{x/kpc}$', size=16)
+        axis00.set_ylabel(r'$\mathrm{y/kpc}$', size=16)
+        axis10.set_ylabel(r'$\mathrm{z/kpc}$', size=16)
         
         # Load and plot the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1079,8 +1085,8 @@ def stellar_light_fit(data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1149,8 +1155,8 @@ def r_band_magnitude(data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1189,6 +1195,6 @@ def r_band_magnitude(data, redshift, read):
         
         plt.hist2d(pos[:, 2], pos[:, 1], weights=band, bins=300, norm=matplotlib.colors.LogNorm(), cmap='gray', range=[[-0.03, 0.03], [-0.03, 0.03]])
         
-        plt.savefig('/u/di43/Auriga/plots/' + 'rbm-' + str(re.split('_|.npy', names[i])[1]), bbox_inches='tight')  # Save the figure.
+        plt.savefig('/u/di43/Auriga/plots/rbm/' + 'Au-' + str(re.split('_|.npy', names[i])[1]), bbox_inches='tight')  # Save the figure.
         plt.close()
     return None

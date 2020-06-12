@@ -148,7 +148,8 @@ def radial_profiles(pdf, data, level, redshift):
                 axis.semilogy(center, reT / vol * efac, 'g', label='$\\epsilon_\\mathrm{turb}$')
                 axis.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, axis, "$r\;\mathrm{[kpc]}$", "$\\epsilon\\;\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$", [1e42, 1e48])
+                set_axes(isnap, axis, "$r\;\mathrm{[kpc]}$", "$\\epsilon\\;\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$",
+                         [1e42, 1e48])
             
             elif ipanel == 3:  # Plot magnetic field strength.
                 bsqr, edges = np.histogram(rxy[i], bins=30, range=[0.0, 30.0], weights=s.data['vol'][i] * bfld[i] ** 2)
@@ -171,7 +172,8 @@ def radial_profiles(pdf, data, level, redshift):
                 axis.plot(center, sigmar, 'r', label="$\\sigma_\mathrm{r}$")
                 axis.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, axis, "$r\;\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\;[km\\;s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$", [0.0, 160.0])
+                set_axes(isnap, axis, "$r\;\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\;[km\\;s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$",
+                         [0.0, 160.0])
             else:
                 continue
             
@@ -274,7 +276,8 @@ def vertical_profiles(pdf, data, level, redshift):
                 axis.semilogy(center, reT / vol * efac, 'g', label='$\\epsilon_\\mathrm{turb}$')
                 axis.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, axis, "$z\;\mathrm{[kpc]}$", "$\\epsilon\\;\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$", [1e42, 1e46])
+                set_axes(isnap, axis, "$z\;\mathrm{[kpc]}$", "$\\epsilon\\;\\mathrm{[erg\\ pc^{-3}]}$", "$\mathrm{Gas\ energy\ density}$",
+                         [1e42, 1e46])
             
             elif ipanel == 3:  # Plot magnetic field strength.
                 bsqr, edges = np.histogram(z[i], bins=30, range=[0.0, 10.0], weights=s.data['vol'][i] * bfld[i] ** 2)
@@ -297,7 +300,8 @@ def vertical_profiles(pdf, data, level, redshift):
                 axis.plot(center, sigmar, 'r', label="$\\sigma_\mathrm{r}$")
                 axis.legend(fontsize=4, frameon=False)
                 
-                set_axes(isnap, axis, "$z\;\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\;[km\\;s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$", [0.0, 100.0])
+                set_axes(isnap, axis, "$z\;\mathrm{[kpc]}$", "$\\sigma\ \\rm{\\;[km\\;s^{-1}]}$", "$\mathrm{Gas\ velocity\ dispersion}$",
+                         [0.0, 100.0])
             
             else:
                 continue
@@ -382,7 +386,7 @@ def stellar_profiles(pdf, data, level, redshift):
         # Plot stellar metallicity.
         metals, edges = np.histogram(rxy[mask], bins=30, range=[0.0, 30.0], weights=s.data['mass'][mask] * s.data['gz'][mask])
         axis01.semilogy(center, metals / mass / 0.0134,
-                      'k')  # set_axes(isnap, axis, "$r\;\mathrm{[kpc]}$", "$Z\;\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.5, 20.0])
+                        'k')  # set_axes(isnap, axis, "$r\;\mathrm{[kpc]}$", "$Z\;\mathrm{[Z_\odot]}$", "$\mathrm{Gas\ metallicity}$", [0.5, 20.0])
         
         # figure.text(0.0, 1.01, "Au%s" % s.haloname, color='k', fontsize=6, transform=axis.transAxes)
     

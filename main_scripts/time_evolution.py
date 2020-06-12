@@ -476,7 +476,7 @@ def bar_strength(pdf, data, read):
         # Load and plot the data #
         max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # In Gyr.
         
         plt.plot(lookback_times, max_A2s, color=next(colors), label='Au-' + str(re.split('_|.npy', names[i])[1]))
         
@@ -574,7 +574,7 @@ def gas_temperature_fraction(pdf, data, read):
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # In Gyr.
         
         # Uncomment the following lines if you want to make a stacked bar plot #
         # redshifts = np.insert(redshifts, 0, 5.1)
@@ -629,7 +629,7 @@ def AGN_modes_cumulative(date, data, read):
             # Declare arrays to store the desired words and lines that contain these words #
             redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
             
-            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/halo_' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
                     # Convert the characters in the line to lowercase and split the line into words #
@@ -657,7 +657,7 @@ def AGN_modes_cumulative(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18.*')
+    names = glob.glob(path + '/name_06NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -692,7 +692,7 @@ def AGN_modes_cumulative(date, data, read):
         redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         
-        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # In Gyr.
         
         # Mask the data and plot the scatter #
         plot000 = axis00.plot([1e54, 1e62], [1e54 / 10, 1e62 / 10])
@@ -743,7 +743,7 @@ def AGN_modes_histogram(date, data, read):
             # Declare arrays to store the desired words and lines that contain these words #
             redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
             
-            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/halo_' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
                     # Convert the characters in the line to lowercase and split the line into words #
@@ -771,7 +771,7 @@ def AGN_modes_histogram(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18.*')
+    names = glob.glob(path + '/name_06NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -840,7 +840,7 @@ def AGN_modes_distribution(date, data, read):
             # Declare arrays to store the desired words and lines that contain these words #
             redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
             
-            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/halo_' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
                     # Convert the characters in the line to lowercase and split the line into words #
@@ -865,7 +865,7 @@ def AGN_modes_distribution(date, data, read):
             redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
             redshifts = ','.join(redshifts)  # Transform the arrays to comma separated strings.
             redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')  # Convert each element to float.
-            lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))
+            lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # In Gyr.
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -874,7 +874,7 @@ def AGN_modes_distribution(date, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18.*')
+    names = glob.glob(path + '/name_06NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -995,7 +995,7 @@ def AGN_modes_step(date, data, read):
             # Declare arrays to store the desired words and lines that contain these words #
             feedback_lines, thermals, mechanicals = [], [], []
             
-            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
+            with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/halo_' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
                 for line in file:
                     # Convert the characters in the line to lowercase and split the line into words #
@@ -1017,7 +1017,7 @@ def AGN_modes_step(date, data, read):
             np.save(path + 'mechanicals_' + str(s.haloname), mechanicals)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18.*')
+    names = glob.glob(path + '/name_17NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -1043,14 +1043,14 @@ def AGN_modes_step(date, data, read):
         axis00.set_xticklabels([])
         axis11.set_yticklabels([])
         
-        axis10.set_xlim(0, 2e56)  # 06:4e55 17:2e56 18:2e56
-        axis10.set_ylim(0, 5e57)  # 06:6e56 17:5e57 18:5e57
-        axis00.set_yscale('log')
+        axis10.set_xlim(0, 4e55)  # 06:4e55 17:2e56 18:2e56
+        axis10.set_ylim(0, 2e57)  # 06:6e56 17:5e57 18:5e57
         axis11.set_xscale('log')
+        axis00.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1)
         axis00.set_ylabel(r'$\mathrm{PDF}$', size=16)
         axis11.set_xlabel(r'$\mathrm{PDF}$', size=16)
-        axis10.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
-        axis10.set_xlabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
+        axis10.set_ylabel(r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', size=16)
+        axis10.set_xlabel(r'$\mathrm{(Mechanical\;feedback\;energy)/ergs}$', size=16)
         figure.text(1.01, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis10.transAxes)
         
         # Load and plot the data #
@@ -1066,7 +1066,6 @@ def AGN_modes_step(date, data, read):
         # Plot the scatter and the axes histograms #
         axis10.scatter(mechanicals, thermals, s=50, edgecolor='none', c='k', marker='1')
         weights = np.ones_like(mechanicals) / float(len(mechanicals))
-        
         axis00.hist(mechanicals, bins=np.linspace(0, 2e56, 100), histtype='step', weights=weights, orientation='vertical', color='k')
         weights = np.ones_like(thermals) / float(len(thermals))
         axis11.hist(thermals, bins=np.linspace(0, 5e57, 100), histtype='step', weights=weights, orientation='horizontal', color='k')
@@ -1087,7 +1086,7 @@ def AGN_modes_gas(date):
     path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
     
     # Load and plot the data #
-    names = glob.glob(path_modes + '/name_18.*')
+    names = glob.glob(path_modes + '/name_06NOR*')
     names.sort()
     
     # Loop over all available haloes #
@@ -1120,7 +1119,7 @@ def AGN_modes_gas(date):
         mechanicals = ','.join(mechanicals)
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
         mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
-        lookback_times_gas = satellite_utilities.return_lookbacktime_from_a((redshifts_gas + 1.0) ** (-1.0))
+        lookback_times_gas = satellite_utilities.return_lookbacktime_from_a((redshifts_gas + 1.0) ** (-1.0))  # In Gyr.
         
         # Plot the gas fractions #
         plot1, = axis.plot(lookback_times_gas, sfg_ratios, color='blue')
@@ -1260,7 +1259,7 @@ def gas_stars_sfr(pdf, data, read):
         
         # Save data for each halo in numpy arrays #
         lookback_times = satellite_utilities.return_lookbacktime_from_a(
-            (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # Convert redshifts to lookback times in Gyr.
+            (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # In Gyr.
         np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
         np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
         np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
@@ -1454,7 +1453,7 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
         
         # Save data for each halo in numpy arrays #
         lookback_times = satellite_utilities.return_lookbacktime_from_a(
-            [(z + 1) ** (-1.0) for z in redshifts_mask])  # Convert redshifts to lookback times in Gyr.
+            [(z + 1) ** (-1.0) for z in redshifts_mask])  # In Gyr.
         np.save(path + 'name_' + str(s.haloname), s.haloname)
         np.save(path + 'gas_volumes_' + str(s.haloname), gas_volumes)
         np.save(path + 'sf_gas_volumes_' + str(s.haloname), sf_gas_volumes)
@@ -1463,7 +1462,7 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
         np.save(path + 'blackhole_hsmls_' + str(s.haloname), blackhole_hsmls)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18.*')
+    names = glob.glob(path + '/name_17*')
     names.sort()
     
     # Loop over all available haloes #
@@ -1473,12 +1472,13 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
         plt.grid(True, color='gray', linestyle='-')
         plt.xlabel(r'$\mathrm{Redshift}$', size=16)
         
-        plt.ylim(-0.2, 1.2)
         axis2 = axis.twiny()
         axis3 = axis.twinx()
+        axis3.set_ylim(-0.5, 2)
+        axis.set_ylim(-0.2, 1.2)
         axis3.yaxis.label.set_color('red')
         axis3.spines['right'].set_color('red')
-        axis3.set_ylabel(r'$\mathrm{BH_{sml}}$', size=16)
+        axis3.set_ylabel(r'$\mathrm{BH_{sml}/kpc}$', size=16)
         axis3.tick_params(axis='y', direction='out', colors='red')
         set_axis_evo(axis, axis2, r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
         figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
@@ -1489,17 +1489,17 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
         nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        plt.scatter(lookback_times, blackhole_hsmls * 1e3, c=colors[1], edgecolor='None')
-        plt.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[0], edgecolor='None')
+        # axis3.scatter(lookback_times, blackhole_hsmls * 1e3, c=colors[1], edgecolor='None')
+        # axis.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[0], edgecolor='None')
         
         # Plot median and 1-sigma lines #
         x_value, median, shigh, slow = median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, 1, log=False)
-        plt.plot(x_value, median, color=colors[0], linewidth=3, zorder=5)
-        plt.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3', zorder=5)
+        axis.plot(x_value, median, color=colors[0], linewidth=3, zorder=5)
+        axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3', zorder=5)
         
         x_value, median, shigh, slow = median_1sigma(lookback_times, blackhole_hsmls * 1e3, 1, log=False)
-        plt.plot(x_value, median, color=colors[1], linewidth=3, zorder=5)
-        plt.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3', zorder=5)
+        axis3.plot(x_value, median, color=colors[1], linewidth=3, zorder=5)
+        axis3.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3', zorder=5)
         
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
         plt.close()

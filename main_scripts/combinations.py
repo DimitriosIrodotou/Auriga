@@ -89,20 +89,27 @@ def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocit
                axis24, axis05, axiscbar5, axis25, x, y, area
     
     elif multiple2 is True:
-        gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
+        gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
         axis00 = plt.subplot(gs[0, 0])
         axis10 = plt.subplot(gs[1, 0])
         axis20 = plt.subplot(gs[2, 0])
         axis30 = plt.subplot(gs[3, 0])
+        axis40 = plt.subplot(gs[4, 0])
+        axis50 = plt.subplot(gs[5, 0])
         axis01 = plt.subplot(gs[0, 1])
         axis11 = plt.subplot(gs[1, 1])
         axis21 = plt.subplot(gs[2, 1])
         axis31 = plt.subplot(gs[3, 1])
+        axis41 = plt.subplot(gs[4, 1])
+        axis51 = plt.subplot(gs[5, 1])
         axis02 = plt.subplot(gs[0, 2])
         axis12 = plt.subplot(gs[1, 2])
         axis22 = plt.subplot(gs[2, 2])
         axis32 = plt.subplot(gs[3, 2])
-        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area
+        axis42 = plt.subplot(gs[4, 2])
+        axis52 = plt.subplot(gs[5, 2])
+        return axis00, axis10, axis20, axis30, axis40, axis50, axis01, axis11, axis21, axis31, axis41, axis51, axis02, axis12, axis22, axis32, \
+               axis42, axis52, x, y, y2, area
     
     elif multiple3 is True:
         gs = gridspec.GridSpec(4, 4, hspace=0.05, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
@@ -539,12 +546,12 @@ def stellar_light_combination(pdf, redshift):
     
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(10, 10))
-    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area = create_axes(res=res,
-                                                                                                                                 boxsize=boxsize *
-                                                                                                                                         1e3,
-                                                                                                                                 multiple2=True)
-    axes_face_on = [axis00, axis20, axis01, axis21, axis02, axis22]
-    axes_edge_on = [axis10, axis30, axis11, axis31, axis12, axis32]
+    axis00, axis10, axis20, axis30, axis40, axis50, axis01, axis11, axis21, axis31, axis41, axis51, axis02, axis12, axis22, axis32, axis42, axis52,\
+    x, y, y2, area = create_axes(
+        res=res, boxsize=boxsize * 1e3, multiple2=True)
+    
+    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
+    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
     # Loop over all available haloes #
     for i, a, a2 in zip(range(len(names)), axes_face_on, axes_edge_on):
         for axis in [a, a2]:

@@ -153,7 +153,8 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_18" % self.directory)
+        haloes = glob.glob("%shalo_*" % self.directory)
+        # haloes = glob.glob("%shalo_06" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -285,10 +286,10 @@ class AurigaPdf:
         # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
+        # projections.stellar_light(pdf, self, redshift, read=False)
+        # projections.stellar_density(pdf, self, redshift, read=False)
         # projections.stellar_light_fit(self, redshift, read=False)
-        # projections.r_band_magnitude(self, redshift, read=True)
-        # projections.stellar_light(pdf, self, redshift, read=True)
-        # projections.stellar_density(pdf, self, redshift, read=True)
+        # projections.r_band_magnitude(self, redshift, read=False)
         # Gas #
         # projections.gas_slice(pdf, self, redshift, read=True)
         # projections.gas_metallicity(pdf, self, level, redshift)
@@ -319,9 +320,9 @@ class AurigaPdf:
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
         # time_evolution.AGN_modes_distribution(date, self, read=False)
-        # time_evolution.AGN_modes_step(date, self, read=True)
+        # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
-        time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=False)
+        # time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=True)
         
         # Movies #
         # movies.gas_movie(self, read=True)
@@ -354,10 +355,10 @@ class AurigaPdf:
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()
-        file_name = 'Auriga-' + date + '.pdf'
         # file_name = 'gm/'
-        # file_name = 'rbm-06N*'
-        # file_name = 'AGNmd-' + date + '.png'
+        file_name = '/rbm/Au-*'
+        # file_name = 'AGNms-' + date + '.png'
+        # file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 

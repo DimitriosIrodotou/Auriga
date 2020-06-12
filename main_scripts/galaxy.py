@@ -623,7 +623,7 @@ def sfr_history(pdf, data, redshift, read):
     plt.grid(True, color='gray', linestyle='-')
     plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
     plt.ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$', size=16)
-
+    
     # Loop over all available haloes #
     for i in range(len(names)):
         # Load and plot the data #
@@ -707,12 +707,13 @@ def delta_sfr_history(pdf, data, redshift, region, read):
     axis12 = plt.subplot(gs[1, 2])
     
     for axis in [axis00, axis01, axis02]:
-        axis.set_ylim(0, 22)
+        axis.set_ylim(0, 2e2)
+        axis.set_yscale('log')
         axis.grid(True, color='gray', linestyle='-')
     for axis in [axis10, axis11, axis12]:
         axis.set_ylim(-1.1, 5e1)
         axis.grid(True, color='gray', linestyle='-')
-        axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1)
+        axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1, linscaley=0.1)
     for axis in [axis01, axis02, axis11, axis12]:
         axis.set_yticklabels([])
     axis10.set_ylabel('$\mathrm{(\delta Sfr)_{norm}}$')
@@ -722,7 +723,7 @@ def delta_sfr_history(pdf, data, redshift, region, read):
     for radial_limit_max, top_axis, bottom_axis, text in zip(radial_limits_max, top_axes, bottom_axes, texts):
         # Get the names and sort them #
         path = '/u/di43/Auriga/plots/data/' + 'dsh/' + str(radial_limit_max) + '/'
-        names = glob.glob(path + '/name_18*')
+        names = glob.glob(path + '/name_06*')
         names.sort()
         
         # Loop over all available haloes #
@@ -815,7 +816,7 @@ def gas_temperature_fraction(pdf, data, read):
     plt.ylim(-0.2, 1.2)
     plt.xlim(-0.2, 1.4)
     plt.ylabel(r'Gas fraction', size=16)
-
+    
     # Loop over all available haloes #
     for i in range(len(names)):
         # Load and plot the data #
@@ -1049,7 +1050,7 @@ def gas_temperature_histogram(pdf, data, read):
     # Load and plot the data #
     names = glob.glob(path + '/name_06*')
     names.sort()
-
+    
     # Loop over all available haloes #
     for i in range(len(names)):
         masses = np.load(path + 'masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
@@ -1135,7 +1136,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
     # Load and plot the data #
     names = glob.glob(path + '/name_18N*')
     names.sort()
-
+    
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
