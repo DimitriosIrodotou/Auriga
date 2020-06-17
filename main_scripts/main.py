@@ -154,7 +154,6 @@ class AurigaOutput:
         
         # Find how many Auriga haloes will be used #
         haloes = glob.glob("%shalo_*" % self.directory)
-        # haloes = glob.glob("%shalo_06" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -291,10 +290,10 @@ class AurigaPdf:
         # projections.stellar_light_fit(self, redshift, read=False)
         # projections.r_band_magnitude(self, redshift, read=False)
         # Gas #
-        # projections.gas_slice(pdf, self, redshift, read=True)
-        # projections.gas_metallicity(pdf, self, level, redshift)
         # projections.gas_density(pdf, self, redshift, read=True)
         # projections.gas_temperature(pdf, self, redshift, read=True)
+        # projections.gas_metallicity(pdf, self, redshift, read=True)
+        projections.gas_slice(pdf, self, redshift, read=True)
         # projections.gas_temperature_edge_on(pdf, self, redshift, read=True)
         # Magnetic fields #
         # projections.bfld(pdf, self, level, redshift)
@@ -356,9 +355,9 @@ class AurigaPdf:
         
         pdf.close()
         # file_name = 'gm/'
-        file_name = '/rbm/Au-*'
+        # file_name = '/rbm/Au-*'
         # file_name = 'AGNms-' + date + '.png'
-        # file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 
