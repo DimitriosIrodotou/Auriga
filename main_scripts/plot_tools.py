@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from scripts.gigagalaxy.util import satellite_utilities
 
 def median_1sigma(x_data, y_data, delta, log):
     """
@@ -56,7 +56,7 @@ def create_colorbar(axis, plot, label, orientation='vertical', size=16):
     return None
 
 
-def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, size=16):
+def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, aspect='equal', size=16):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -66,6 +66,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     :param yscale: y axis scale.
     :param xlabel: x axis label.
     :param ylabel: y axis label.
+    :param aspect: aspect of the axis scaling.
     :param size: text size.
     :return:
     """
@@ -92,8 +93,38 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
         axis.set_xticklabels([])
     
     # Set grid and tick parameters #
-    axis.set_aspect('equal')
+    if aspect is not None:
+        axis.set_aspect('equal')
     axis.grid(True, which='both', axis='both', color='gray', linestyle='-')
     axis.tick_params(direction='out', which='both', top='on', right='on', labelsize=size)
+    
+    return None
+
+
+def set_axis_evo(axis, axis2, ylabel=None):
+    z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
+    times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
+    
+    lb = []
+    for v in z:
+        if v >= 1.0:
+            lb += ["%.0f" % v]
+        else:
+            if v != 0:
+                lb += ["%.1f" % v]
+            else:
+                lb += ["%.0f" % v]
+    
+    axis.set_xlim(0, 13)
+    axis.invert_xaxis()
+    axis.set_ylabel(ylabel, size=16)
+    axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=16)
+    axis.tick_params(direction='out', which='both', right='on')
+    
+    axis2.set_xticks(times)
+    axis2.set_xticklabels(lb)
+    axis2.set_xlim(axis.get_xlim())
+    axis2.set_xlabel(r'$\mathrm{z}$', size=16)
+    axis2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None

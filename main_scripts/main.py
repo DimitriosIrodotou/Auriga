@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_*" % self.directory)
+        haloes = glob.glob("%shalo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -273,16 +273,14 @@ class AurigaPdf:
         return self.selected_current_snapshot
     
     
-    def make_pdf(self, level):
+    def make_pdf(self):
         """
         Create a pdf with the desired plots from
-        :param level: level of the run
         :return: None
         """
         redshift = 0.0
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
-        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Projections #
         # Stars #
         # projections.stellar_light(pdf, self, redshift, read=False)
@@ -290,11 +288,12 @@ class AurigaPdf:
         # projections.stellar_light_fit(self, redshift, read=False)
         # projections.r_band_magnitude(self, redshift, read=False)
         # Gas #
-        # projections.gas_density(pdf, self, redshift, read=True)
-        # projections.gas_temperature(pdf, self, redshift, read=True)
-        # projections.gas_metallicity(pdf, self, redshift, read=True)
-        projections.gas_slice(pdf, self, redshift, read=True)
-        # projections.gas_temperature_edge_on(pdf, self, redshift, read=True)
+        # projections.gas_density(pdf, self, redshift, read=False)
+        # projections.gas_temperature(pdf, self, redshift, read=False)
+        # projections.gas_metallicity(pdf, self, redshift, read=False)
+        # projections.gas_slice(pdf, self, redshift, read=False)
+        # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
+        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Magnetic fields #
         # projections.bfld(pdf, self, level, redshift)
         # Dark matter #
@@ -321,7 +320,8 @@ class AurigaPdf:
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
-        # time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=True)
+        # time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=False, ds=False)
+        time_evolution.AGN_feedback_smoothed(pdf)
         
         # Movies #
         # movies.gas_movie(self, read=True)
@@ -366,7 +366,7 @@ class AurigaPdf:
 level = 4
 b = AurigaPdf()
 b.add_directory('/u/di43/Auriga/output/', level)
-b.make_pdf(level)  # Generate the pdf.
+b.make_pdf()  # Generate the pdf.
 
 # Print total time # hewwoc-dItnub-8fejza
 print('–––––––––––––––––––––––––––––––––––––––––––––')

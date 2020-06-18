@@ -130,7 +130,7 @@ def circularity(pdf, data, levels, redshift):
             nn, = np.where((s.data['type'][iall] == 4) & (age[iall] > 0.))
             smass = s.data['mass'][iall][nn]
             jz = np.cross(s.data['pos'][iall, :][nn, :].astype('f8'), s.data['vel'][iall, :][nn, :])[:, 0]
-            ene = 0.5 * (s.vel[iall, :][nn, :].astype('f8') ** 2.).sum(axis=1) + s.data['pot'][iall][nn].astype('f8')
+            ene = 0.5 * (s.data['vel'][iall, :][nn, :].astype('f8') ** 2.).sum(axis=1) + s.data['pot'][iall][nn].astype('f8')
             esort = ene.argsort()
             
             jz = jz[esort]

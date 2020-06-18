@@ -4,6 +4,7 @@ import os
 import re
 import glob
 import pickle
+import plot_tools
 import projections
 
 import numpy as np
@@ -90,35 +91,6 @@ def set_axis(s, axis, axis2, ylabel, ylim=None):
     
     if ylim is not None:
         axis.set_ylim(ylim)
-    
-    return None
-
-
-def set_axis_evo(axis, axis2, ylabel=None):
-    z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
-    times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
-    
-    lb = []
-    for v in z:
-        if v >= 1.0:
-            lb += ["%.0f" % v]
-        else:
-            if v != 0:
-                lb += ["%.1f" % v]
-            else:
-                lb += ["%.0f" % v]
-    
-    axis.set_xlim(0, 13)
-    axis.invert_xaxis()
-    axis.set_ylabel(ylabel, size=16)
-    axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
-    axis.tick_params(direction='out', which='both', right='on')
-    
-    axis2.set_xticks(times)
-    axis2.set_xticklabels(lb)
-    axis2.set_xlim(axis.get_xlim())
-    axis2.set_xlabel(r'$\mathrm{z}$', size=16)
-    axis2.tick_params(direction='out', which='both', top='on', right='on')
     
     return None
 
@@ -328,10 +300,10 @@ def blackhole_masses(pdf, data, read):
             axis.grid(True, color='gray', linestyle='-')
             axis.tick_params(direction='out', which='both', top='on', right='on', left='on')
         
-        set_axis_evo(axis00, axis002, r'$\mathrm{M_\mathrm{BH}/\mathrm{M_\odot}}$')
-        set_axis_evo(axis01, axis012, r'$\mathrm{M_\mathrm{cum}/\mathrm{M_\odot}}$')
-        set_axis_evo(axis10, axis102, r'$\mathrm{\dot{M}_\mathrm{BH}/(\mathrm{M_\odot\; Gyr^{-1}})}$')
-        set_axis_evo(axis11, axis112, r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
+        plot_tools.set_axis_evo(axis00, axis002, ylabel=r'$\mathrm{M_\mathrm{BH}/\mathrm{M_\odot}}$')
+        plot_tools.set_axis_evo(axis01, axis012, ylabel=r'$\mathrm{M_\mathrm{cum}/\mathrm{M_\odot}}$')
+        plot_tools.set_axis_evo(axis10, axis102, ylabel=r'$\mathrm{\dot{M}_\mathrm{BH}/(\mathrm{M_\odot\; Gyr^{-1}})}$')
+        plot_tools.set_axis_evo(axis11, axis112, ylabel=r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
         
         # Load and plot the data #
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -362,8 +334,8 @@ def blackhole_masses(pdf, data, read):
         modes = [mechanicals, thermals]
         for i, mode in enumerate(modes):
             nbin = int((max(lookback_times_modes[np.where(mode > 0)]) - min(lookback_times_modes[np.where(mode > 0)])) / 0.02)
-            x_value = np.empty(nbin)
             sum = np.empty(nbin)
+            x_value = np.empty(nbin)
             x_low = min(lookback_times_modes[np.where(mode > 0)])
             for j in range(nbin):
                 index = np.where((lookback_times_modes[np.where(mode > 0)] >= x_low) & (lookback_times_modes[np.where(mode > 0)] < x_low + 0.05))[0]
@@ -471,7 +443,7 @@ def bar_strength(pdf, data, read):
         plt.ylim(0, 1)
         plt.xlabel(r'$\mathrm{Redshift}$', size=16)
         axis2 = axis.twiny()
-        set_axis_evo(axis, axis2, r'$\mathrm{A_{2}}$')
+        plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{A_{2}}$')
         
         # Load and plot the data #
         max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -568,7 +540,7 @@ def gas_temperature_fraction(pdf, data, read):
         plt.xlabel(r'$\mathrm{Redshift}$', size=16)
         axis.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis.transAxes)
         axis2 = axis.twiny()
-        set_axis_evo(axis, axis2, r'$\mathrm{A_{2}}$')
+        plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{A_{2}}$')
         
         sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -782,7 +754,7 @@ def AGN_modes_histogram(date, data, read):
         axis.grid(True, color='gray', linestyle='-')
         axis2 = axis.twiny()
         axis.set_yscale('log')
-        set_axis_evo(axis, axis2, r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
+        plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
         axis.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
@@ -931,8 +903,8 @@ def AGN_modes_distribution(date, data, read):
         
         # # Calculate and plot the mechanical energy sum #
         # nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
-        # x_value = np.empty(nbin)
         # sum = np.empty(nbin)
+        # x_value = np.empty(nbin)
         # x_low = min(lookback_times[np.where(mechanicals > 0)])
         # for j in range(nbin):
         #     index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
@@ -945,8 +917,8 @@ def AGN_modes_distribution(date, data, read):
         
         # Calculate and plot the mechanical energy sum #
         nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
-        x_value = np.empty(nbin)
         sum = np.empty(nbin)
+        x_value = np.empty(nbin)
         x_low = min(lookback_times[np.where(thermals > 0)])
         for j in range(nbin):
             index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.05))[0]
@@ -1128,8 +1100,8 @@ def AGN_modes_gas(date):
         
         # Calculate and plot the thermals energy sum #
         nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
-        x_value = np.empty(nbin)
         sum = np.empty(nbin)
+        x_value = np.empty(nbin)
         x_low = min(lookback_times[np.where(thermals > 0)])
         for j in range(nbin):
             index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.05))[0]
@@ -1142,8 +1114,8 @@ def AGN_modes_gas(date):
         
         # Calculate and plot the mechanical energy sum #
         nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
-        x_value = np.empty(nbin)
         sum = np.empty(nbin)
+        x_value = np.empty(nbin)
         x_low = min(lookback_times[np.where(mechanicals > 0)])
         for j in range(nbin):
             index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
@@ -1258,8 +1230,7 @@ def gas_stars_sfr(pdf, data, read):
                     hg_ratios.append(np.sum(gas_mass[np.where((temperature >= 5e5))]) / np.sum(gas_mass))
         
         # Save data for each halo in numpy arrays #
-        lookback_times = satellite_utilities.return_lookbacktime_from_a(
-            (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # In Gyr.
+        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # In Gyr.
         np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
         np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
         np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
@@ -1294,7 +1265,7 @@ def gas_stars_sfr(pdf, data, read):
             axis002.set_ylim(1e55, 1e61)
             axis002.set_ylabel(r'$\mathrm{Feedback\;energy\;[ergs]}$', size=16)
             axis003 = axis00.twiny()
-            set_axis_evo(axis00, axis003, r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
+            plot_tools.set_axis_evo(axis00, axis003, ylabel=r'$\mathrm{Sfr\;[M_\odot\;yr^{-1}]}$')
             axis10.set_xlim(13, 0)
             axis10.set_yscale('log')
             axis10.set_ylim(1e6, 1e11)
@@ -1331,8 +1302,8 @@ def gas_stars_sfr(pdf, data, read):
             
             # Calculate and plot the thermals energy sum #
             # nbin = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
-            # x_value = np.empty(nbin)
             # sum = np.empty(nbin)
+            # x_value = np.empty(nbin)
             # x_low = min(lookback_times_modes[np.where(thermals > 0)])
             # for j in range(nbin):
             #     index = \
@@ -1347,8 +1318,8 @@ def gas_stars_sfr(pdf, data, read):
             
             # # Calculate and plot the mechanical energy sum #
             # nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
-            # x_value = np.empty(nbin)
             # sum = np.empty(nbin)
+            # x_value = np.empty(nbin)
             # x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
             # for j in range(nbin):
             #     index = np.where(
@@ -1382,13 +1353,14 @@ def gas_stars_sfr(pdf, data, read):
     return None
 
 
-def AGN_feedback_kernel(pdf, data, redshift, read):
+def AGN_feedback_kernel(pdf, data, redshift, read, ds):
     """
     Calculate the energy deposition on gas cells from the AGN feedback.
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.
+    :param ds: boolean to downsample halo_18_3000 data.
     :return:
     """
     # Check if a folder to save the data exists, if not create one #
@@ -1406,6 +1378,12 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
+        if ds is True:
+            # Downsample the 3000 snapshots run #
+            for name, halo in haloes.items():
+                if name == '18':
+                    redshifts = halo.get_redshifts()
+        
         for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [0, 4, 5]
@@ -1417,8 +1395,8 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
                 # Check if any of the haloes' data already exists, if not then read and save it #
                 names = glob.glob(path + '/name_*')
                 names = [re.split('_|.npy', name)[1] for name in names]
-                # if str(s.haloname) in names:
-                #     continue
+                if str(s.haloname) in names:
+                    continue
                 
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
@@ -1452,52 +1430,52 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
                 nsf_gas_volumes.append(s.data['vol'][nsf_gas_mask].sum() * 1e9)  # In kpc^-3.
         
         # Save data for each halo in numpy arrays #
-        lookback_times = satellite_utilities.return_lookbacktime_from_a(
-            [(z + 1) ** (-1.0) for z in redshifts_mask])  # In Gyr.
-        np.save(path + 'name_' + str(s.haloname), s.haloname)
-        np.save(path + 'gas_volumes_' + str(s.haloname), gas_volumes)
-        np.save(path + 'sf_gas_volumes_' + str(s.haloname), sf_gas_volumes)
-        np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
-        np.save(path + 'nsf_gas_volumes_' + str(s.haloname), nsf_gas_volumes)
-        np.save(path + 'blackhole_hsmls_' + str(s.haloname), blackhole_hsmls)
+        if ds is True:
+            name = str(s.haloname) + '_ds' + str(len(redshifts))
+        else:
+            name = str(s.haloname)
+        
+        lookback_times = satellite_utilities.return_lookbacktime_from_a([(z + 1) ** (-1.0) for z in redshifts_mask])  # In Gyr.
+        np.save(path + 'name_' + name, s.haloname)
+        np.save(path + 'gas_volumes_' + name, gas_volumes)
+        np.save(path + 'sf_gas_volumes_' + name, sf_gas_volumes)
+        np.save(path + 'lookback_times_' + name, lookback_times)
+        np.save(path + 'nsf_gas_volumes_' + name, nsf_gas_volumes)
+        np.save(path + 'blackhole_hsmls_' + name, blackhole_hsmls)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_17*')
+    names = glob.glob(path + '/name_3000_ds252*')
     names.sort()
     
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plt.grid(True, color='gray', linestyle='-')
-        plt.xlabel(r'$\mathrm{Redshift}$', size=16)
-        
         axis2 = axis.twiny()
         axis3 = axis.twinx()
-        axis3.set_ylim(-0.5, 2)
-        axis.set_ylim(-0.2, 1.2)
         axis3.yaxis.label.set_color('red')
         axis3.spines['right'].set_color('red')
-        axis3.set_ylabel(r'$\mathrm{BH_{sml}/kpc}$', size=16)
         axis3.tick_params(axis='y', direction='out', colors='red')
-        set_axis_evo(axis, axis2, r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
-        figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
+        plot_tools.set_axis(axis, ylim=[0, 1], aspect=None)
+        plot_tools.set_axis(axis3, ylim=[0, 1], aspect=None)
+        plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
+        figure.text(0.0, 0.95, 'Au-3000_' + str(re.split('_|.npy', names[i])[2]), color='k', fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
-        gas_volumes = np.load(path + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        gas_volumes = np.load(path + 'gas_volumes_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        lookback_times = np.load(path + 'lookback_times_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        blackhole_hsmls = np.load(path + 'blackhole_hsmls_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         
         # axis3.scatter(lookback_times, blackhole_hsmls * 1e3, c=colors[1], edgecolor='None')
         # axis.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[0], edgecolor='None')
         
         # Plot median and 1-sigma lines #
-        x_value, median, shigh, slow = median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, 1, log=False)
+        x_value, median, shigh, slow = plot_tools.median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, 1, log=False)
         axis.plot(x_value, median, color=colors[0], linewidth=3, zorder=5)
         axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3', zorder=5)
         
-        x_value, median, shigh, slow = median_1sigma(lookback_times, blackhole_hsmls * 1e3, 1, log=False)
+        x_value, median, shigh, slow = plot_tools.median_1sigma(lookback_times, blackhole_hsmls * 1e3, 1, log=False)
         axis3.plot(x_value, median, color=colors[1], linewidth=3, zorder=5)
         axis3.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3', zorder=5)
         
@@ -1506,35 +1484,76 @@ def AGN_feedback_kernel(pdf, data, redshift, read):
     return None
 
 
-def median_1sigma(x_data, y_data, delta, log):
+def AGN_feedback_smoothed(pdf):
     """
-    Calculate the median and 1-sigma lines.
-    :param x_data: x-axis data.
-    :param y_data: y-axis data.
-    :param delta: step.
-    :param log: boolean.
-    :return: x_value, median, shigh, slow
+    Calculate the energy deposition on gas cells from the AGN feedback.
+    :param pdf: path to save the pdf from main.make_pdf
+    :return:
     """
-    # Initialise arrays #
-    if log is True:
-        x = np.log10(x_data)
-    else:
-        x = x_data
-    nbin = int((max(x) - min(x)) / delta)
-    x_value = np.empty(nbin)
-    median = np.empty(nbin)
-    slow = np.empty(nbin)
-    shigh = np.empty(nbin)
-    x_low = min(x)
+    # Check if a folder to save the data exists, if not create one #
+    path = '/u/di43/Auriga/plots/data/' + 'AGNfs/'
+    path_data = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
+    path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+    if not os.path.exists(path):
+        os.makedirs(path)
     
-    # Loop over all bins and calculate the median and 1-sigma lines #
-    for i in range(nbin):
-        index, = np.where((x >= x_low) & (x < x_low + delta))
-        x_value[i] = np.nanmean(x_data[index])
-        if len(index) > 0:
-            median[i] = np.nanmedian(y_data[index])
-        slow[i] = np.nanpercentile(y_data[index], 15.87)
-        shigh[i] = np.nanpercentile(y_data[index], 84.13)
-        x_low += delta
+    # Load and plot the data #
+    names = glob.glob(path_data + '/name_18.*')
+    names.sort()
     
-    return x_value, median, shigh, slow
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and define its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+        axis2 = axis.twiny()
+        plot_tools.set_axis(axis, aspect=None)
+        plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
+        figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
+        
+        # Load and plot the data #
+        thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        gas_volumes = np.load(path_data + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times = np.load(path_data + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        nsf_gas_volumes = np.load(path_data + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Transform the arrays to comma separated strings and convert each element to float #
+        thermals = ','.join(thermals)
+        mechanicals = ','.join(mechanicals)
+        thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+        mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+
+        # Calculate and plot the thermals energy sum #
+        nbin = int((max(lookback_times) - min(lookback_times)) / 0.2)
+        sum = np.empty(nbin)
+        x_value = np.empty(nbin)
+        x_low = min(lookback_times)
+        for j in range(nbin):
+            index = np.where((lookback_times >= x_low) & (lookback_times < x_low + 0.5))[0]
+            x_value[j] = np.mean(np.absolute(lookback_times)[index])
+            if len(index) > 0:
+                sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
+            x_low += 0.5
+        plot20, = plt.plot(x_value, sum, color='orange', zorder=5)
+        
+        # # Calculate and plot the mechanical energy sum #
+        # nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
+        # x_value = np.empty(nbin)
+        # sum = np.empty(nbin)
+        # x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
+        # for j in range(nbin):
+        #     index = \
+        #     np.where((lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low +
+        #     0.05))[0]
+        #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
+        #     if len(index) > 0:
+        #         sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
+        #     x_low += 0.05
+        # plot21, = axis2.plot(x_value, sum, color='magenta', zorder=5)
+        #
+        # axis2.legend([plot20, plot21], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False,
+        # numpoints=1,
+        #              ncol=2)
+        pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+        plt.close()
+    return None
