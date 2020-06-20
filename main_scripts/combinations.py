@@ -293,30 +293,30 @@ def AGN_modes_distribution(date, data):
             axis.tick_params(direction='out', which='both', top='on', right='on')
         
         # Calculate and plot the mechanical energy sum #
-        nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
-        x_value = np.empty(nbin)
-        sum = np.empty(nbin)
+        n_bins = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
+        x_value = np.empty(n_bins)
+        sum = np.empty(n_bins)
         x_low = min(lookback_times[np.where(mechanicals > 0)])
-        for j in range(nbin):
-            index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+        for j in range(n_bins):
+            index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.02))[0]
             x_value[j] = np.mean(np.absolute(lookback_times[np.where(mechanicals > 0)])[index])
             if len(index) > 0:
                 sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-            x_low += 0.05
+            x_low += 0.02
         
         sum00, = axis00.plot(x_value, sum, color='black', zorder=5)
         
         # Calculate and plot the mechanical energy sum #
-        nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
-        x_value = np.empty(nbin)
-        sum = np.empty(nbin)
+        n_bins = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
+        x_value = np.empty(n_bins)
+        sum = np.empty(n_bins)
         x_low = min(lookback_times[np.where(thermals > 0)])
-        for j in range(nbin):
-            index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.05))[0]
+        for j in range(n_bins):
+            index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.02))[0]
             x_value[j] = np.mean(np.absolute(lookback_times[np.where(thermals > 0)])[index])
             if len(index) > 0:
                 sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
-            x_low += 0.05
+            x_low += 0.02
         
         # Plot sum #
         sum02, = axis02.plot(x_value, sum, color='black', zorder=5)

@@ -111,9 +111,9 @@ def circularity(pdf, data, levels, z):
             disc_frac = smass[jj].sum() / smass[ll].sum()
             
             axis = create_axis(figure, isnap)
-            ydata, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
-            ydata /= edges[1:] - edges[:-1]
-            axis.plot(0.5 * (edges[1:] + edges[:-1]), ydata, 'k')
+            y_data, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
+            y_data /= edges[1:] - edges[:-1]
+            axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, 'k')
             
             set_axis(isnap, axis, "$\\epsilon$", "$f\\left(\\epsilon\\right)$", None)
             axis.text(0.0, 1.01, "Au-%s z = %.1f " % (s.haloname, z), color='k', fontsize=6, transform=axis.transAxes)

@@ -21,7 +21,7 @@ from scripts.gigagalaxy.util import satellite_utilities
 res = 512
 level = 4
 boxsize = 0.06
-colors = ['black', 'tab:red', 'tab:green', 'tab:blue']
+colors = ['black', 'tab:red', 'tab:green', 'tab:blue', 'tab:orange']
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
@@ -208,14 +208,14 @@ def get_blackhole_data(snapshot_ids, halo, blackhole_id):
     """
     
     # Check if there is a black hole particle, if not return only lookback times #
-    s = halo.snaps[snapshot_ids].loadsnap(loadonlytype=[5], loadonly=['bcmr', 'bcmq', 'bhmd', 'bhmr', 'bhmq', 'id', 'mass'])
+    s = halo.snaps[snapshot_ids].loadsnap(loadonlytype=[5], loadonly=['bhma', 'bcmr', 'bcmq', 'bhmd', 'bhmr', 'bhmq', 'id'])
     if 'id' not in s.data:
         return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), 0, 0, 0, 0, 0, 0
     
     # Return lookback times, black hole masses and growth rates #
     blackhole_mask, = np.where(s.data['id'] == blackhole_id)
     if len(blackhole_mask) > 0:
-        black_hole_mass = s.data['mass'][blackhole_mask[0]]
+        black_hole_mass = s.data['bhma'][blackhole_mask[0]]
         black_hole_dmass = s.data['bhmd'][blackhole_mask[0]]
         black_hole_cmass_radio = s.data['bcmr'][blackhole_mask[0]]
         black_hole_dmass_radio = s.data['bhmr'][blackhole_mask[0]]
@@ -250,7 +250,7 @@ def blackhole_masses(pdf, data, read):
         halos = data.get_haloes(level)
         
         for name, halo in halos.items():
-            # Get all snapshots with redshift less than 13 #
+            # Get all snapshots with redshift less than 7 #
             redshifts = halo.get_redshifts()
             redshift_mask, = np.where(redshifts < 7)
             snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
@@ -301,9 +301,9 @@ def blackhole_masses(pdf, data, read):
             axis.tick_params(direction='out', which='both', top='on', right='on', left='on')
         
         plot_tools.set_axis_evo(axis00, axis002, ylabel=r'$\mathrm{M_\mathrm{BH}/\mathrm{M_\odot}}$')
-        plot_tools.set_axis_evo(axis01, axis012, ylabel=r'$\mathrm{M_\mathrm{cum}/\mathrm{M_\odot}}$')
+        plot_tools.set_axis_evo(axis01, axis012, ylabel=r'$\mathrm{M_\mathrm{BH,mode}/\mathrm{M_\odot}}$')
         plot_tools.set_axis_evo(axis10, axis102, ylabel=r'$\mathrm{\dot{M}_\mathrm{BH}/(\mathrm{M_\odot\; Gyr^{-1}})}$')
-        plot_tools.set_axis_evo(axis11, axis112, ylabel=r'$\mathrm{AGN\;feedback\;energy\;[ergs]}$')
+        plot_tools.set_axis_evo(axis11, axis112, ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$')
         
         # Load and plot the data #
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -317,12 +317,16 @@ def blackhole_masses(pdf, data, read):
         black_hole_cmasses_quasar = np.load(path + 'black_hole_cmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         black_hole_dmasses_quasar = np.load(path + 'black_hole_cmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
+        # Convert cumulative masses to instantaneous measurements #
+        black_hole_imasses_radio = np.insert(np.diff(black_hole_cmasses_radio), 0, 0)
+        black_hole_imasses_quasar = np.insert(np.diff(black_hole_cmasses_quasar), 0, 0)
+        
         axis00.plot(lookback_times, black_hole_masses * 1e10, c=colors[0])
-        axis01.plot(lookback_times, black_hole_cmasses_radio * 1e10, c=colors[1])
-        axis01.plot(lookback_times, black_hole_cmasses_quasar * 1e10, c=colors[2])
-        axis10.plot(lookback_times, black_hole_dmasses, c=colors[0])
-        axis10.plot(lookback_times, black_hole_dmasses_radio, c=colors[1])
-        axis10.plot(lookback_times, black_hole_dmasses_quasar, c=colors[2])
+        axis01.plot(lookback_times, black_hole_imasses_radio * 1e10, c=colors[1])
+        axis01.plot(lookback_times, black_hole_imasses_quasar * 1e10, c=colors[2])
+        plt10, = axis10.plot(lookback_times, black_hole_dmasses, c=colors[0])
+        plt101, = axis10.plot(lookback_times, black_hole_dmasses_radio, c=colors[1])
+        plt102, = axis10.plot(lookback_times, black_hole_dmasses_quasar, c=colors[2])
         
         # Transform the arrays to comma separated strings and convert each element to float #
         thermals = ','.join(thermals)
@@ -333,19 +337,21 @@ def blackhole_masses(pdf, data, read):
         # Calculate and plot the thermals energy sum #
         modes = [mechanicals, thermals]
         for i, mode in enumerate(modes):
-            nbin = int((max(lookback_times_modes[np.where(mode > 0)]) - min(lookback_times_modes[np.where(mode > 0)])) / 0.02)
-            sum = np.empty(nbin)
-            x_value = np.empty(nbin)
+            n_bins = int((max(lookback_times_modes[np.where(mode > 0)]) - min(lookback_times_modes[np.where(mode > 0)])) / 0.02)
+            sum = np.empty(n_bins)
+            x_value = np.empty(n_bins)
             x_low = min(lookback_times_modes[np.where(mode > 0)])
-            for j in range(nbin):
-                index = np.where((lookback_times_modes[np.where(mode > 0)] >= x_low) & (lookback_times_modes[np.where(mode > 0)] < x_low + 0.05))[0]
+            for j in range(n_bins):
+                index = np.where((lookback_times_modes[np.where(mode > 0)] >= x_low) & (lookback_times_modes[np.where(mode > 0)] < x_low + 0.02))[0]
                 x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mode > 0)])[index])
                 if len(index) > 0:
                     sum[j] = np.sum(mode[np.where(mode > 0)][index])
-                x_low += 0.05
+                x_low += 0.02
             axis11.plot(x_value, sum, color=colors[1 + i], zorder=5)
         
         axis00.text(0.0, 0.9, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis00.transAxes)
+        axis10.legend([plt10, plt102, plt101], [r'$\mathrm{BH}$', r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='lower right', fontsize=16,
+                      frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
         plt.close()
     return None
@@ -400,17 +406,17 @@ def bar_strength(pdf, data, read):
                 x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
                 
                 # Split up galaxy in radius bins and calculate the Fourier components #
-                nbins = 40  # Number of radial bins.
+                n_bins = 40  # Number of radial bins.
                 r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
                 
                 # Initialise Fourier components #
-                r_m = np.zeros(nbins)
-                beta_2 = np.zeros(nbins)
-                alpha_0 = np.zeros(nbins)
-                alpha_2 = np.zeros(nbins)
+                r_m = np.zeros(n_bins)
+                beta_2 = np.zeros(n_bins)
+                alpha_0 = np.zeros(n_bins)
+                alpha_2 = np.zeros(n_bins)
                 
                 # Calculate the Fourier components for each bin as in sec 2.3.2 from Athanassoula et al. 2013 #
-                for i in range(0, nbins):
+                for i in range(0, n_bins):
                     r_s = float(i) * 0.25
                     r_b = float(i) * 0.25 + 0.25
                     r_m[i] = float(i) * 0.25 + 0.125
@@ -902,30 +908,30 @@ def AGN_modes_distribution(date, data, read):
             axis.tick_params(direction='out', which='both', top='on', right='on')
         
         # # Calculate and plot the mechanical energy sum #
-        # nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
-        # sum = np.empty(nbin)
-        # x_value = np.empty(nbin)
+        # n_bins = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
+        # sum = np.empty(n_bins)
+        # x_value = np.empty(n_bins)
         # x_low = min(lookback_times[np.where(mechanicals > 0)])
-        # for j in range(nbin):
-        #     index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+        # for j in range(n_bins):
+        #     index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.02))[0]
         #     x_value[j] = np.mean(np.absolute(lookback_times[np.where(mechanicals > 0)])[index])
         #     if len(index) > 0:
         #         sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-        #     x_low += 0.05
+        #     x_low += 0.02
         #
         # sum00, = axis00.plot(x_value, sum, color='black', zorder=5)
         
         # Calculate and plot the mechanical energy sum #
-        nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
-        sum = np.empty(nbin)
-        x_value = np.empty(nbin)
+        n_bins = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
+        sum = np.empty(n_bins)
+        x_value = np.empty(n_bins)
         x_low = min(lookback_times[np.where(thermals > 0)])
-        for j in range(nbin):
-            index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.05))[0]
+        for j in range(n_bins):
+            index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.02))[0]
             x_value[j] = np.mean(np.absolute(lookback_times[np.where(thermals > 0)])[index])
             if len(index) > 0:
                 sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
-            x_low += 0.05
+            x_low += 0.02
         
         # Plot sum #
         sum02, = axis02.plot(x_value, sum, color='black', zorder=5)
@@ -1099,30 +1105,30 @@ def AGN_modes_gas(date):
         plot3, = axis.plot(lookback_times_gas, hg_ratios, color='red')
         
         # Calculate and plot the thermals energy sum #
-        nbin = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
-        sum = np.empty(nbin)
-        x_value = np.empty(nbin)
+        n_bins = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
+        sum = np.empty(n_bins)
+        x_value = np.empty(n_bins)
         x_low = min(lookback_times[np.where(thermals > 0)])
-        for j in range(nbin):
-            index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.05))[0]
+        for j in range(n_bins):
+            index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.02))[0]
             x_value[j] = np.mean(np.absolute(lookback_times[np.where(thermals > 0)])[index])
             if len(index) > 0:
                 sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
-            x_low += 0.05
+            x_low += 0.02
         
         sum00, = plt.plot(x_value, sum, color='black', zorder=5, linestyle='dashed')
         
         # Calculate and plot the mechanical energy sum #
-        nbin = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
-        sum = np.empty(nbin)
-        x_value = np.empty(nbin)
+        n_bins = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
+        sum = np.empty(n_bins)
+        x_value = np.empty(n_bins)
         x_low = min(lookback_times[np.where(mechanicals > 0)])
-        for j in range(nbin):
-            index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.05))[0]
+        for j in range(n_bins):
+            index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.02))[0]
             x_value[j] = np.mean(np.absolute(lookback_times[np.where(mechanicals > 0)])[index])
             if len(index) > 0:
                 sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-            x_low += 0.05
+            x_low += 0.02
         
         sum02, = plt.plot(x_value, sum, color='black', zorder=5)
         
@@ -1301,34 +1307,34 @@ def gas_stars_sfr(pdf, data, read):
             axis00.hist(age, weights=weights, histtype='step', bins=100, range=[0, 13], edgecolor='k')  # Plot the sfr history.
             
             # Calculate and plot the thermals energy sum #
-            # nbin = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
-            # sum = np.empty(nbin)
-            # x_value = np.empty(nbin)
+            # n_bins = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
+            # sum = np.empty(n_bins)
+            # x_value = np.empty(n_bins)
             # x_low = min(lookback_times_modes[np.where(thermals > 0)])
-            # for j in range(nbin):
+            # for j in range(n_bins):
             #     index = \
             #         np.where((lookback_times_modes[np.where(thermals > 0)] >= x_low) & (lookback_times_modes[np.where(thermals > 0)] < x_low +
-            #         0.05))[
+            #         0.02))[
             #             0]
             #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(thermals > 0)])[index])
             #     if len(index) > 0:
             #         sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
-            #     x_low += 0.05
+            #     x_low += 0.02
             # plot20, = axis002.plot(x_value, sum, color='orange', zorder=5)
             
             # # Calculate and plot the mechanical energy sum #
-            # nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
-            # sum = np.empty(nbin)
-            # x_value = np.empty(nbin)
+            # n_bins = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
+            # sum = np.empty(n_bins)
+            # x_value = np.empty(n_bins)
             # x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
-            # for j in range(nbin):
+            # for j in range(n_bins):
             #     index = np.where(
             #         (lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low +
-            #         0.05))[0]
+            #         0.02))[0]
             #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
             #     if len(index) > 0:
             #         sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-            #     x_low += 0.05
+            #     x_low += 0.02
             # plot21, = axis002.plot(x_value, sum, color='magenta', zorder=5)
             
             # Plot the stellar and gaseous masses #
@@ -1444,7 +1450,7 @@ def AGN_feedback_kernel(pdf, data, redshift, read, ds):
         np.save(path + 'blackhole_hsmls_' + name, blackhole_hsmls)
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_3000_ds252*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
     
     # Loop over all available haloes #
@@ -1456,26 +1462,27 @@ def AGN_feedback_kernel(pdf, data, redshift, read, ds):
         axis3.yaxis.label.set_color('red')
         axis3.spines['right'].set_color('red')
         axis3.tick_params(axis='y', direction='out', colors='red')
-        plot_tools.set_axis(axis, ylim=[0, 1], aspect=None)
-        plot_tools.set_axis(axis3, ylim=[0, 1], aspect=None)
+        plot_tools.set_axis(axis, ylim=[0, 1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$',
+                            aspect=None)
+        plot_tools.set_axis(axis3, ylim=[0, 1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
         plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
-        figure.text(0.0, 0.95, 'Au-3000_' + str(re.split('_|.npy', names[i])[2]), color='k', fontsize=16, transform=axis.transAxes)
+        figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
-        gas_volumes = np.load(path + 'gas_volumes_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        lookback_times = np.load(path + 'lookback_times_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
-        blackhole_hsmls = np.load(path + 'blackhole_hsmls_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
+        gas_volumes = np.load(path + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        # axis3.scatter(lookback_times, blackhole_hsmls * 1e3, c=colors[1], edgecolor='None')
-        # axis.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[0], edgecolor='None')
+        axis3.scatter(lookback_times, blackhole_hsmls * 1e3, c=colors[1], edgecolor='None')
+        axis.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[0], edgecolor='None')
         
         # Plot median and 1-sigma lines #
-        x_value, median, shigh, slow = plot_tools.median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, 1, log=False)
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_width=1, log=False)
         axis.plot(x_value, median, color=colors[0], linewidth=3, zorder=5)
         axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3', zorder=5)
         
-        x_value, median, shigh, slow = plot_tools.median_1sigma(lookback_times, blackhole_hsmls * 1e3, 1, log=False)
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_width=1, log=False)
         axis3.plot(x_value, median, color=colors[1], linewidth=3, zorder=5)
         axis3.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3', zorder=5)
         
@@ -1492,13 +1499,13 @@ def AGN_feedback_smoothed(pdf):
     """
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'AGNfs/'
-    path_data = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
     path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+    path_kernel = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
     if not os.path.exists(path):
         os.makedirs(path)
     
     # Load and plot the data #
-    names = glob.glob(path_data + '/name_18.*')
+    names = glob.glob(path_kernel + '/name_18.*')
     names.sort()
     
     # Loop over all available haloes #
@@ -1506,54 +1513,31 @@ def AGN_feedback_smoothed(pdf):
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
-        plot_tools.set_axis(axis, aspect=None)
-        plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
+        plot_tools.set_axis(axis, ylim=[1e52, 1e62], yscale='log', xlabel=r'$\mathrm{t_{look}/Gyr}$',
+                            ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$', aspect=None)
+        plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$')
         figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        gas_volumes = np.load(path_data + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        lookback_times = np.load(path_data + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        nsf_gas_volumes = np.load(path_data + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        gas_volumes = np.load(path_kernel + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times = np.load(path_kernel + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        nsf_gas_volumes = np.load(path_kernel + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Transform the arrays to comma separated strings and convert each element to float #
         thermals = ','.join(thermals)
-        mechanicals = ','.join(mechanicals)
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
-        mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
-
-        # Calculate and plot the thermals energy sum #
-        nbin = int((max(lookback_times) - min(lookback_times)) / 0.2)
-        sum = np.empty(nbin)
-        x_value = np.empty(nbin)
-        x_low = min(lookback_times)
-        for j in range(nbin):
-            index = np.where((lookback_times >= x_low) & (lookback_times < x_low + 0.5))[0]
-            x_value[j] = np.mean(np.absolute(lookback_times)[index])
-            if len(index) > 0:
-                sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
-            x_low += 0.5
-        plot20, = plt.plot(x_value, sum, color='orange', zorder=5)
         
-        # # Calculate and plot the mechanical energy sum #
-        # nbin = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
-        # x_value = np.empty(nbin)
-        # sum = np.empty(nbin)
-        # x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
-        # for j in range(nbin):
-        #     index = \
-        #     np.where((lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low +
-        #     0.05))[0]
-        #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
-        #     if len(index) > 0:
-        #         sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-        #     x_low += 0.05
-        # plot21, = axis2.plot(x_value, sum, color='magenta', zorder=5)
-        #
-        # axis2.legend([plot20, plot21], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False,
-        # numpoints=1,
-        #              ncol=2)
+        # Calculate and plot the thermals energy sum #
+        y_data, edges = np.histogram(lookback_times_modes[np.where(thermals > 0)], weights=thermals[np.where(thermals > 0)],
+                                     bins=np.sort(lookback_times))
+        y_data /= edges[1:] - edges[:-1]  # Normalise the values wrt the bin width.
+        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[1])
+        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data * np.flip(nsf_gas_volumes[1:] / gas_volumes[1:]), color=colors[4])
+        # axis2.hist(lookback_times_modes[np.where(thermals > 0)], weights=thermals[np.where(thermals > 0)], histtype='step',
+        #            bins=lookback_times.sort())
+        
         pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
         plt.close()
     return None

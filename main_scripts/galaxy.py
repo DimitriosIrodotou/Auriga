@@ -157,9 +157,9 @@ def circularity(pdf, data, levels, redshift):
             disc_frac = smass[jj].sum() / smass[ll].sum()
             
             # axis = create_axis(figure, isnap)
-            ydata, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
-            ydata /= edges[1:] - edges[:-1]
-            axis.plot(0.5 * (edges[1:] + edges[:-1]), ydata, color=next(colors), label='Au-%s D/T = %.2f' % (s.haloname, disc_frac))
+            y_data, edges = np.histogram(eps, weights=smass / smass.sum(), bins=100, range=[-1.7, 1.7])
+            y_data /= edges[1:] - edges[:-1]
+            axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=next(colors), label='Au-%s D/T = %.2f' % (s.haloname, disc_frac))
             axis.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
             axis.text(0.0, 1.01, "redshift = %.1f " % redshift, color='k', fontsize=16, transform=axis.transAxes)
             axis.set_xlim(-2., 2.)
@@ -511,17 +511,17 @@ def bar_strength(pdf, data, read):
             x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
             
             # Split up galaxy in radius bins and calculate the Fourier components #
-            nbins = 40  # Number of radial bins.
+            n_bins = 40  # Number of radial bins.
             r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
             
             # Initialise Fourier components #
-            r_m = np.zeros(nbins)
-            beta_2 = np.zeros(nbins)
-            alpha_0 = np.zeros(nbins)
-            alpha_2 = np.zeros(nbins)
+            r_m = np.zeros(n_bins)
+            beta_2 = np.zeros(n_bins)
+            alpha_0 = np.zeros(n_bins)
+            alpha_2 = np.zeros(n_bins)
             
             # Split up galaxy in radius bins and calculate Fourier components #
-            for i in range(0, nbins):
+            for i in range(0, n_bins):
                 r_s = float(i) * 0.25
                 r_b = float(i) * 0.25 + 0.25
                 r_m[i] = float(i) * 0.25 + 0.125
@@ -580,8 +580,8 @@ def sfr_history(pdf, data, redshift, read):
     """
     tmin = 0
     tmax = 13
-    nbins = 100
-    timebin = (tmax - tmin) / nbins
+    n_bins = 100
+    timebin = (tmax - tmin) / n_bins
     
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'sh/'
@@ -629,7 +629,7 @@ def sfr_history(pdf, data, redshift, read):
         # Load and plot the data #
         age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        axis.hist(age, weights=weights, color=next(colors), histtype='step', bins=nbins, range=[tmin, tmax],
+        axis.hist(age, weights=weights, color=next(colors), histtype='step', bins=n_bins, range=[tmin, tmax],
                   label="Au-" + (str(re.split('_|.npy', names[i])[1])))
         
         axis2 = axis.twiny()
@@ -653,8 +653,8 @@ def delta_sfr_history(pdf, data, redshift, region, read):
     """
     tmin = 0
     tmax = 13
-    nbins = 100
-    timebin = (tmax - tmin) / nbins
+    n_bins = 100
+    timebin = (tmax - tmin) / n_bins
     
     if region == 'outer':
         radial_limits_min, radial_limits_max = (7.5e-4, 1e-3, 5e-3), (1e-3, 5e-3, 15e-3)
@@ -731,7 +731,7 @@ def delta_sfr_history(pdf, data, redshift, region, read):
             age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             
-            counts, bins, bars = top_axis.hist(age, weights=weights, histtype='step', bins=nbins, range=[tmin, tmax], color=colors[i],
+            counts, bins, bars = top_axis.hist(age, weights=weights, histtype='step', bins=n_bins, range=[tmin, tmax], color=colors[i],
                                                label="Au-" + (str(re.split('_|.npy', names[i])[1])))
             
             axis2 = top_axis.twiny()
@@ -1063,20 +1063,20 @@ def gas_temperature_histogram(pdf, data, read):
         # average_volumes = np.sum(volumes, axis=0) / 10
         # average_temperatures = np.sum(temperatures,axis=0) / 10
         
-        # ydata, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
-        # plt.plot(0.5 * (edges[1:] + edges[:-1]), ydata, label='Mass-weighted')
+        # y_data, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
+        # plt.plot(0.5 * (edges[1:] + edges[:-1]), y_data, label='Mass-weighted')
         
         # Convert bin centres to log space and plot #
         l = np.sort(temperatures)
         print(l[0, :100])
-        ydata, edges = np.histogram(temperatures, weights=masses / np.sum(masses), bins=100)
+        y_data, edges = np.histogram(temperatures, weights=masses / np.sum(masses), bins=100)
         print(np.sort(edges))
         bin_centres = 10 ** (0.5 * (np.log10(edges[1:]) + np.log10(edges[:-1])))
-        plt.plot(bin_centres, ydata, label='Mass-weighted', color=colors[3])
+        plt.plot(bin_centres, y_data, label='Mass-weighted', color=colors[3])
         
-        ydata, edges = np.histogram(temperatures, weights=volumes / np.sum(volumes), bins=100)
+        y_data, edges = np.histogram(temperatures, weights=volumes / np.sum(volumes), bins=100)
         bin_centres = 10 ** (0.5 * (np.log10(edges[1:]) + np.log10(edges[:-1])))
-        plt.plot(bin_centres, ydata, label='Volume-weighted', color=colors[2])
+        plt.plot(bin_centres, y_data, label='Volume-weighted', color=colors[2])
     
     plt.legend(loc='upper left', fontsize=12, frameon=False, numpoints=1)
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.

@@ -1154,17 +1154,17 @@ def rotate_bar(z, y, x):
     :param x: the x-position of the particles.
     :return:
     """
-    nbins = 40  # Number of radial bins.
+    n_bins = 40  # Number of radial bins.
     r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
     
     # Initialise fourier components
-    r_m = np.zeros(nbins)
-    beta_2 = np.zeros(nbins)
-    alpha_0 = np.zeros(nbins)
-    alpha_2 = np.zeros(nbins)
+    r_m = np.zeros(n_bins)
+    beta_2 = np.zeros(n_bins)
+    alpha_0 = np.zeros(n_bins)
+    alpha_2 = np.zeros(n_bins)
     
     # Split disc in radial bins and calculate Fourier components #
-    for i in range(0, nbins):
+    for i in range(0, n_bins):
         r_s = float(i) * 0.25
         r_b = float(i) * 0.25 + 0.25
         r_m[i] = float(i) * 0.25 + 0.125
@@ -1182,7 +1182,7 @@ def rotate_bar(z, y, x):
     r_s = 1  # In kpc.
     k = 0.0
     phase_in = 0.0
-    for i in range(0, nbins):
+    for i in range(0, n_bins):
         if (r_m[i] < r_b) & (r_m[i] > r_s):
             k = k + 1.
             phase_in = phase_in + 0.5 * np.arctan2(beta_2[i], alpha_2[i])

@@ -2,12 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scripts.gigagalaxy.util import satellite_utilities
 
-def median_1sigma(x_data, y_data, delta, log):
+
+def binned_median_1sigma(x_data, y_data, bin_width, log=False):
     """
-    Calculate the median and 1-sigma lines.
+    Calculate the binned median and 1-sigma lines.
     :param x_data: x-axis data.
     :param y_data: y-axis data.
-    :param delta: step.
+    :param bin_width: width of the bin.
     :param log: boolean.
     :return: x_value, median, shigh, slow
     """
@@ -16,24 +17,56 @@ def median_1sigma(x_data, y_data, delta, log):
         x = np.log10(x_data)
     else:
         x = x_data
-    n_bins = int((max(x) - min(x)) / delta)
-    x_value = np.empty(n_bins)
-    median = np.empty(n_bins)
+    x_low = min(x)
+    
+    n_bins = int((max(x) - min(x)) / bin_width)
     slow = np.empty(n_bins)
     shigh = np.empty(n_bins)
-    x_low = min(x)
+    median = np.empty(n_bins)
+    x_value = np.empty(n_bins)
     
     # Loop over all bins and calculate the median and 1-sigma lines #
     for i in range(n_bins):
-        index, = np.where((x >= x_low) & (x < x_low + delta))
+        index, = np.where((x >= x_low) & (x < x_low + bin_width))
         x_value[i] = np.mean(x_data[index])
         if len(index) > 0:
             median[i] = np.nanmedian(y_data[index])
         slow[i] = np.nanpercentile(y_data[index], 15.87)
         shigh[i] = np.nanpercentile(y_data[index], 84.13)
-        x_low += delta
+        x_low += bin_width
     
     return x_value, median, shigh, slow
+
+
+def binned_sum(x_data, y_data, bin_width, log=False):
+    """
+    Calculate the binned sum line.
+    :param x_data: x-axis data.
+    :param y_data: y-axis data.
+    :param bin_width: width of the bin.
+    :param log: boolean.
+    :return: x_value, sum
+    """
+    # Initialise arrays #
+    if log is True:
+        x = np.log10(x_data)
+    else:
+        x = x_data
+    x_low = min(x)
+    
+    n_bins = int((max(x) - min(x)) / bin_width)
+    sum = np.empty(n_bins)
+    x_value = np.empty(n_bins)
+    
+    # Loop over all bins and calculate the sum line #
+    for i in range(n_bins):
+        index, = np.where((x >= x_low) & (x < x_low + bin_width))
+        x_value[i] = np.mean(x_data[index])
+        if len(index) > 0:
+            sum[i] = np.sum(y_data[index])
+        x_low += bin_width
+    
+    return x_value, sum
 
 
 def create_colorbar(axis, plot, label, orientation='vertical', size=16):
@@ -90,7 +123,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     if xscale:
         axis.set_xscale(xscale)
     if yscale:
-        axis.set_xticklabels([])
+        axis.set_yscale(yscale)
     
     # Set grid and tick parameters #
     if aspect is not None:
@@ -102,7 +135,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
 
 
 def set_axis_evo(axis, axis2, ylabel=None):
-    z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
+    z = np.array([5.0, 3.0, 2.0, 1.0, 0.5, 0.2, 0.0])
     times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
     
     lb = []
@@ -115,8 +148,7 @@ def set_axis_evo(axis, axis2, ylabel=None):
             else:
                 lb += ["%.0f" % v]
     
-    axis.set_xlim(0, 13)
-    axis.invert_xaxis()
+    axis.set_xlim(13, 0)
     axis.set_ylabel(ylabel, size=16)
     axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=16)
     axis.tick_params(direction='out', which='both', right='on')
