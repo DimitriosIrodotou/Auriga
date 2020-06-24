@@ -1359,12 +1359,11 @@ def gas_stars_sfr(pdf, data, read):
     return None
 
 
-def AGN_feedback_kernel(pdf, data, redshift, read, ds):
+def AGN_feedback_kernel(pdf, data, read, ds):
     """
     Calculate the energy deposition on gas cells from the AGN feedback.
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
-    :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.
     :param ds: boolean to downsample halo_18_3000 data.
     :return:
@@ -1444,6 +1443,7 @@ def AGN_feedback_kernel(pdf, data, redshift, read, ds):
         lookback_times = satellite_utilities.return_lookbacktime_from_a([(z + 1) ** (-1.0) for z in redshifts_mask])  # In Gyr.
         np.save(path + 'name_' + name, s.haloname)
         np.save(path + 'gas_volumes_' + name, gas_volumes)
+        np.save(path + 'redshifts_' + name, redshifts_mask)
         np.save(path + 'sf_gas_volumes_' + name, sf_gas_volumes)
         np.save(path + 'lookback_times_' + name, lookback_times)
         np.save(path + 'nsf_gas_volumes_' + name, nsf_gas_volumes)
@@ -1462,13 +1462,14 @@ def AGN_feedback_kernel(pdf, data, redshift, read, ds):
         axis3.yaxis.label.set_color('red')
         axis3.spines['right'].set_color('red')
         axis3.tick_params(axis='y', direction='out', colors='red')
-        plot_tools.set_axis(axis, ylim=[0, 1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$',
+        plot_tools.set_axis(axis, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$',
                             aspect=None)
-        plot_tools.set_axis(axis3, ylim=[0, 1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
+        plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
         plot_tools.set_axis_evo(axis, axis2, ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$')
         figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
+        redshifts = np.load(path + 'redshifts_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         gas_volumes = np.load(path + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1478,11 +1479,18 @@ def AGN_feedback_kernel(pdf, data, redshift, read, ds):
         axis.scatter(lookback_times, nsf_gas_volumes / gas_volumes, c=colors[0], edgecolor='None')
         
         # Plot median and 1-sigma lines #
-        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_width=1, log=False)
+        x_value, median = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
+                                                          n_bins=len(lookback_times) / 3, log=False)
+        axis.plot(x_value, median, color=colors[0], linewidth=3, zorder=5)
+        # axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3', zorder=5)
+        
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_width',
+                                                                       n_bins=10, log=False)
         axis.plot(x_value, median, color=colors[0], linewidth=3, zorder=5)
         axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3', zorder=5)
         
-        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_width=1, log=False)
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_type='equal_width', n_bins=10,
+                                                                       log=False)
         axis3.plot(x_value, median, color=colors[1], linewidth=3, zorder=5)
         axis3.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3', zorder=5)
         
@@ -1531,10 +1539,10 @@ def AGN_feedback_smoothed(pdf):
         
         # Calculate and plot the thermals energy sum #
         y_data, edges = np.histogram(lookback_times_modes[np.where(thermals > 0)], weights=thermals[np.where(thermals > 0)],
-                                     bins=np.sort(lookback_times))
+                                     bins=np.quantile(np.sort(lookback_times), np.linspace(0, 1, len(lookback_times) + 1)))
         y_data /= edges[1:] - edges[:-1]  # Normalise the values wrt the bin width.
         axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[1])
-        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data * np.flip(nsf_gas_volumes[1:] / gas_volumes[1:]), color=colors[4])
+        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data * np.flip(nsf_gas_volumes / gas_volumes), color=colors[4])
         # axis2.hist(lookback_times_modes[np.where(thermals > 0)], weights=thermals[np.where(thermals > 0)], histtype='step',
         #            bins=lookback_times.sort())
         

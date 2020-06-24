@@ -293,24 +293,16 @@ class AurigaPdf:
         # projections.gas_metallicity(pdf, self, redshift, read=False)
         # projections.gas_slice(pdf, self, redshift, read=False)
         # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
-        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Magnetic fields #
-        # projections.bfld(pdf, self, level, redshift)
+        # projections.magnetic_field(pdf, self, redshift, read=False)
         # Dark matter #
-        # projections.dm_mass(pdf, self, level, redshift)
+        # projections.dark_matter_density(pdf, self, redshift, read=True)
         
-        # Profiles #
-        # profiles.radial_profiles(pdf, self, level, redshift)
-        # profiles.vertical_profiles(pdf, self, level, redshift)
-        # profiles.stellar_profiles(pdf, self, level, redshift)
-        
+        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Time evolution #
-        # for redshift in np.linspace(0.0, 2, 21):
-        #     print(redshift)
-        #     evolution.circularity(pdf, self, [level], redshift)
         # time_evolution.bar_strength(pdf, self, read=False)
         # time_evolution.bfld(pdf, self, level)
-        time_evolution.blackhole_masses(pdf, self, read=False)
+        # time_evolution.blackhole_masses(pdf, self, read=False)
         # time_evolution.gas_temperature_fraction(pdf, self, read=False)
         # time_evolution.gas_stars_sfr(pdf, self, read=False)
         #  AGN modes #
@@ -319,11 +311,11 @@ class AurigaPdf:
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
-        # time_evolution.AGN_feedback_kernel(pdf, self, redshift, read=False, ds=False)
+        time_evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
         # time_evolution.AGN_feedback_smoothed(pdf)
-        
-        # Movies #
-        # movies.gas_movie(self, read=True)
+        # for redshift in np.linspace(0.0, 2, 21):
+        #     print(redshift)
+        #     evolution.circularity(pdf, self, [level], redshift)
         
         # Global galactic relations #
         # galaxy.sfr_history(pdf, self, redshift, read=True)
@@ -346,11 +338,19 @@ class AurigaPdf:
         # Metallicities #
         # metallicities.ratios(pdf, self, [level], 0.)
         
+        # Movies #
+        # movies.gas_movie(self, read=True)
+        
         # Combinations #
         # combinations.AGN_modes_distribution(date, pdf)
         # combinations.gas_density_combination(pdf, redshift)
         # combinations.stellar_light_combination(pdf, redshift)
         # combinations.central_combination(pdf, self, redshift, read=False)
+        
+        # Profiles #
+        # profiles.radial_profiles(pdf, self, level, redshift)
+        # profiles.vertical_profiles(pdf, self, level, redshift)
+        # profiles.stellar_profiles(pdf, self, level, redshift)
         
         pdf.close()
         # file_name = 'gm/'
