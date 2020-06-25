@@ -192,8 +192,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     :param maxHsml:
     :return: proj
     """
-    
-    pos = np.zeros((np.size(mass), 3))  # Declare array to store the new positions of particles.
+    pos = np.zeros((np.size(mass), 3))  # Declare array to store the data.
     
     # Generate projection planes #
     if idir == 0:  # XY plane
@@ -272,13 +271,13 @@ def stellar_light(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'sl/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'sl/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
@@ -349,13 +348,13 @@ def stellar_density(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'sd/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'sd/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['mass', 'pos']
@@ -445,13 +444,13 @@ def stellar_light_fit(data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'slf/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'slf/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
@@ -515,13 +514,13 @@ def r_band_magnitude(data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'rbm/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'rbm/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
@@ -587,13 +586,13 @@ def gas_density(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gd/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gd/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'rho']
@@ -657,13 +656,13 @@ def gas_temperature(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gt/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gt/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
@@ -737,13 +736,13 @@ def gas_metallicity(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gm/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gm/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'gz']
@@ -809,13 +808,12 @@ def gas_slice(pdf, data, redshift, read):
     """
     boxsize = 0.08  # Increase the boxsize.
     
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gs/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gs/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
         
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
@@ -839,10 +837,10 @@ def gas_slice(pdf, data, redshift, read):
             ngas = np.size(mask)
             
             indy = [[1, 2, 0], [1, 0, 2]]  # Swap the position and velocity indices for the face-on and edge-on projections #
+            
             # Loop over the two projections #
             for j in range(2):
-                
-                # Initialise arrays to store the data #
+                # Declare lists/arrays to store the data #
                 frbs = []
                 temp_pos = s.data['pos'][mask, :]
                 temp_vel = s.data['vel'][mask, :]
@@ -864,7 +862,7 @@ def gas_slice(pdf, data, redshift, read):
                 # Define the three temperatures regimes #
                 sfgas = np.where(temperature < 2e4)
                 medgas = np.where((temperature >= 1e4) & (temperature < 6e5))
-                hotgas = np.where((temperature >= 5e5))
+                hotgas = np.where(temperature >= 5e5)
                 
                 # Loop over the three temperature regimes and get a gas slice #
                 for i in range(3):
@@ -994,13 +992,13 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     """
     boxsize = 0.2  # Increase the boxsize.
     
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gteo/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gteo/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
@@ -1070,13 +1068,13 @@ def magnetic_field(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'mf/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'mf/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'bfld']
@@ -1145,13 +1143,13 @@ def dark_matter_density(pdf, data, redshift, read):
     """
     boxsize = 0.4  # Increase the boxsize.
     
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'dmd/' + str(redshift) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'dmd/' + str(redshift) + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [1, 4]
         attributes = ['mass', 'pos']
@@ -1219,16 +1217,15 @@ def rotate_bar(z, y, x):
     :param x: the x-position of the particles.
     :return:
     """
+    # Declare arrays to store the data #
     n_bins = 40  # Number of radial bins.
-    r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
-    
-    # Initialise fourier components
     r_m = np.zeros(n_bins)
     beta_2 = np.zeros(n_bins)
     alpha_0 = np.zeros(n_bins)
     alpha_2 = np.zeros(n_bins)
     
     # Split disc in radial bins and calculate Fourier components #
+    r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
     for i in range(0, n_bins):
         r_s = float(i) * 0.25
         r_b = float(i) * 0.25 + 0.25

@@ -14,12 +14,12 @@ def binned_median_1sigma(x_data, y_data, bin_type, n_bins, log=False):
     :return: x_value, median, shigh, slow
     """
     if bin_type == 'equal_number':
-        # Initialise arrays #
         if log is True:
             x = np.log10(x_data)
         else:
             x = x_data
-        
+
+        # Declare arrays to store the data #
         n_bins = np.quantile(np.sort(x), np.linspace(0, 1, n_bins + 1))
         slow = np.empty(len(n_bins))
         shigh = np.empty(len(n_bins))
@@ -38,13 +38,13 @@ def binned_median_1sigma(x_data, y_data, bin_type, n_bins, log=False):
         return x_value, median
     
     elif bin_type == 'equal_width':
-        # Initialise arrays #
         if log is True:
             x = np.log10(x_data)
         else:
             x = x_data
         x_low = min(x)
         
+        # Declare arrays to store the data #
         bin_width = (max(x) - min(x)) / n_bins
         slow = np.empty(n_bins)
         shigh = np.empty(n_bins)
@@ -73,13 +73,13 @@ def binned_sum(x_data, y_data, bin_width, log=False):
     :param log: boolean.
     :return: x_value, sum
     """
-    # Initialise arrays #
     if log is True:
         x = np.log10(x_data)
     else:
         x = x_data
     x_low = min(x)
     
+    # Declare arrays to store the data #
     n_bins = int((max(x) - min(x)) / bin_width)
     sum = np.empty(n_bins)
     x_value = np.empty(n_bins)

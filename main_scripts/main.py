@@ -4,7 +4,6 @@ import glob
 import galaxy
 import movies
 import profiles
-import evolution
 import projections
 import combinations
 import metallicities
@@ -153,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_" % self.directory)
+        haloes = glob.glob("%shalo_06" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -304,23 +303,19 @@ class AurigaPdf:
         # time_evolution.bfld(pdf, self, level)
         # time_evolution.blackhole_masses(pdf, self, read=False)
         # time_evolution.gas_temperature_fraction(pdf, self, read=False)
-        # time_evolution.gas_stars_sfr(pdf, self, read=False)
-        #  AGN modes #
+        time_evolution.gas_stars_sfr(pdf, self, read=False)
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
         # time_evolution.AGN_modes_distribution(date, self, read=False)
         # time_evolution.AGN_modes_step(date, self, read=False)
         # time_evolution.AGN_modes_gas(date)
-        time_evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
+        # time_evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
         # time_evolution.AGN_feedback_smoothed(pdf)
-        # for redshift in np.linspace(0.0, 2, 21):
-        #     print(redshift)
-        #     evolution.circularity(pdf, self, [level], redshift)
         
         # Global galactic relations #
         # galaxy.sfr_history(pdf, self, redshift, read=True)
         # galaxy.delta_sfr_history(pdf, self, redshift, region='outer', read=False)
-        # galaxy.delta_sfr_history(pdf, self, redshift, region='inner', read=False)
+        # galaxy.delta_sfr_history(pdf, self, redshift, region='inner', read=True)
         # galaxy.gas_temperature_fraction(pdf, self, read=False)
         # for redshift in np.linspace(0.0, 1.0, 11):
         #     print(redshift)

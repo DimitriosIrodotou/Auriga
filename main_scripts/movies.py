@@ -33,14 +33,15 @@ def gas_movie(data, read):
     
     # Read the data #
     if read is True:
-        redshift_cut = 5e-2
-        # redshift_cut = 1e-14
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
-        
+
+        # Loop over all desired redshifts #
+        redshift_cut = 5e-2
+        # redshift_cut = 1e-14
         for redshift in np.flip(redshifts[np.where(redshifts <= redshift_cut)]):
             print(redshift)
             print(np.flip(redshifts[np.where(redshifts <= redshift_cut)]))

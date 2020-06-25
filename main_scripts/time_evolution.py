@@ -239,14 +239,14 @@ def blackhole_masses(pdf, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'bm/'
-    path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'bm/'
+        path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         halos = data.get_haloes(level)
         
         for name, halo in halos.items():
@@ -300,9 +300,9 @@ def blackhole_masses(pdf, data, read):
             axis.grid(True, color='gray', linestyle='-')
             axis.tick_params(direction='out', which='both', top='on', right='on', left='on')
         
-        plot_tools.set_axis_evo(axis00, axis002, ylabel=r'$\mathrm{M_\mathrm{BH}/\mathrm{M_\odot}}$')
-        plot_tools.set_axis_evo(axis01, axis012, ylabel=r'$\mathrm{M_\mathrm{BH,mode}/\mathrm{M_\odot}}$')
-        plot_tools.set_axis_evo(axis10, axis102, ylabel=r'$\mathrm{\dot{M}_\mathrm{BH}/(\mathrm{M_\odot\; Gyr^{-1}})}$')
+        plot_tools.set_axis_evo(axis00, axis002, ylabel=r'$\mathrm{M_{BH}/M_\odot}$')
+        plot_tools.set_axis_evo(axis01, axis012, ylabel=r'$\mathrm{M_{BH,mode}/M_\odot}$')
+        plot_tools.set_axis_evo(axis10, axis102, ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\; Gyr^{-1})}$')
         plot_tools.set_axis_evo(axis11, axis112, ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$')
         
         # Load and plot the data #
@@ -365,20 +365,21 @@ def bar_strength(pdf, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'bse/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
-        redshift_cut = 5.0
-        max_A2s = []  # Declare lists to store the data.
+        max_A2s = []  # Declare a list to store the data.
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'bse/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Get all available redshifts #
         haloes = data.get_haloes(level)
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
+        # Loop over all desired redshifts #
+        redshift_cut = 5.0
         for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [4]
@@ -405,17 +406,15 @@ def bar_strength(pdf, data, read):
                 s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
                 x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
                 
-                # Split up galaxy in radius bins and calculate the Fourier components #
+                # Declare arrays to store the data #
                 n_bins = 40  # Number of radial bins.
-                r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
-                
-                # Initialise Fourier components #
                 r_m = np.zeros(n_bins)
                 beta_2 = np.zeros(n_bins)
                 alpha_0 = np.zeros(n_bins)
                 alpha_2 = np.zeros(n_bins)
                 
-                # Calculate the Fourier components for each bin as in sec 2.3.2 from Athanassoula et al. 2013 #
+                # Split up galaxy in radius bins and calculate the Fourier components #
+                r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
                 for i in range(0, n_bins):
                     r_s = float(i) * 0.25
                     r_b = float(i) * 0.25 + 0.25
@@ -473,21 +472,22 @@ def gas_temperature_fraction(pdf, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gtfe/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
-        redshift_cut = 5.0
         sfg_ratios, wg_ratios, hg_ratios, masses = [], [], [], []  # Declare lists to store the data.
+        
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gtfe/'
+        if not os.path.exists(path):
+            os.makedirs(path)
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
+        # Loop over all desired redshifts #
+        redshift_cut = 5.0
         for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [0, 4]
@@ -520,9 +520,9 @@ def gas_temperature_fraction(pdf, data, read):
                 # Calculate the mass of the gas cells within three temperatures regimes #
                 mass = s.data['mass'][mask]
                 masses.append(np.sum(mass))
-                sfg_ratios.append(np.sum(mass[np.where((temperature < 2e4))]) / np.sum(mass))
+                sfg_ratios.append(np.sum(mass[np.where(temperature < 2e4)]) / np.sum(mass))
                 wg_ratios.append(np.sum(mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(mass))
-                hg_ratios.append(np.sum(mass[np.where((temperature >= 5e5))]) / np.sum(mass))
+                hg_ratios.append(np.sum(mass[np.where(temperature >= 5e5)]) / np.sum(mass))
         
         # Save data for each halo in numpy arrays #
         np.save(path + 'masses_' + str(s.haloname), masses)
@@ -587,25 +587,26 @@ def AGN_modes_cumulative(date, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'AGNmc/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'AGNmc/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
         for s in data:
+            # Declare arrays to store the desired words and lines that contain these words #
+            redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
+            
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
-            
-            # Declare arrays to store the desired words and lines that contain these words #
-            redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
             
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/halo_' + str(s.haloname) + '.txt') as file:
                 # Iterate over each line #
@@ -700,14 +701,14 @@ def AGN_modes_histogram(date, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'AGNmh/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'AGNmh/'
+        if not os.path.exists(path):
+            os.makedirs(path)
         
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
@@ -798,13 +799,14 @@ def AGN_modes_distribution(date, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
@@ -953,13 +955,14 @@ def AGN_modes_step(date, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'AGNms/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'AGNms/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         data.select_haloes(level, 0, loadonlytype=None, loadonlyhalo=0, loadonly=None)
         
         # Loop over all haloes #
@@ -1151,14 +1154,15 @@ def gas_stars_sfr(pdf, data, read):
     :return: None
     """
     radial_limits = (5e-4, 7.5e-4, 1e-3)
-    # Check if a folder to save the data exists, if not create one #
-    for radial_limit in radial_limits:
-        path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
-        if not os.path.exists(path):
-            os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        for radial_limit in radial_limits:
+            path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
+            if not os.path.exists(path):
+                os.makedirs(path)
+        
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'mass', 'pos']
         data.select_haloes(level, 0, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
@@ -1173,9 +1177,8 @@ def gas_stars_sfr(pdf, data, read):
             for radial_limit in radial_limits:
                 path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
                 
-                spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
-                stellar_mask, = np.where((spherical_distance < radial_limit) & (
-                    s.data['age'] > 0))  # Mask the data: select stellar particles within a 500pc radius sphere.
+                stellar_mask, = np.where(
+                    (s.r() < radial_limit) & (s.data['age'] > 0))  # Mask the data: select stellar particles within a 500pc radius sphere.
                 
                 time_bin = (13 - 0) / 100
                 age = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True)
@@ -1186,13 +1189,13 @@ def gas_stars_sfr(pdf, data, read):
                 np.save(path + 'weights_' + str(s.haloname), weights)
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
         
-        redshift_cut = 7.0
-        gas_masses, stellar_masses, sfg_ratios, wg_ratios, hg_ratios = [], [], [], [], []  # Declare lists to store the data.
         # Get all available redshifts #
         haloes = data.get_haloes(level)
         for name, halo in haloes.items():
             redshifts = halo.get_redshifts()
         
+        # Loop over all desired redshifts #
+        redshift_cut = 7
         for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [0, 4]
@@ -1207,20 +1210,27 @@ def gas_stars_sfr(pdf, data, read):
                 
                 # Loop over different radial limits #
                 for radial_limit in radial_limits:
-                    path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
+                    # Check if a folder to save the data exists, if not create one #Z
+                    path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/' + str(redshift) + '/'
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    
+                    # Check if any of the haloes' data already exists, if not then read and save it #
+                    names = glob.glob(path + '/name_*')
+                    names = [re.split('_|.npy', name)[1] for name in names]
+                    # if str(s.haloname) in names:
+                    #     continue
                     
                     # Mask the data: select stellar particles and gas cells within a 500pc radius sphere #
                     age = np.zeros(s.npartall)
                     age[s.data['type'] == 4] = s.data['age']
-                    spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
-                    gas_mask, = np.where((spherical_distance < radial_limit) & (s.data['type'] == 0))
-                    stellar_mask, = np.where((spherical_distance < radial_limit) & (s.data['type'] == 4) & (age > 0))
+                    a = 1 / (1 + redshift)  # Used to convert radial limits to physical.
+                    gas_mask, = np.where((s.r() < radial_limit * a) & (s.data['type'] == 0))
+                    stellar_mask, = np.where((s.r() < radial_limit * a) & (s.data['type'] == 4) & (age > 0))
                     
                     # Calculate the stellar and gas mass of each halo #
                     gas_mass = s.data['mass'][gas_mask]
                     stellar_mass = s.data['mass'][stellar_mask]
-                    gas_masses.append(np.sum(gas_mass))
-                    stellar_masses.append(np.sum(stellar_mass))
                     
                     # Calculate the temperature of the gas cells #
                     ne = s.data['ne'][gas_mask]
@@ -1231,26 +1241,59 @@ def gas_stars_sfr(pdf, data, read):
                     temperature = GAMMA_MINUS1 * s.data['u'][gas_mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
                     
                     # Calculate the mass of the gas cells within three temperatures regimes #
-                    sfg_ratios.append(np.sum(gas_mass[np.where((temperature < 2e4))]) / np.sum(gas_mass))
-                    wg_ratios.append(np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass))
-                    hg_ratios.append(np.sum(gas_mass[np.where((temperature >= 5e5))]) / np.sum(gas_mass))
+                    hg_ratio = np.sum(gas_mass[np.where(temperature >= 5e5)]) / np.sum(gas_mass)
+                    sfg_ratio = np.sum(gas_mass[np.where(temperature < 2e4)]) / np.sum(gas_mass)
+                    wg_ratio = np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass)
+                    
+                    # Save data for each halo in numpy arrays #
+                    np.save(path + 'name_' + str(s.haloname), s.haloname)
+                    np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratio)
+                    np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratio)
+                    np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratio)
+                    np.save(path + 'gas_masses_' + str(s.haloname), np.sum(gas_mass))
+                    np.save(path + 'stellar_masses_' + str(s.haloname), np.sum(stellar_mass))
         
-        # Save data for each halo in numpy arrays #
-        lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # In Gyr.
-        np.save(path + 'wg_ratios_' + str(s.haloname), wg_ratios)
-        np.save(path + 'hg_ratios_' + str(s.haloname), hg_ratios)
-        np.save(path + 'sfg_ratios_' + str(s.haloname), sfg_ratios)
-        np.save(path + 'gas_masses_' + str(s.haloname), gas_masses)
-        np.save(path + 'stellar_masses_' + str(s.haloname), stellar_masses)
-        np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
+        # Loop over all radial limits #
+        path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/' + str(redshift) + '/'
+        names = glob.glob(path + '/name_06.*')
+        names.sort()
+        for i in range(len(names)):
+            for radial_limit in radial_limits:
+                gas_masses, stellar_masses, sfg_ratios, wg_ratios, hg_ratios = [], [], [], [], []  # Declare lists to store the data.
+                for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
+                    path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/' + str(redshift) + '/'
+                    wg_ratio = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+                    hg_ratio = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+                    sfg_ratio = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+                    gas_mass = np.load(path + 'gas_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+                    stellar_mass = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+                    
+                    # Append the properties for all redshifts #
+                    wg_ratios.append(wg_ratio)
+                    hg_ratios.append(hg_ratio)
+                    sfg_ratios.append(sfg_ratio)
+                    gas_masses.append(gas_mass)
+                    stellar_masses.append(stellar_mass)
+                
+                # Save data for each halo in numpy arrays #
+                path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
+                np.save(path + 'wg_ratios_' + str(name), wg_ratios)
+                np.save(path + 'hg_ratios_' + str(name), hg_ratios)
+                np.save(path + 'sfg_ratios_' + str(name), sfg_ratios)
+                np.save(path + 'gas_masses_' + str(name), gas_masses)
+                np.save(path + 'stellar_masses_' + str(name), stellar_masses)
+                np.save(path + 'redshifts_' + str(name), redshifts[np.where(redshifts <= redshift_cut)])
+                lookback_times = satellite_utilities.return_lookbacktime_from_a(
+                    (redshifts[np.where(redshifts <= redshift_cut)] + 1.0) ** (-1.0))  # In Gyr.
+                np.save(path + 'lookback_times_' + str(name), lookback_times)
     
-    radial_limits = (5e-4, 7.5e-4, 1e-3)
+    # Loop over all radial limits #
     for radial_limit in radial_limits:
         path = '/u/di43/Auriga/plots/data/' + 'gsse/' + str(radial_limit) + '/'
         path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
         
         # Get the names and sort them #
-        names = glob.glob(path + '/name_18NOA*')
+        names = glob.glob(path + '/name_06.*')
         names.sort()
         
         # Loop over all available haloes #
@@ -1264,7 +1307,7 @@ def gas_stars_sfr(pdf, data, read):
             for axis in [axis00, axis10, axis20]:
                 axis.grid(True, color='gray', linestyle='-')
                 axis.tick_params(direction='out', which='both', top='on', right='on')
-            axis00.set_ylim(0, 15)
+            axis00.set_ylim(0, 8)
             axis00.set_xticklabels([])
             axis002 = axis00.twinx()
             axis002.set_yscale('log')
@@ -1286,9 +1329,9 @@ def gas_stars_sfr(pdf, data, read):
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit) * 1e6)), fontsize=16, transform=axis00.transAxes)
             
             # Load and plot the data #
-            # thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            # mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            # lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             gas_masses = np.load(path + 'gas_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1299,43 +1342,41 @@ def gas_stars_sfr(pdf, data, read):
             sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             
             # Transform the arrays to comma separated strings and convert each element to float #
-            # thermals = ','.join(thermals)
-            # mechanicals = ','.join(mechanicals)
-            # thermals = np.fromstring(thermals, dtype=np.float, sep=',')
-            # mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
+            thermals = ','.join(thermals)
+            mechanicals = ','.join(mechanicals)
+            thermals = np.fromstring(thermals, dtype=np.float, sep=',')
+            mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
             
             axis00.hist(age, weights=weights, histtype='step', bins=100, range=[0, 13], edgecolor='k')  # Plot the sfr history.
             
             # Calculate and plot the thermals energy sum #
-            # n_bins = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
-            # sum = np.empty(n_bins)
-            # x_value = np.empty(n_bins)
-            # x_low = min(lookback_times_modes[np.where(thermals > 0)])
-            # for j in range(n_bins):
-            #     index = \
-            #         np.where((lookback_times_modes[np.where(thermals > 0)] >= x_low) & (lookback_times_modes[np.where(thermals > 0)] < x_low +
-            #         0.02))[
-            #             0]
-            #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(thermals > 0)])[index])
-            #     if len(index) > 0:
-            #         sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
-            #     x_low += 0.02
-            # plot20, = axis002.plot(x_value, sum, color='orange', zorder=5)
+            n_bins = int((max(lookback_times_modes[np.where(thermals > 0)]) - min(lookback_times_modes[np.where(thermals > 0)])) / 0.02)
+            sum = np.empty(n_bins)
+            x_value = np.empty(n_bins)
+            x_low = min(lookback_times_modes[np.where(thermals > 0)])
+            for j in range(n_bins):
+                index = \
+                    np.where((lookback_times_modes[np.where(thermals > 0)] >= x_low) & (lookback_times_modes[np.where(thermals > 0)] < x_low + 0.02))[
+                        0]
+                x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(thermals > 0)])[index])
+                if len(index) > 0:
+                    sum[j] = np.sum(thermals[np.where(thermals > 0)][index])
+                x_low += 0.02
+            plot20, = axis002.plot(x_value, sum, color='orange', zorder=5)
             
-            # # Calculate and plot the mechanical energy sum #
-            # n_bins = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
-            # sum = np.empty(n_bins)
-            # x_value = np.empty(n_bins)
-            # x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
-            # for j in range(n_bins):
-            #     index = np.where(
-            #         (lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low +
-            #         0.02))[0]
-            #     x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
-            #     if len(index) > 0:
-            #         sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
-            #     x_low += 0.02
-            # plot21, = axis002.plot(x_value, sum, color='magenta', zorder=5)
+            # Calculate and plot the mechanical energy sum #
+            n_bins = int((max(lookback_times_modes[np.where(mechanicals > 0)]) - min(lookback_times_modes[np.where(mechanicals > 0)])) / 0.02)
+            sum = np.empty(n_bins)
+            x_value = np.empty(n_bins)
+            x_low = min(lookback_times_modes[np.where(mechanicals > 0)])
+            for j in range(n_bins):
+                index = np.where(
+                    (lookback_times_modes[np.where(mechanicals > 0)] >= x_low) & (lookback_times_modes[np.where(mechanicals > 0)] < x_low + 0.02))[0]
+                x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mechanicals > 0)])[index])
+                if len(index) > 0:
+                    sum[j] = np.sum(mechanicals[np.where(mechanicals > 0)][index])
+                x_low += 0.02
+            plot21, = axis002.plot(x_value, sum, color='magenta', zorder=5)
             
             # Plot the stellar and gaseous masses #
             plot100, = axis10.plot(lookback_times, gas_masses * 1e10, c='b')
@@ -1349,7 +1390,8 @@ def gas_stars_sfr(pdf, data, read):
             # Create the legends and save the figure #
             axis10.legend([plot100, plot101], [r'$\mathrm{Gas}$', r'$\mathrm{Stars}$'], loc='lower center', fontsize=16, frameon=False, numpoints=1,
                           ncol=2)
-            # axis002.legend([plot20], [r'$\mathrm{Thermal}$'], loc='upper center', fontsize=16, frameon=False, numpoints=1, ncol=2)
+            axis002.legend([plot20, plot21], [r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper center', fontsize=16, frameon=False,
+                           numpoints=1, ncol=2)
             axis00.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, ncol=2)
             axis20.legend([plot3, plot2, plot1], [r'$\mathrm{Hot\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Cold\;gas}$'], loc='upper left',
                           fontsize=16, frameon=False, numpoints=1)
@@ -1368,14 +1410,13 @@ def AGN_feedback_kernel(pdf, data, read, ds):
     :param ds: boolean to downsample halo_18_3000 data.
     :return:
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
-        redshift_cut = 7
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         gas_volumes, sf_gas_volumes, nsf_gas_volumes, redshifts_mask, blackhole_hsmls = [], [], [], [], []  # Declare lists to store the data.
         
         # Get all available redshifts #
@@ -1389,6 +1430,8 @@ def AGN_feedback_kernel(pdf, data, read, ds):
                 if name == '18':
                     redshifts = halo.get_redshifts()
         
+        # Loop over all desired redshifts #
+        redshift_cut = 7
         for redshift in redshifts[np.where(redshifts <= redshift_cut)]:
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [0, 4, 5]
@@ -1406,10 +1449,9 @@ def AGN_feedback_kernel(pdf, data, read, ds):
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-                spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
                 
                 # Mask the data: select the black hole inside the halo #
-                blackhole_mask, = np.where((s.data['type'] == 5) & (spherical_distance < 0.1 * s.subfind.data['frc2'][0]))
+                blackhole_mask, = np.where((s.data['type'] == 5) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))
                 
                 # Check that only one (the closest) black hole is selected #
                 if len(blackhole_mask) == 1:
@@ -1423,9 +1465,9 @@ def AGN_feedback_kernel(pdf, data, read, ds):
                     continue
                 
                 # Mask the data: select star-forming and not gas cells within the black hole's radius #
-                gas_mask, = np.where(spherical_distance[s.data['type'] == 0] < blackhole_hsml)
-                sf_gas_mask, = np.where((s.data['sfr'] > 0.0) & (spherical_distance[s.data['type'] == 0] < blackhole_hsml))
-                nsf_gas_mask, = np.where((s.data['sfr'] <= 0.0) & (spherical_distance[s.data['type'] == 0] < blackhole_hsml))
+                gas_mask, = np.where(s.r()[s.data['type'] == 0] < blackhole_hsml)
+                sf_gas_mask, = np.where((s.data['sfr'] > 0.0) & (s.r()[s.data['type'] == 0] < blackhole_hsml))
+                nsf_gas_mask, = np.where((s.data['sfr'] <= 0.0) & (s.r()[s.data['type'] == 0] < blackhole_hsml))
                 
                 # Compute the total volume of cells with SFR == 0 and compare it to the total volume of all cells within this
                 redshifts_mask.append(redshift)

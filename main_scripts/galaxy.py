@@ -485,14 +485,13 @@ def bar_strength(pdf, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'bs/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'bs/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'mass', 'pos']
@@ -583,13 +582,13 @@ def sfr_history(pdf, data, redshift, read):
     n_bins = 100
     timebin = (tmax - tmin) / n_bins
     
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'sh/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'sh/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gima', 'mass', 'pos']
@@ -651,26 +650,22 @@ def delta_sfr_history(pdf, data, redshift, region, read):
     :param read: boolean to read new data.
     :return: None
     """
-    tmin = 0
-    tmax = 13
-    n_bins = 100
-    timebin = (tmax - tmin) / n_bins
-    
-    if region == 'outer':
-        radial_limits_min, radial_limits_max = (7.5e-4, 1e-3, 5e-3), (1e-3, 5e-3, 15e-3)
-        texts = [r'$\mathrm{0<r/kpc<1}$', r'$\mathrm{1<r/kpc<5}$', r'$\mathrm{5<r/kpc<15}$']
-    elif region == 'inner':
-        radial_limits_min, radial_limits_max = (0.0, 2.5e-4, 5e-4), (2.5e-4, 5e-4, 7.5e-4)
-        texts = [r'$\mathrm{0.00<r/kpc<0.25}$', r'$\mathrm{0.25<r/kpc<0.50}$', r'$\mathrm{0.50<r/kpc<0.75}$']
-    
-    for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
-        # Check if a folder to save the data exists, if not create one #
-        path = '/u/di43/Auriga/plots/data/' + 'dsh/' + str(radial_limit_max) + '/'
-        if not os.path.exists(path):
-            os.makedirs(path)
+    # Read the data #
+    if read is True:
+        if region == 'outer':
+            radial_limits_min, radial_limits_max = (7.5e-4, 1e-3, 5e-3), (1e-3, 5e-3, 15e-3)
+            texts = [r'$\mathrm{0<r/kpc<1}$', r'$\mathrm{1<r/kpc<5}$', r'$\mathrm{5<r/kpc<15}$']
+        elif region == 'inner':
+            radial_limits_min, radial_limits_max = (0.0, 2.5e-4, 5e-4), (2.5e-4, 5e-4, 7.5e-4)
+            texts = [r'$\mathrm{0.00<r/kpc<0.25}$', r'$\mathrm{0.25<r/kpc<0.50}$', r'$\mathrm{0.50<r/kpc<0.75}$']
         
-        # Read the data #
-        if read is True:
+        # Get all available redshifts #
+        haloes = data.get_haloes(level)
+        for name, halo in haloes.items():
+            redshifts = halo.get_redshifts()
+        
+        # Loop over all desired redshifts #
+        for redshift in redshifts:
             # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
             particle_type = [4]
             attributes = ['age', 'gima', 'mass', 'pos']
@@ -678,23 +673,45 @@ def delta_sfr_history(pdf, data, redshift, region, read):
             
             # Loop over all haloes #
             for s in data:
-                # Check if any of the haloes' data already exists, if not then read and save it #
-                names = glob.glob(path + '/name_*')
-                names = [re.split('_|.npy', name)[1] for name in names]
-                # if str(s.haloname) in names:
-                #     continue
+                # s.centerat(s.subfind.data['fpos'][0, :])  # Centre halo at the potential minimum.
+                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+                s.calc_sf_indizes(s.subfind)
+                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
-                s.centerat(s.subfind.data['fpos'][0, :])  # Centre halo at the potential minimum.
-                
-                # Mask the data and calculate the age and sfr for stellar particles within different spatial regimes #
-                mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_limit_min) & (s.r() < radial_limit_max) & (s.data['pos'][:, 2] < 0.003))
-                weights = s.data['gima'][mask] * 1e10 / 1e9 / timebin
-                age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
-                
-                # Save data for each halo in numpy arrays #
-                np.save(path + 'age_' + str(s.haloname), age)
-                np.save(path + 'weights_' + str(s.haloname), weights)
-                np.save(path + 'name_' + str(s.haloname), s.haloname)
+                # Loop over different radial limits #
+                for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
+                    SFRs, stellar_masses, redshifts_mask = [], [], []  # Declare lists to store the data.
+                    
+                    # Check if a folder to save the data exists, if not create one #
+                    path = '/u/di43/Auriga/plots/data/' + 'dsh/' + str(radial_limit_max) + '/'
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    
+                    # Check if any of the haloes' data already exists, if not then read and save it #
+                    # names = glob.glob(path + '/name_*')
+                    # names = [re.split('_|.npy', name)[1] for name in names]
+                    # if str(s.haloname) in names:
+                    #     continue
+                    
+                    # Mask the data and calculate the age and sfr for stellar particles within different spatial regimes #
+                    a = 1 / (1 + redshift)  # Used to convert radial limits to physical.
+                    stellar_mask, = np.where(
+                        (s.data['age'] > 0.) & (s.r() > radial_limit_min * a) & (s.r() < radial_limit_max * a) & (s.data['pos'][:, 2] < 0.003 * a))
+                    
+                    stellar_mass = s.data['mass'][stellar_mask].sum()
+                    time_lim = 0.5
+                    SFR = s.data['gima'][stellar_mask][(s.data['age'][stellar_mask] - s.time) < time_lim].sum() / time_lim * 10.
+                    
+                    # Append the properties for all redshifts #
+                    SFRs.append(SFR)
+                    redshifts_mask.append(redshift)
+                    stellar_masses.append(stellar_mass)
+        
+        # Save data for each halo in numpy arrays #
+        np.save(path + 'SFRs_' + str(s.haloname), SFRs)
+        np.save(path + 'name_' + str(s.haloname), s.haloname)
+        np.save(path + 'redshifts_mask_' + str(s.haloname), redshifts_mask)
+        np.save(path + 'stellar_masses_' + str(s.haloname), stellar_masses)
     
     # Generate the figure and define its parameters #
     figure = plt.figure(figsize=(16, 9))
@@ -759,13 +776,13 @@ def gas_temperature_fraction(pdf, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gtf/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gtf/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
@@ -796,9 +813,9 @@ def gas_temperature_fraction(pdf, data, read):
             
             # Calculate the mass of the gas cells within three temperatures regimes #
             mass = s.data['mass'][mask]
-            sfgmass = mass[np.where((temperature < 2e4))]
+            sfgmass = mass[np.where(temperature < 2e4)]
             warmgmass = mass[np.where((temperature >= 2e4) & (temperature < 5e5))]
-            hotgmass = mass[np.where((temperature >= 5e5))]
+            hotgmass = mass[np.where(temperature >= 5e5)]
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -982,14 +999,14 @@ def gas_temperature_histogram(pdf, data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gth/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
-        volumes, masses, temperatures = [], [], []
+        volumes, masses, temperatures = [], [], []  # Declare empty arrays to store the data.
+        
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gth/'
+        if not os.path.exists(path):
+            os.makedirs(path)
         
         # Get all available redshifts #
         haloes = data.get_haloes(level)
@@ -1017,8 +1034,7 @@ def gas_temperature_histogram(pdf, data, read):
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
                 # Mask the data: select gas cells within the virial radius R200 #
-                spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
-                mask, = np.where((s.data['type'] == 0) & (spherical_distance < s.subfind.data['frc2'][0]))
+                mask, = np.where((s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))
                 
                 # Calculate the temperature of the gas cells #
                 ne = s.data['ne'][mask]
@@ -1093,13 +1109,13 @@ def gas_distance_temperature(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    # Check if a folder to save the data exists, if not create one #
-    path = '/u/di43/Auriga/plots/data/' + 'gdt/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     # Read the data #
     if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        path = '/u/di43/Auriga/plots/data/' + 'gdt/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
@@ -1116,9 +1132,8 @@ def gas_distance_temperature(pdf, data, redshift, read):
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            spherical_distance = np.max(np.abs(s.data['pos'] - s.center[None, :]), axis=1)
-            mask, = np.where((spherical_distance < s.subfind.data['frc2'][0]) & (
-                s.data['type'] == 0))  # Mask the data: select gas cells within the virial radius R200 #
+            mask, = np.where(
+                (s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells within the virial radius R200 #
             
             # Calculate the temperature of the gas cells #
             ne = s.data['ne'][mask]
@@ -1131,7 +1146,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
             np.save(path + 'temperature_' + str(s.haloname), temperature)
-            np.save(path + 'spherical_distance_' + str(s.haloname), spherical_distance[mask])
+            np.save(path + 'spherical_distance_' + str(s.haloname), s.r()[mask])
     
     # Load and plot the data #
     names = glob.glob(path + '/name_18N*')
