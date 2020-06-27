@@ -17,7 +17,9 @@ res = 512
 level = 4
 boxsize = 0.06
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
-
+# names = glob.glob(path + '/name_18*')
+# names.sort()
+# colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
 
 def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False, multiple3=False):
     """
@@ -324,8 +326,10 @@ def AGN_modes_distribution(date, data):
         # Create the legends and save the figure #
         axis00.legend([sum00], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
         axis02.legend([sum02], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
-        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis00.transAxes)
+
+        # Save and close the figure #
+        plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')
         plt.close()
     
     return None
@@ -354,7 +358,7 @@ def central_combination(pdf, data, redshift, read):
         attributes = ['mass', 'ne', 'pos', 'rho', 'u', 'bfld', 'sfr']
         data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
         
-        # Loop over all haloes #
+        # Loop over all available haloes #
         for s in data:
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
@@ -527,7 +531,9 @@ def central_combination(pdf, data, redshift, read):
             axis.tick_params(direction='out', which='both', top='on', right='on')
         
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), fontsize=12, transform=axis00.transAxes)
-        pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+        
+        # Save and close the figure #
+        pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
 
@@ -566,7 +572,9 @@ def stellar_light_combination(pdf, redshift):
         a2.imshow(edge_on, interpolation='nearest', aspect='equal')
         
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=axis.transAxes)
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+    
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
     plt.close()
     return None
 
@@ -617,6 +625,8 @@ def gas_density_combination(pdf, redshift):
         create_colorbar(axiscbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$")
         
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=axis.transAxes)
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+    
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
     plt.close()
     return None

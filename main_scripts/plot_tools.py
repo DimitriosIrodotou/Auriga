@@ -18,7 +18,7 @@ def binned_median_1sigma(x_data, y_data, bin_type, n_bins, log=False):
             x = np.log10(x_data)
         else:
             x = x_data
-
+        
         # Declare arrays to store the data #
         n_bins = np.quantile(np.sort(x), np.linspace(0, 1, n_bins + 1))
         slow = np.empty(len(n_bins))
@@ -127,7 +127,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     :param ylabel: y axis label.
     :param aspect: aspect of the axis scaling.
     :param size: text size.
-    :return:
+    :return: None
     """
     # Set axis limits #
     if xlim:
@@ -155,12 +155,23 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     if aspect is not None:
         axis.set_aspect('equal')
     axis.grid(True, which='both', axis='both', color='gray', linestyle='-')
-    axis.tick_params(direction='out', which='both', top='on', right='on', labelsize=size)
+    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
     
     return None
 
 
-def set_axis_evo(axis, axis2, ylabel=None):
+def set_axes_evo(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect='equal', size=16):
+    """
+    Set axes parameters for evolution plots.
+    :param axis: name of the axis.
+    :param axis2: name of the twin axis.
+    :param ylim: y axis limit.
+    :param yscale: y axis scale.
+    :param ylabel: y axis label.
+    :param aspect: aspect of the axis scaling.
+    :param size: text size.
+    :return: None
+    """
     z = np.array([5.0, 3.0, 2.0, 1.0, 0.5, 0.2, 0.0])
     times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
     
@@ -169,20 +180,82 @@ def set_axis_evo(axis, axis2, ylabel=None):
         if v >= 1.0:
             lb += ["%.0f" % v]
         else:
-            if v != 0:
+            if v:
                 lb += ["%.1f" % v]
             else:
                 lb += ["%.0f" % v]
     
-    axis.set_xlim(13, 0)
-    axis.set_ylabel(ylabel, size=16)
-    axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=16)
-    axis.tick_params(direction='out', which='both', right='on')
-    
+    # Set axis limits #
     axis2.set_xticks(times)
     axis2.set_xticklabels(lb)
+    if ylim:
+        axis.set_ylim(ylim)
+    axis.set_xlim(13, 0)
     axis2.set_xlim(axis.get_xlim())
-    axis2.set_xlabel(r'$\mathrm{z}$', size=16)
-    axis2.tick_params(direction='out', which='both', top='on', right='on')
+    
+    # Set axis scales #
+    if yscale:
+        axis.set_yscale(yscale)
+    
+    # Set axis labels #
+    axis.set_ylabel(ylabel, size=size)
+    axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=size)
+    axis2.set_xlabel(r'$\mathrm{z}$', size=size)
+    
+    # Set grid and tick parameters #
+    if aspect is not None:
+        axis.set_aspect('equal')
+    axis.grid(True, which='both', axis='both', color='gray', linestyle='-')
+    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
+    axis2.tick_params(direction='out', which='both', top='on', left='on', right='on', labelsize=size)
     
     return None
+
+
+def rotate_bar(z, y, x):
+    """
+    Calculate bar strength and rotate bar to horizontal position.
+    :param z: the z-position of the particles.
+    :param y: the y-position of the particles.
+    :param x: the x-position of the particles.
+    :return:
+    """
+    # Declare arrays to store the data #
+    n_bins = 40  # Number of radial bins.
+    r_m = np.zeros(n_bins)
+    beta_2 = np.zeros(n_bins)
+    alpha_0 = np.zeros(n_bins)
+    alpha_2 = np.zeros(n_bins)
+    
+    # Split disc in radial bins and calculate Fourier components #
+    r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
+    for i in range(0, n_bins):
+        r_s = float(i) * 0.25
+        r_b = float(i) * 0.25 + 0.25
+        r_m[i] = float(i) * 0.25 + 0.125
+        xfit = x[(r < r_b) & (r > r_s)]
+        yfit = y[(r < r_b) & (r > r_s)]
+        l = len(xfit)
+        for k in range(0, l):
+            th_i = np.arctan2(yfit[k], xfit[k])
+            alpha_0[i] = alpha_0[i] + 1
+            alpha_2[i] = alpha_2[i] + np.cos(2 * th_i)
+            beta_2[i] = beta_2[i] + np.sin(2 * th_i)
+    
+    # Calculate bar rotation angle for each time by averaging over radii between 1 and 5 kpc #
+    r_b = 5  # In kpc.
+    r_s = 1  # In kpc.
+    k = 0.0
+    phase_in = 0.0
+    for i in range(0, n_bins):
+        if (r_m[i] < r_b) & (r_m[i] > r_s):
+            k = k + 1.
+            phase_in = phase_in + 0.5 * np.arctan2(beta_2[i], alpha_2[i])
+    phase_in = phase_in / k
+    
+    # Transform back -tangle to horizontal position #
+    z_pos = z[:]
+    y_pos = np.cos(-phase_in) * (y[:]) + np.sin(-phase_in) * (x[:])
+    x_pos = np.cos(-phase_in) * (x[:]) - np.sin(-phase_in) * (y[:])
+    
+    return z_pos / 1e3, y_pos / 1e3, x_pos / 1e3  # In kpc.

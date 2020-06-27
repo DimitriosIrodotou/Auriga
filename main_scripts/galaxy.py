@@ -4,6 +4,7 @@ import os
 import re
 import glob
 import calcGrid
+import plot_tools
 import matplotlib
 import projections
 
@@ -61,7 +62,7 @@ def set_axis(isnap, axis, xlabel=None, ylabel=None, title=None, ylim=None, ncol=
     return None
 
 
-def set_axis_evo(axis, axis2):
+def set_axes_evo(axis, axis2):
     z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
     times = satellite_utilities.return_lookbacktime_from_a((z + 1.0) ** (-1.0))  # In Gyr.
     
@@ -187,7 +188,7 @@ def obs_tullyfisher_fit(masses):
 def pizagno_convert_color_to_mass(color, magnitude, band=5):
     mass_to_light = 10 ** (-0.306 + 1.097 * color)
     luminosity = 10 ** (2.0 * (Msunabs[band] - magnitude) / 5.0)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 M_sun.
+    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 Msun.
     # this converts in the MPA stellar masses eq. 20 of Dutton+11. There is an offset
     # of -0.1 dex that takes into account the Chabrier IMF see sect. 3.5
     stellar_mass = (stellar_mass - 0.230) / 0.922
@@ -197,7 +198,7 @@ def pizagno_convert_color_to_mass(color, magnitude, band=5):
 def verheijen_convert_color_to_mass(color, magnitude, band=1):
     mass_to_light = 10 ** (-0.976 + 1.111 * color)
     luminosity = 10 ** (2.0 * (Msunabs[band] - magnitude) / 5.0)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 M_sun.
+    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 Msun.
     # this converts in the MPA stellar masses eq. 20 of Dutton+11. There is an offset
     # of -0.1 dex that takes into account the Chabrier IMF see sect. 3.5
     stellar_mass = (stellar_mass - 0.230) / 0.922
@@ -208,7 +209,7 @@ def verheijen_convert_color_to_mass(color, magnitude, band=1):
 def courteau_convert_luminosity_to_mass(loglum):
     mass_to_light = 10 ** (0.172 + 0.144 * (loglum - 10.3))
     luminosity = 10 ** (loglum)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 M_sun.
+    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 Msun.
     # this converts in the MPA stellar masses eq. 20 of Dutton+11. There is an offset
     # of -0.1 dex that takes into account the Chabrier IMF see sect. 3.5
     stellar_mass = (stellar_mass - 0.230) / 0.922
@@ -305,7 +306,7 @@ def tully_fisher(pdf, data, levels):
 
 
 def guo_abundance_matching(mass):
-    # equation 3 of Guo et al. 2010. Mass MUST be given in 10^10 M_sun
+    # equation 3 of Guo et al. 2010. Mass MUST be given in 10^10 Msun
     c = 0.129
     M_zero = 10 ** 1.4
     alpha = -0.926
@@ -497,14 +498,14 @@ def bar_strength(pdf, data, read):
         attributes = ['age', 'mass', 'pos']
         data.select_haloes(level, 0, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
-        # Loop over all haloes #
+        # Loop over all available haloes #
         for s in data:
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
             mask, = np.where(s.data['age'] > 0.)  # Mask the data: select stellar particles.
-            z_rotated, y_rotated, x_rotated = projections.rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
+            z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
                                                                      s.data['pos'][mask, 2] * 1e3)  # Distances are in Mpc.
             s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
@@ -568,78 +569,6 @@ def bar_strength(pdf, data, read):
     return None
 
 
-def sfr_history(pdf, data, redshift, read):
-    """
-    Plot star formation rate history.
-    :param pdf: path to save the pdf from main.make_pdf
-    :param data: data from main.make_pdf
-    :param redshift: redshift from main.make_pdf
-    :param read: boolean to read new data.
-    :return: None
-    """
-    tmin = 0
-    tmax = 13
-    n_bins = 100
-    timebin = (tmax - tmin) / n_bins
-    
-    # Read the data #
-    if read is True:
-        # Check if a folder to save the data exists, if not create one #
-        path = '/u/di43/Auriga/plots/data/' + 'sh/'
-        if not os.path.exists(path):
-            os.makedirs(path)
-        
-        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-        particle_type = [4]
-        attributes = ['age', 'gima', 'mass', 'pos']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
-        
-        # Loop over all haloes #
-        for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
-            names = glob.glob(path + '/name_*')
-            names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
-            
-            s.centerat(s.subfind.data['fpos'][0, :])
-            mask, = np.where((s.data['age'] > 0.) & (s.r() < 0.03))
-            age = s.cosmology_get_lookback_time_from_a(s.data['age'][mask], is_flat=True)
-            weights = s.data['gima'][mask] * 1e10 / 1e9 / timebin
-            
-            # Save data for each halo in numpy arrays #
-            np.save(path + 'age_' + str(s.haloname), age)
-            np.save(path + 'weights_' + str(s.haloname), weights)
-            np.save(path + 'name_' + str(s.haloname), s.haloname)
-    
-    # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
-    names.sort()
-    colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
-    
-    # Generate the figure and define its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='gray', linestyle='-')
-    plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
-    plt.ylabel('$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$', size=16)
-    
-    # Loop over all available haloes #
-    for i in range(len(names)):
-        # Load and plot the data #
-        age = np.load(path + 'age_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        axis.hist(age, weights=weights, color=next(colors), histtype='step', bins=n_bins, range=[tmin, tmax],
-                  label="Au-" + (str(re.split('_|.npy', names[i])[1])))
-        
-        axis2 = axis.twiny()
-        set_axis_evo(axis, axis2)
-        axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-    
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
-    plt.close()
-    return None
-
-
 def delta_sfr_history(pdf, data, redshift, region, read):
     """
     Plot star formation rate history difference between Auriga haloes for three different spatial regimes (<1, 1<5 and 5<15 kpc).
@@ -671,10 +600,10 @@ def delta_sfr_history(pdf, data, redshift, region, read):
             attributes = ['age', 'gima', 'mass', 'pos']
             data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
             
-            # Loop over all haloes #
+            # Loop over all available haloes #
             for s in data:
-                # s.centerat(s.subfind.data['fpos'][0, :])  # Centre halo at the potential minimum.
                 # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+                # s.centerat(s.subfind.data['fpos'][0, :])  # Centre halo at the potential minimum.
                 s.calc_sf_indizes(s.subfind)
                 s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
                 
@@ -752,7 +681,7 @@ def delta_sfr_history(pdf, data, redshift, region, read):
                                                label="Au-" + (str(re.split('_|.npy', names[i])[1])))
             
             axis2 = top_axis.twiny()
-            set_axis_evo(top_axis, axis2)
+            set_axes_evo(top_axis, axis2)
             top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
             top_axis.text(0.05, 0.92, text, color='k', fontsize=12, transform=top_axis.transAxes)
             
@@ -761,7 +690,7 @@ def delta_sfr_history(pdf, data, redshift, region, read):
             else:
                 bottom_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)), color=colors[i], )
                 axis2 = bottom_axis.twiny()
-                set_axis_evo(bottom_axis, axis2)
+                set_axes_evo(bottom_axis, axis2)
     
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
     plt.close()
@@ -788,7 +717,7 @@ def gas_temperature_fraction(pdf, data, read):
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
         data.select_haloes(level, 0., loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
-        # Loop over all haloes #
+        # Loop over all available haloes #
         for s in data:
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
@@ -856,7 +785,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
     attributes = ['pos', 'vel', 'mass', 'age', 'gsph']
     data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
-    # Loop over all haloes #
+    # Loop over all available haloes #
     for s in data:
         # Generate the figure and define its parameters #
         figure = plt.figure(0, figsize=(10, 7.5))
@@ -929,7 +858,7 @@ def circular_velocity_curves(pdf, data, redshift):
     attributes = ['pos', 'vel', 'mass', 'age']
     data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
-    # Loop over all haloes #
+    # Loop over all available haloes #
     for s in data:
         # Generate the figure and define its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
@@ -1021,7 +950,7 @@ def gas_temperature_histogram(pdf, data, read):
             attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
             data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
             
-            # Loop over all haloes #
+            # Loop over all available haloes #
             for s in data:
                 # Check if any of the haloes' data already exists, if not then read and save it #
                 names = glob.glob(path + '/name_*')
@@ -1121,7 +1050,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
         attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
         data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
-        # Loop over all haloes #
+        # Loop over all available haloes #
         for s in data:
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')

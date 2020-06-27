@@ -51,7 +51,7 @@ def gas_movie(data, read):
             attributes = ['mass', 'ne', 'pos', 'rho', 'u']
             data.select_haloes(level, redshift, loadonlytype=particle_type, loadonlyhalo=0, loadonly=attributes)
             
-            # Loop over all haloes #
+            # Loop over all available haloes #
             for s in data:
                 # Check if any of the haloes' data already exists, if not then read and save it #
                 names = glob.glob(path + '/name_3000*')
@@ -139,7 +139,7 @@ def gas_movie(data, read):
     # Loop over all available haloes #
     for i in range(len(names)):
         print(names[i])
-        # Load and plot the data #
+        # Load the data #
         redshift = np.load(path + 'redshift_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         rho_face_on = np.load(path + 'rho_face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         rho_edge_on = np.load(path + 'rho_edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')

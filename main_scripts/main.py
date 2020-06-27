@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_06" % self.directory)
+        haloes = glob.glob("%shalo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -278,10 +278,11 @@ class AurigaPdf:
         :return: None
         """
         redshift = 0.0
+        # for redshift in np.linspace(0.0, 1.0, 11):
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
         
         # Projections #
-        # Stars #
+        # Stellar #
         # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
         # projections.stellar_light_fit(self, redshift, read=False)
@@ -292,18 +293,21 @@ class AurigaPdf:
         # projections.gas_metallicity(pdf, self, redshift, read=False)
         # projections.gas_slice(pdf, self, redshift, read=False)
         # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
-        # Magnetic fields #
+        # Magnetic field #
         # projections.magnetic_field(pdf, self, redshift, read=False)
         # Dark matter #
-        # projections.dark_matter_density(pdf, self, redshift, read=True)
+        # projections.dark_matter_density(pdf, self, redshift, read=False)
         
-        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # Time evolution #
+        # Masses #
+        # time_evolution.sfr_history(pdf, self, read=False)
         # time_evolution.bar_strength(pdf, self, read=False)
-        # time_evolution.bfld(pdf, self, level)
-        # time_evolution.blackhole_masses(pdf, self, read=False)
+        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
+        time_evolution.delta_sfr_history(pdf, self, redshift, region='outer', read=True)
+        # time_evolution.delta_sfr_history(pdf, self, redshift, region='inner', read=True)
         # time_evolution.gas_temperature_fraction(pdf, self, read=False)
-        time_evolution.gas_stars_sfr(pdf, self, read=False)
+        # time_evolution.gas_stars_sfr(pdf, self, read=True)
+        # AGN #
         # time_evolution.AGN_modes_cumulative(date, self, read=False)
         # time_evolution.AGN_modes_histogram(date, self, read=False)
         # time_evolution.AGN_modes_distribution(date, self, read=False)
@@ -311,19 +315,15 @@ class AurigaPdf:
         # time_evolution.AGN_modes_gas(date)
         # time_evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
         # time_evolution.AGN_feedback_smoothed(pdf)
+        # time_evolution.blackhole_masses(pdf, self, read=False)
         
         # Global galactic relations #
-        # galaxy.sfr_history(pdf, self, redshift, read=True)
-        # galaxy.delta_sfr_history(pdf, self, redshift, region='outer', read=False)
-        # galaxy.delta_sfr_history(pdf, self, redshift, region='inner', read=True)
         # galaxy.gas_temperature_fraction(pdf, self, read=False)
-        # for redshift in np.linspace(0.0, 1.0, 11):
-        #     print(redshift)
         # galaxy.circularity(pdf, self, [level], redshift)
         # galaxy.tully_fisher(pdf, self, [level])
         # galaxy.stellar_vs_total(pdf, self, [level])
         # galaxy.gas_fraction(pdf, self, [level])
-        # main.galaxy.central_bfld(pdf, self, [level])
+        # galaxy.central_bfld(pdf, self, [level])
         # galaxy.bar_strength(pdf, self, read=False)
         # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
         # galaxy.circular_velocity_curves(pdf, self, redshift)
@@ -345,7 +345,6 @@ class AurigaPdf:
         # Profiles #
         # profiles.radial_profiles(pdf, self, level, redshift)
         # profiles.vertical_profiles(pdf, self, level, redshift)
-        # profiles.stellar_profiles(pdf, self, level, redshift)
         
         pdf.close()
         # file_name = 'gm/'
