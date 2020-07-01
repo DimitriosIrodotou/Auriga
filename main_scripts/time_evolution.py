@@ -264,7 +264,7 @@ def delta_sfr_history(pdf, data, region, read):
     :param read: boolean to read new data.
     :return: None
     """
-    redshift_cut = 0.1
+    redshift_cut = 7
     n_bins = 100
     
     if region == 'outer':
@@ -342,8 +342,8 @@ def delta_sfr_history(pdf, data, region, read):
             counts, bins, bars = top_axis.hist(lookback_times, weights=SFR, histtype='step', bins=n_bins, range=[0, 13],
                                                label="Au-" + (str(re.split('_|.npy', names[i])[1])))
             
-            print(SFR[0])
-            print(np.shape(SFR))
+            # print(len(SFR[0]))
+            # print(np.shape(SFR))
             axis2 = top_axis.twiny()
             plot_tools.set_axes_evo(top_axis, axis2, ylim=[0, 22], ylabel='$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$', aspect=None)
             top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)

@@ -1,5 +1,7 @@
 import re
+import os
 import PIL
+import time
 import glob
 import skimage
 import numpy as np
@@ -16,11 +18,13 @@ from photutils.isophote import EllipseGeometry
 from scipy.ndimage.filters import gaussian_filter
 from photutils.isophote import build_ellipse_model
 
+date = time.strftime("%d_%m_%y_%H%M")
+
 
 def convert_for_fit(name, min_intensity):
     """
     Add Gaussian noise, Gaussian blur, convert to gray scale and save an image in 512x512 along with its fits version.
-    :param name:
+    :param name: name of the file.
     :return:
     """
     # Load a png image and convert to 512x512 #
@@ -28,7 +32,7 @@ def convert_for_fit(name, min_intensity):
     image_png = image_png.resize((512, 512), PIL.Image.NEAREST)
     
     # Create and save a fits version of the gray scaled image #
-    name = re.split('rbm-|.png', name)[1]
+    name = re.split('Au-|.png', name)[1]
     hdu = fits.PrimaryHDU(image_png)
     hdu.writeto(plots_path + str(name) + '_ctf.fits', overwrite=True)
     
@@ -62,6 +66,7 @@ def convert_for_fit(name, min_intensity):
 def plot_fits_image(name):
     """
     Load and show a fits image.
+    :param name: name of the file.
     :return: None
     """
     # Load the fits image and show it #
@@ -73,18 +78,19 @@ def plot_fits_image(name):
     axis.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
-    plt.imsave(name + '_pfi.png', image_fits, cmap='gray')
+    plt.imsave(name + '_pfi_' + str(date) + '.png', image_fits, cmap='gray')
     plt.close()
     return None
 
 
-def get_image_centre():
+def get_image_centre(name):
     """
     Get the centre of the image in pixels.
+    :param name: name of the file.
     :return: centre
     """
     # Load the png image and calculate the centre #
-    im = Image.open(name + '_ctf.png')
+    im = Image.open(plots_path + name + '_ctf.png')
     
     (X, Y) = im.size
     centre = X / 2, Y / 2
@@ -128,7 +134,7 @@ def plot_fit_data(h=0.0, R_eff=0.0):
         axis.add_patch(circle)
     
     # Create and save a gray scaled version of the image #
-    plt.savefig(name + '_2.png', cmap='gray', bbox_inches='tight')
+    plt.savefig(name + '_2_' + str(date) + '.png', cmap='gray', bbox_inches='tight')
     plt.close()
     return None
 
@@ -136,18 +142,19 @@ def plot_fit_data(h=0.0, R_eff=0.0):
 def fit_isophotal_ellipses(name, ellipticity):
     """
     Use the photutils package to fit isophotal ellipses on fits images.
+    :param name: name of the file.
+    :param ellipticity: initial ellipticity.
     :return: None
     """
     # Load the fits image and calculate the centre #
-    name = re.split('Auriga/|/', name)[-1]
-    image_fits = fits.getdata(name + '_ctf.fits', ext=0)
-    centre = get_image_centre()
+    name = re.split('Au-|.png', name)[1]
+    image_fits = fits.getdata(plots_path + name + '_ctf.fits', ext=0)
+    centre = get_image_centre(name)
     
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=0.0)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
-    print(name)
     print(isolist.to_table())  # Print the isophote values as a table sorted by the semi-major axis length.
     
     # Plot the ellipticity, position angle, and the center x and y position as a function of the semi-major axis length.
@@ -169,18 +176,18 @@ def fit_isophotal_ellipses(name, ellipticity):
     y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.x0_err, isolist.y0_err, isolist.int_err]
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.set_ylim(y_lim)
-        axis.set_ylabel(y_label)
         axis.set_xscale('log')
+        axis.set_ylabel(y_label)
         axis.set_xlim(1e0, centre[0])
+        axis.grid(True, color='gray', linestyle='-')
         axis.set_xlabel(r'$\mathrm{Semi-major\;axis\;length\;[pix]}$')
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', markersize=3)
     
     axis02.set_yscale('log')
-    axis12.set_xscale('linear')
     popt, pcov = curve_fit(fit_exponential_profile, isolist.sma, isolist.intens, p0=[isolist.intens[0], 1])
-    print(popt)
+    print('I_0:', popt[0], 'h:', popt[1])
     axis12.plot(isolist.sma, fit_exponential_profile(isolist.sma, popt[0], popt[1]), 'b-')
-    plt.savefig(name + '_fie_isolist.png', bbox_inches='tight')  # Save the figure.
+    plt.savefig(plots_path + name + '_fie_isolist_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
     
     # Build an elliptical model #
     # model_image = build_ellipse_model(image_fits.shape, isolist)
@@ -199,6 +206,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     titles = [r'$\mathrm{Auriga-}$' + str(name), r'$\mathrm{Sample\;of\;isophotes}$']  # , r'$\mathrm{Ellipse\;model}$', r'$\mathrm{Residual}$']
     images = [image_fits, image_fits]  # , model_image, residual]
     for axis, title, image in zip(axes, titles, images):
+        axis.grid(True, color='gray', linestyle='-')
         axis.set_title(title)
         axis.imshow(image, origin='lower', cmap='gray')
     
@@ -208,7 +216,7 @@ def fit_isophotal_ellipses(name, ellipticity):
         x, y, = iso.sampled_coordinates()
         axis01.plot(x, y, color='tab:red')
     
-    plt.savefig(name + '_fie_model.png', bbox_inches='tight')  # Save the figure.
+    plt.savefig(plots_path + name + '_fie_model_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -227,17 +235,22 @@ def fit_exponential_profile(x, I_0, R_d):
 # Define the paths to the images #
 output_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
-min_intensities = [69.98, 61.24, 36.13, 52.20, 32.42, 86.66, 51.92]
-ellipticities = [0.70, 0.40, 0.35, 0.50, 0.09, 0.34, 0.44]
+min_intensities = [47.45]#, 61.24, 36.13, 52.20, 32.42, 86.66, 51.92]
+ellipticities = [0.70]#, 0.40, 0.35, 0.50, 0.09, 0.34, 0.44]
 
 # Loop over all Auriga rbm images, convert them to the appropriate fit format and fit isophotal ellipses #
-# names = glob.glob(plots_path + 'rbm-06N*')
-# names = [re.split('Imfit/|.png', name)[1] for name in names]
-# print(names)
-# for name, min_intensity, ellipticity in zip(names, min_intensities, ellipticities):
-#     convert_for_fit(plots_path + name, min_intensity)
-#
-#     name = re.split('rbm-|.png', name)[1]
-#     fit_isophotal_ellipses(name, 0.5)
-
-plot_fits_image(output_path+'resid_06NOAGN_E.fits')
+names = glob.glob(plots_path + 'Au-06NOA*')
+names = [re.split('Imfit/|.png', name)[1] for name in names]
+print(names)
+for name, min_intensity, ellipticity in zip(names, min_intensities, ellipticities):
+    # Prepare the image and fit isophotal ellipses #
+    # convert_for_fit(plots_path + name, min_intensity)
+    # fit_isophotal_ellipses(name, 0.5)
+    
+    # Fit Imfit to the image #
+    name = re.split('Au-|.png', name)[1]
+    os.system('../imfit -c config_%s_E.dat --nm --model-errors --cashstat --bootstrap 5 ../../plots/projections/Imfit/%s_ctf.fits --save-model=model_%s_E.fits --save-residual=resid_%s_E.fits '
+              '--save-params bestfit_06NOAGN_E.dat' % (name, name, name, name))
+    
+    plot_fits_image(output_path + 'resid_' + str(name) + '_E.fits')
+    plot_fits_image(output_path + 'model_' + str(name) + '_E.fits')
