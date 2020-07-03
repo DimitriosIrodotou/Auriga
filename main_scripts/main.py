@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_06" % self.directory)
+        haloes = glob.glob("%shalo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -303,7 +303,7 @@ class AurigaPdf:
         # time_evolution.sfr_history(pdf, self, read=False)
         # time_evolution.bar_strength(pdf, self, read=False)
         # TODO remove: set_axes, level, centerat - add: read, data-exist-check
-        # time_evolution.delta_sfr_history(pdf, self, region='outer', read=True)
+        time_evolution.delta_sfr_history(pdf, self, region='outer', read=False)
         # time_evolution.delta_sfr_history(pdf, self, region='inner', read=True)
         # time_evolution.gas_temperature_fraction(pdf, self, read=False)
         # time_evolution.gas_stars_sfr(pdf, self, read=True)

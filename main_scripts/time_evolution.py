@@ -49,7 +49,7 @@ def sfr_history(pdf, data, read):
     :return: None
     """
     n_bins = 100
-    time_bin_width = (13 - 0) / 100
+    time_bin_width = (13 - 0) / n_bins
     path = '/u/di43/Auriga/plots/data/' + 'sh/'
     
     # Read the data #
@@ -234,11 +234,9 @@ def get_delta_sfr_history(snapshot_ids, halo, radial_limit_min, radial_limit_max
     :param radial_limit_max: outer radial limit.
     :return: lookback time, SFR.
     """
-    time_bin_width = (13 - 0) / 100
-    
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-    particle_type = [4]
-    attributes = ['age', 'gima', 'mass', 'pos']
+    particle_type = [0, 4]
+    attributes = ['age', 'gima', 'mass', 'pos', 'sfr']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
     
     # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
@@ -246,13 +244,17 @@ def get_delta_sfr_history(snapshot_ids, halo, radial_limit_min, radial_limit_max
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
     
     # Calculate the age and sfr #
-    a = 1 / (1 + s.redshift)  # Used to convert radial limits to physical.
-    stellar_mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_limit_min) & (s.r() < radial_limit_max) & (
-        s.data['pos'][:, 2] < 0.003))  # Mask the data: select stellar particles inside different (physical) spatial regimes
+    # a = 1 / (1 + s.redshift)  # Used to convert radial limits to physical.
+    # stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() > radial_limit_min) & (s.r() < radial_limit_max) & (
+    #     s.data['pos'][:, 2] < 0.003))  # Mask the data: select stellar particles inside different (physical) spatial regimes
+    # time_mask, = np.where(((s.data['age'][stellar_mask] - s.time) < time_bin_width) & (s.data['age'][stellar_mask] > s.time))
+    # SFR = s.data['gima'][stellar_mask][time_mask] / time_bin_width * 10  # In Msun yr^-1.
     
-    SFR = (s.data['gima'][stellar_mask][(s.data['age'][stellar_mask] - s.time) < time_bin_width]) / time_bin_width * 10  # In Msun Gyr^-1.
+    gas_mask, = np.where((s.data['sfr'] > 0.0) & (s.r()[s.data['type'] == 0] > radial_limit_min) & (s.r()[s.data['type'] == 0] < radial_limit_max) & (
+        s.data['pos'][s.data['type'] == 0, 2] < 0.003))  # Mask the data: select stellar particles inside different (physical) spatial regimes
+    SFR = np.sum(s.data['sfr'][gas_mask])
     
-    return s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True), SFR
+    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), SFR
 
 
 def delta_sfr_history(pdf, data, region, read):
@@ -296,7 +298,7 @@ def delta_sfr_history(pdf, data, region, read):
                 redshift_mask, = np.where(redshifts <= redshift_cut)
                 snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
                 
-                # Get bar data #
+                # Get delta sfr history data #
                 delta_sfr_history_data = np.array(get_delta_sfr_history(snapshot_ids, halo, radial_limit_min, radial_limit_max))
                 lookback_times = delta_sfr_history_data[:, 0]
                 SFR = delta_sfr_history_data[:, 1]
@@ -339,17 +341,18 @@ def delta_sfr_history(pdf, data, region, read):
             SFR = np.load(path + 'SFR_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
             
-            counts, bins, bars = top_axis.hist(lookback_times, weights=SFR, histtype='step', bins=n_bins, range=[0, 13],
+            counts, bins, bars = top_axis.hist(lookback_times, weights=SFR, histtype='step', bins=50, range=[0, 13],
                                                label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+            # y_data, edges = np.histogram(lookback_times, weights=SFR, bins=50)
+            # y_data /= edges[1:] - edges[:-1]  # Normalise the values wrt the bin width.
+            # top_axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[1])
             
-            # print(len(SFR[0]))
-            # print(np.shape(SFR))
             axis2 = top_axis.twiny()
             plot_tools.set_axes_evo(top_axis, axis2, ylim=[0, 22], ylabel='$\mathrm{Sfr}\,\mathrm{[M_\odot\,yr^{-1}]}$', aspect=None)
             top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
             
-            # top_axis.text(0.05, 0.92, text, color='k', fontsize=12, transform=top_axis.transAxes)  #  # if i == 0:  #       #   #  #
-            # original_bins, original_counts = bins, counts  # else:  #     bottom_axis.plot(original_bins[:-1], (np.divide(counts -  #   #  #
+            # top_axis.text(0.05, 0.92, text, color='k', fontsize=12, transform=top_axis.transAxes)  #  # if i == 0:  #       #   #  #  #  #  #  #
+            # original_bins, original_counts = bins, counts  # else:  #     bottom_axis.plot(original_bins[:-1], (np.divide(counts -  #   #  #  #
             # original_counts, original_counts)), color=colors[i], )  #     axis2 = bottom_axis.twiny()  #     set_axes_evo(bottom_axis, axis2)
     
     pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
@@ -935,7 +938,7 @@ def AGN_modes_distribution(date, data, read):
             axis.set_xlim(12, 0)
             axis.set_yscale('log')
             axis.set_ylim(1e51, 1e60)
-            axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=16)
+            axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}}$', size=16)
             axis.tick_params(direction='out', which='both', right='on', left='on', labelsize=16)
         axis00.set_ylabel(r'$\mathrm{Mechanical\;feedback\;energy\;[ergs]}$', size=16)
         axis02.set_ylabel(r'$\mathrm{Thermal\;feedback\;energy\;[ergs]}$', size=16)
