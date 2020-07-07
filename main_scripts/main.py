@@ -4,10 +4,10 @@ import glob
 import galaxy
 import movies
 import profiles
+import evolution
 import projections
 import combinations
 import metallicities
-import time_evolution
 
 import numpy as np
 
@@ -299,23 +299,19 @@ class AurigaPdf:
         # projections.dark_matter_density(pdf, self, redshift, read=False)
         
         # Time evolution #
-        # Masses #
-        # time_evolution.sfr_history(pdf, self, read=False)
-        # time_evolution.bar_strength(pdf, self, read=False)
-        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
-        time_evolution.delta_sfr_history(pdf, self, region='outer', read=False)
-        # time_evolution.delta_sfr_history(pdf, self, region='inner', read=True)
-        # time_evolution.gas_temperature_fraction(pdf, self, read=False)
-        # time_evolution.gas_stars_sfr(pdf, self, read=True)
+        # Galaxy #
+        # evolution.sfr(pdf, self, read=False)
+        # evolution.bar_strength(pdf, self, read=False)
+        # evolution.delta_sfr(pdf, self, region='outer', read=False)
+        # evolution.gas_temperature_regimes(pdf, self, read=False)
         # AGN #
-        # time_evolution.AGN_modes_cumulative(date, self, read=False)
-        # time_evolution.AGN_modes_histogram(date, self, read=False)
-        # time_evolution.AGN_modes_distribution(date, self, read=False)
-        # time_evolution.AGN_modes_step(date, self, read=False)
-        # time_evolution.AGN_modes_gas(date)
-        # time_evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
-        # time_evolution.AGN_feedback_smoothed(pdf)
-        # time_evolution.blackhole_masses(pdf, self, read=False)
+        evolution.AGN_modes_distribution(date, self, read=False)
+        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
+        # evolution.AGN_modes_gas(date)
+        # evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
+        # evolution.AGN_feedback_smoothed(pdf)
+        # evolution.gas_stars_sfr(pdf, self, read=True)
+        # evolution.blackhole_masses(pdf, self, read=False)
         
         # Global galactic relations #
         # galaxy.gas_temperature_fraction(pdf, self, read=False)
@@ -349,8 +345,8 @@ class AurigaPdf:
         pdf.close()
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
-        # file_name = 'AGNms-' + date + '.png'
-        file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'AGNmd-' + date + '.png'
+        # file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 

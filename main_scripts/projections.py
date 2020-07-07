@@ -15,168 +15,9 @@ from loadmodules import *
 from matplotlib import gridspec
 
 res = 512
-level = 4
 boxsize = 0.06
+default_level = 4
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
-
-
-def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False, multiple3=False):
-    """
-    Generate plot axes.
-    :param res: resolution
-    :param boxsize: boxsize
-    :param contour: contour
-    :param colorbar: colorbar
-    :param velocity_vectors: velocity_vectors
-    :param multiple: multiple
-    :return: axes
-    """
-    
-    # Set the axis values #
-    x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
-    y = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
-    y2 = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res / 2 + 1)
-    
-    area = (boxsize / res) ** 2  # Calculate the area.
-    
-    # Generate the panels #
-    if contour is True:
-        gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.0, height_ratios=[1, 0.5], width_ratios=[1, 1, 0.05])
-        axis00 = plt.subplot(gs[0, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axis10 = plt.subplot(gs[1, 0])
-        axis11 = plt.subplot(gs[1, 1])
-        axiscbar = plt.subplot(gs[:, 2])
-        
-        return axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area
-    
-    elif colorbar is True:
-        gs = gridspec.GridSpec(2, 2, hspace=0.05, wspace=0.0, height_ratios=[1, 0.5], width_ratios=[1, 0.05])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        axiscbar = plt.subplot(gs[:, 1])
-        
-        return axis00, axis10, axiscbar, x, y, y2, area
-    
-    elif velocity_vectors is True:
-        gs = gridspec.GridSpec(2, 1, hspace=0.05)
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        
-        return axis00, axis10, x, y, y2, area
-    
-    elif multiple is True:
-        gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        axis20 = plt.subplot(gs[2, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axis11 = plt.subplot(gs[1, 1])
-        axis21 = plt.subplot(gs[2, 1])
-        axis02 = plt.subplot(gs[0, 2])
-        axis12 = plt.subplot(gs[1, 2])
-        axis22 = plt.subplot(gs[2, 2])
-        axis03 = plt.subplot(gs[0, 3])
-        axis13 = plt.subplot(gs[1, 3])
-        axis23 = plt.subplot(gs[2, 3])
-        axis04 = plt.subplot(gs[0, 4])
-        axis14 = plt.subplot(gs[1, 4])
-        axis24 = plt.subplot(gs[2, 4])
-        axis05 = plt.subplot(gs[0, 5])
-        axis15 = plt.subplot(gs[1, 5])
-        axis25 = plt.subplot(gs[2, 5])
-        
-        return axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22, axis03, axis13, axis23, axis04, axis14, axis24, axis05, \
-               axis15, axis25, x, y, area
-    
-    elif multiple2 is True:
-        gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        axis20 = plt.subplot(gs[2, 0])
-        axis30 = plt.subplot(gs[3, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axis11 = plt.subplot(gs[1, 1])
-        axis21 = plt.subplot(gs[2, 1])
-        axis31 = plt.subplot(gs[3, 1])
-        axis02 = plt.subplot(gs[0, 2])
-        axis12 = plt.subplot(gs[1, 2])
-        axis22 = plt.subplot(gs[2, 2])
-        axis32 = plt.subplot(gs[3, 2])
-        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area
-    
-    elif multiple3 is True:
-        gs = gridspec.GridSpec(4, 4, hspace=0.05, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        axis20 = plt.subplot(gs[2, 0])
-        axis30 = plt.subplot(gs[3, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axis11 = plt.subplot(gs[1, 1])
-        axis21 = plt.subplot(gs[2, 1])
-        axis31 = plt.subplot(gs[3, 1])
-        axis02 = plt.subplot(gs[0, 2])
-        axis12 = plt.subplot(gs[1, 2])
-        axis22 = plt.subplot(gs[2, 2])
-        axis32 = plt.subplot(gs[3, 2])
-        axiscbar = plt.subplot(gs[:, 3])
-        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area
-    
-    else:
-        gs = gridspec.GridSpec(2, 1, hspace=0.05)
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        
-        return axis00, axis10, x, y, y2, area
-
-
-def set_axes(axis00, axis10, xlabel=None, ylabel=None, y2label=None, ticks=False):
-    """
-    Set axes' parameters.
-    :param axis00: top plot axes from create_axes
-    :param axis10: bottom plot axes from create_axes
-    :param xlabel: x-axis label
-    :param ylabel: y-axis label
-    :param y2label: y2-axis label
-    :param ticks: y2-axis label
-    :return: None
-    """
-    
-    # Set x-axis labels and ticks #
-    if xlabel is None:
-        axis00.set_xticks([])
-        axis10.set_xticks([])
-        axis00.set_xticklabels([])
-        axis10.set_xticklabels([])
-    else:
-        axis00.set_xticklabels([])
-        axis10.set_xlabel(xlabel, size=16)
-    
-    # Set y-axis labels and ticks #
-    if ylabel is None:
-        axis00.set_yticks([])
-        axis00.set_yticklabels([])
-    else:
-        axis00.set_ylabel(ylabel, size=16)
-    
-    # Set y2-axis labels and ticks #
-    if y2label is None:
-        axis10.set_yticks([])
-        axis10.set_yticklabels([])
-    else:
-        axis10.set_ylabel(y2label, size=16)
-    
-    # Set x- and y-axis ticks size #
-    if ticks is True:
-        for axis in [axis00, axis10]:
-            axis.tick_params(direction='out', which='both', top='on', right='on')
-            
-            for label in axis.xaxis.get_ticklabels():
-                label.set_size(16)
-            for label in axis.yaxis.get_ticklabels():
-                label.set_size(16)
-    
-    return None
 
 
 def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False):
@@ -206,7 +47,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
         boxy = boxsize
     
     elif idir == 1:  # XZ plane
-        pos[:, 0] = pos_orig[:, 0]  # y-axis.
+        pos[:, 0] = pos_orig[:, 0]  # z-axis.
         pos[:, 1] = pos_orig[:, 2]  # x-axis.
         pos[:, 2] = pos_orig[:, 1]  # 3rd dimension.
         
@@ -216,9 +57,9 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
         boxy = boxsize
     
     elif idir == 2:  # YZ plane
-        pos[:, 0] = pos_orig[:, 1]
-        pos[:, 1] = pos_orig[:, 0]
-        pos[:, 2] = pos_orig[:, 2]
+        pos[:, 0] = pos_orig[:, 1]  # y-axis.
+        pos[:, 1] = pos_orig[:, 0]  # z-axis.
+        pos[:, 2] = pos_orig[:, 2]  # 3rd dimension.
         
         xres = res
         yres = res // 2
@@ -282,7 +123,7 @@ def stellar_light(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -291,6 +132,8 @@ def stellar_light(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -320,7 +163,7 @@ def stellar_light(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 10))
-        axis00, axis10, x, y, y2, area = create_axes(res=res, boxsize=boxsize)
+        axis00, axis10, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize)
         for axis in [axis00, axis10]:
             axis.set_yticks([])
             axis.set_xticks([])
@@ -335,6 +178,7 @@ def stellar_light(pdf, data, redshift, read):
         # Plot the stellar light projections #
         axis00.imshow(face_on, interpolation='nearest', aspect='equal')
         axis10.imshow(edge_on, interpolation='nearest', aspect='equal')
+        
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
@@ -361,7 +205,7 @@ def stellar_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['mass', 'pos']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -370,8 +214,11 @@ def stellar_density(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
-            axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)  # Generate the axes.
+            axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
+                                                                                                          contour=True)  # Generate the axes.
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -409,7 +256,7 @@ def stellar_density(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(16, 9))
-        axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, contour=True)
+        axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, contour=True)
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis01, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$', ylabel=r'$\mathrm{z/kpc}$')
@@ -459,7 +306,7 @@ def stellar_light_fit(data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -468,6 +315,8 @@ def stellar_light_fit(data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -530,7 +379,7 @@ def r_band_magnitude(data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gsph', 'mass', 'pos']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -539,6 +388,8 @@ def r_band_magnitude(data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -604,7 +455,7 @@ def gas_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'rho']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -613,6 +464,8 @@ def gas_density(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -635,7 +488,7 @@ def gas_density(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(7.5, 10))
-        axis00, axis10, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$', ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), color='k', fontsize=16,
@@ -676,7 +529,7 @@ def gas_temperature(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -685,6 +538,8 @@ def gas_temperature(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -715,7 +570,7 @@ def gas_temperature(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(7.5, 10))
-        axis00, axis10, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$', ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), color='k', fontsize=16,
@@ -758,7 +613,7 @@ def gas_metallicity(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'gz']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -767,6 +622,8 @@ def gas_metallicity(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -789,7 +646,7 @@ def gas_metallicity(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(7.5, 10))
-        axis00, axis10, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$', ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), color='k', fontsize=16,
@@ -831,15 +688,17 @@ def gas_slice(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['pos', 'vel', 'mass', 'u', 'ne', 'gz', 'gmet', 'rho', 'vol']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on Euler's angles #
             s.calc_sf_indizes(s.subfind)
@@ -964,7 +823,7 @@ def gas_slice(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(10, 15))
-        axis00, axis10, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
+        axis00, axis10, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), color='k', fontsize=16,
                     transform=axis00.transAxes)
         for axis in [axis00, axis10]:
@@ -1014,7 +873,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'ne', 'pos', 'rho', 'u']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -1023,6 +882,8 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1092,7 +953,7 @@ def magnetic_field(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
         attributes = ['mass', 'pos', 'bfld']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -1101,6 +962,8 @@ def magnetic_field(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1126,7 +989,7 @@ def magnetic_field(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(7.5, 10))
-        axis00, axis10, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$', ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), color='k', fontsize=16,
@@ -1168,7 +1031,7 @@ def dark_matter_density(pdf, data, redshift, read):
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [1, 4]
         attributes = ['mass', 'pos']
-        data.select_haloes(level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
@@ -1177,12 +1040,15 @@ def dark_matter_density(pdf, data, redshift, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo: ", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             
-            axis00, axis10, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)  # Generate the axes.
+            axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
+                                                                                          colorbar=True)  # Generate the axes.
             
             # Get the dark matter density projections #
             dark_matter_mask, = np.where(
@@ -1205,7 +1071,7 @@ def dark_matter_density(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and define its parameters #
         figure = plt.figure(figsize=(7.5, 10))
-        axis00, axis10, axiscbar, x, y, y2, area = create_axes(res=res, boxsize=boxsize * 1e3, colorbar=True)
+        axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
         plot_tools.set_axis(axis00, xlim=[-200, 200], ylim=[-200, 200], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-200, 200], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$', ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), color='k', fontsize=16,

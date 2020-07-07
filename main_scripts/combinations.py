@@ -296,8 +296,8 @@ def AGN_modes_distribution(date, data):
         
         # Calculate and plot the mechanical energy sum #
         n_bins = int((max(lookback_times[np.where(mechanicals > 0)]) - min(lookback_times[np.where(mechanicals > 0)])) / 0.02)
-        x_value = np.empty(n_bins)
-        sum = np.empty(n_bins)
+        x_value = np.zeros(n_bins)
+        sum = np.zeros(n_bins)
         x_low = min(lookback_times[np.where(mechanicals > 0)])
         for j in range(n_bins):
             index = np.where((lookback_times[np.where(mechanicals > 0)] >= x_low) & (lookback_times[np.where(mechanicals > 0)] < x_low + 0.02))[0]
@@ -310,8 +310,8 @@ def AGN_modes_distribution(date, data):
         
         # Calculate and plot the mechanical energy sum #
         n_bins = int((max(lookback_times[np.where(thermals > 0)]) - min(lookback_times[np.where(thermals > 0)])) / 0.02)
-        x_value = np.empty(n_bins)
-        sum = np.empty(n_bins)
+        x_value = np.zeros(n_bins)
+        sum = np.zeros(n_bins)
         x_low = min(lookback_times[np.where(thermals > 0)])
         for j in range(n_bins):
             index = np.where((lookback_times[np.where(thermals > 0)] >= x_low) & (lookback_times[np.where(thermals > 0)] < x_low + 0.02))[0]
