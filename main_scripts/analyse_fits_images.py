@@ -48,7 +48,7 @@ def convert_for_fit(name, min_intensity):
     image_fits = gaussian_filter(image_fits, sigma=sigma)
     array = np.asarray(image_fits)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
     axis.set_aspect('equal')
@@ -72,7 +72,7 @@ def plot_fits_image(name):
     # Load the fits image and show it #
     image_fits = fits.getdata(name, ext=0)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
     axis.set_aspect('equal')
@@ -121,7 +121,7 @@ def plot_fit_data(h=0.0, R_eff=0.0):
     # Load the fits image and show it #
     image_fits = fits.getdata(name + '.fits', ext=0)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
     axis.set_aspect('equal')
@@ -158,7 +158,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     print(isolist.to_table())  # Print the isophote values as a table sorted by the semi-major axis length.
     
     # Plot the ellipticity, position angle, and the center x and y position as a function of the semi-major axis length.
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     plt.figure(figsize=(10, 7.5))
     gs = gridspec.GridSpec(2, 3, hspace=0.35, wspace=0.35)
     axis00 = plt.subplot(gs[0, 0])
@@ -194,7 +194,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     # residual = image_fits - model_image
     
     # Plot the original data with some of the isophotes, the elliptical model image, and the residual image #
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     plt.figure(figsize=(10, 10))
     gs = gridspec.GridSpec(1, 2, hspace=0.2, wspace=0.2)
     axis00 = plt.subplot(gs[0, 0])

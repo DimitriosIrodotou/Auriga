@@ -69,12 +69,12 @@ def binned_median_1sigma(x_data, y_data, bin_type, n_bins, log=False):
         return x_value, median, shigh, slow
 
 
-def binned_sum(x_data, y_data, bin_width, log=False):
+def binned_sum(x_data, y_data, n_bins, log=False):
     """
     Calculate the binned sum line.
     :param x_data: x-axis data.
     :param y_data: y-axis data.
-    :param bin_width: width of the bin.
+    :param n_bins: number of the bin.
     :param log: boolean.
     :return: x_value, sum
     """
@@ -85,7 +85,7 @@ def binned_sum(x_data, y_data, bin_width, log=False):
     x_low = min(x)
     
     # Declare arrays to store the data #
-    n_bins = int((max(x) - min(x)) / bin_width)
+    bin_width = (max(x) - min(x)) / n_bins
     sum = np.zeros(n_bins)
     x_value = np.zeros(n_bins)
     
@@ -206,7 +206,11 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
         axis.set_yscale(yscale)
     
     # Set axis labels #
-    axis.set_ylabel(ylabel, size=size)
+    if ylabel:
+        axis.set_ylabel(ylabel, size=size)
+    else:
+        axis.set_yticklabels([])
+    
     axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=size)
     axis2.set_xlabel(r'$\mathrm{z}$', size=size)
     

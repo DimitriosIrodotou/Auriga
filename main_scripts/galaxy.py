@@ -95,7 +95,7 @@ def circularity(pdf, data, levels, redshift):
         data.select_haloes(levels[il], redshift)
         nhalos += data.selected_current_nsnaps
     colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.xlabel(r'$\mathrm{\epsilon}$', size=16)
@@ -216,7 +216,7 @@ def courteau_convert_luminosity_to_mass(loglum):
 def tully_fisher(pdf, data, levels):
     nlevels = len(levels)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$", size=16)
@@ -317,7 +317,7 @@ def guo_abundance_matching(mass):
 def stellar_vs_total(pdf, data, levels):
     nlevels = len(levels)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
@@ -388,7 +388,7 @@ def convert_rband_to_Rband_mag(r, g):
 def gas_fraction(pdf, data, levels):
     nlevels = len(levels)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.xlabel("$\\rm{M_{R}\\,[mag]}$", size=16)
@@ -538,7 +538,7 @@ def bar_strength(pdf, data, read):
             np.save(path + 'r_m_' + str(s.haloname), r_m)
             np.save(path + 'name_' + str(s.haloname), s.haloname)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.ylim(-0.2, 1.2)
@@ -639,7 +639,7 @@ def delta_sfr_history(pdf, data, redshift, region, read):
         np.save(path + 'redshifts_mask_' + str(s.haloname), redshifts_mask)
         np.save(path + 'stellar_masses_' + str(s.haloname), stellar_masses)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(16, 9))
     gs = gridspec.GridSpec(2, 3, hspace=0.3, wspace=0.05)
     axis00 = plt.subplot(gs[0, 0])
@@ -753,7 +753,7 @@ def gas_temperature_fraction(pdf, data, read):
     names = glob.glob(path + '/name_*')
     names.sort()
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.ylim(-0.2, 1.2)
@@ -784,7 +784,7 @@ def stellar_surface_density_decomposition(pdf, data, redshift):
     
     # Loop over all available haloes #
     for s in data:
-        # Generate the figure and define its parameters #
+        # Generate the figure and set its parameters #
         figure = plt.figure(0, figsize=(10, 7.5))
         plt.ylim(1e0, 1e6)
         plt.xlim(0.0, 30.0)
@@ -857,7 +857,7 @@ def circular_velocity_curves(pdf, data, redshift):
     
     # Loop over all available haloes #
     for s in data:
-        # Generate the figure and define its parameters #
+        # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plt.xlim(0.0, 24.0)
         plt.ylim(0.0, 700.0)
@@ -981,7 +981,7 @@ def gas_temperature_histogram(pdf, data, read):
         np.save(path + 'name_' + str(s.haloname), s.haloname)
         np.save(path + 'temperatures_' + str(s.haloname), temperatures)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(10, 7.5))
     plt.grid(True, color='gray', linestyle='-')
     plt.xscale('log')
@@ -1080,7 +1080,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
     
     # Loop over all available haloes #
     for i in range(len(names)):
-        # Generate the figure and define its parameters #
+        # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plt.grid(True, color='gray', linestyle='-')
         plt.xscale('log')

@@ -150,7 +150,7 @@ def gas_movie(data, read):
         temperature_face_on = np.load(path + 'temperature_face_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         temperature_edge_on = np.load(path + 'temperature_edge_on_3000_' + str(re.split('_|.npy', names[i])[2]) + '.npy')
         
-        # Generate the figure and define its parameters #
+        # Generate the figure and set its parameters #
         plt.rcParams['savefig.facecolor'] = 'black'
         figure, axis = plt.subplots(1, figsize=(20, 20))
         gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
@@ -196,7 +196,7 @@ def gas_movie(data, read):
         plt.savefig('/u/di43/Auriga/plots/gm/' + 'gmf_%04d.png' % i, bbox_inches='tight')  # Save the figure.
         plt.close()
         
-        # Generate the figure and define its parameters #
+        # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(20, 20))
         gs = gridspec.GridSpec(2, 2, hspace=0, wspace=0)
         axis00 = plt.subplot(gs[0, 0])

@@ -301,16 +301,15 @@ class AurigaPdf:
         # Time evolution #
         # Galaxy #
         # evolution.sfr(pdf, self, read=False)
+        # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
+        # evolution.sfr_stars_gas_regimes(pdf, self, region='outer', read=False)
         # evolution.bar_strength(pdf, self, read=False)
-        # evolution.delta_sfr(pdf, self, region='outer', read=False)
         # evolution.gas_temperature_regimes(pdf, self, read=False)
         # AGN #
-        evolution.AGN_modes_distribution(date, self, read=False)
+        # evolution.AGN_modes_distribution(date, self, read=False)
         # TODO remove: set_axes, level, centerat - add: read, data-exist-check
-        # evolution.AGN_modes_gas(date)
-        # evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
+        evolution.AGN_feedback_kernel(pdf, self, read=False, ds=False)
         # evolution.AGN_feedback_smoothed(pdf)
-        # evolution.gas_stars_sfr(pdf, self, read=True)
         # evolution.blackhole_masses(pdf, self, read=False)
         
         # Global galactic relations #
@@ -345,8 +344,8 @@ class AurigaPdf:
         pdf.close()
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
-        file_name = 'AGNmd-' + date + '.png'
-        # file_name = 'Auriga-' + date + '.pdf'
+        # file_name = 'AGNmd-' + date + '.png'
+        file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 

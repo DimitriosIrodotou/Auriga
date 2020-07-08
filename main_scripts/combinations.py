@@ -239,7 +239,7 @@ def AGN_modes_distribution(date, data):
     if not os.path.exists(path):
         os.makedirs(path)
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(16, 9))
     gs = gridspec.GridSpec(2, 2, wspace=0.05, hspace=0.1, height_ratios=[0.05, 1])
     axiscbar = plt.subplot(gs[0, 0])
@@ -447,7 +447,7 @@ def central_combination(pdf, data, redshift, read):
     
     # Loop over all available haloes #
     for i in range(len(names)):
-        # Generate the figure and define its parameters #
+        # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, axis24, \
         axis05, axiscbar5, axis25, x, y, area = create_axes(
@@ -550,7 +550,7 @@ def stellar_light_combination(pdf, redshift):
     names = glob.glob(path + 'sl/' + str(redshift) + '/name_*')
     names.sort()
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(10, 10))
     axis00, axis10, axis20, axis30, axis40, axis50, axis01, axis11, axis21, axis31, axis41, axis51, axis02, axis12, axis22, axis32, axis42, axis52,\
     x, y, y2, area = create_axes(
@@ -591,7 +591,7 @@ def gas_density_combination(pdf, redshift):
     names = glob.glob(path + 'gd/' + str(redshift) + '/name_*')
     names.sort()
     
-    # Generate the figure and define its parameters #
+    # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(10, 10))
     axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area = create_axes(res=res,
                                                                                                                                            boxsize=boxsize * 1e3,
