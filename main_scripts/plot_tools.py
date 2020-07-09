@@ -40,7 +40,7 @@ def binned_median_1sigma(x_data, y_data, bin_type, n_bins, log=False):
                 slow[i] = np.nanpercentile(y_data[index], 15.87)
                 shigh[i] = np.nanpercentile(y_data[index], 84.13)
         
-        return x_value, median
+        return x_value, median, shigh, slow
     
     elif bin_type == 'equal_width':
         if log is True:
