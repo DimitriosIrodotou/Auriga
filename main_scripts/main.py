@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_" % self.directory)
+        haloes = glob.glob("%shalo_06" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -307,15 +307,14 @@ class AurigaPdf:
         # evolution.gas_temperature_regimes(pdf, self, read=False)
         # AGN #
         # evolution.AGN_modes_distribution(date, self, read=False)
-        evolution.AGN_feedback_kernel(date, self, read=False, ds=False)
-        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
+        # evolution.AGN_feedback_kernel(date, self, read=True, ds=False)
         # evolution.AGN_feedback_smoothed(pdf)
         # evolution.blackhole_masses(pdf, self, read=False)
         
         # Global galactic relations #
-        # galaxy.gas_temperature_fraction(pdf, self, read=False)
-        # galaxy.circularity(pdf, self, [level], redshift)
-        # galaxy.tully_fisher(pdf, self, [level])
+        # galaxy.circularity(pdf, self, redshift, read=False)
+        galaxy.tully_fisher(pdf, self, redshift, read=True)
+        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
         # galaxy.stellar_vs_total(pdf, self, [level])
         # galaxy.gas_fraction(pdf, self, [level])
         # galaxy.central_bfld(pdf, self, [level])
@@ -328,6 +327,10 @@ class AurigaPdf:
         # Metallicities #
         # metallicities.ratios(pdf, self, [level], 0.)
         
+        # Profiles #
+        # profiles.radial_profiles(pdf, self, level, redshift)
+        # profiles.vertical_profiles(pdf, self, level, redshift)
+        
         # Movies #
         # movies.gas_movie(self, read=True)
         
@@ -337,15 +340,11 @@ class AurigaPdf:
         # combinations.stellar_light_combination(pdf, redshift)
         # combinations.central_combination(pdf, self, redshift, read=False)
         
-        # Profiles #
-        # profiles.radial_profiles(pdf, self, level, redshift)
-        # profiles.vertical_profiles(pdf, self, level, redshift)
-        
         pdf.close()
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
         # file_name = 'AGNmd-' + date + '.png'
-        file_name = 'Auriga-' + date + '.png'
+        file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 

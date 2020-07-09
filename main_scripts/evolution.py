@@ -51,6 +51,8 @@ def sfr(pdf, data, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
+            else:
+                print("Analysing halo:", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -871,9 +873,9 @@ def AGN_feedback_kernel(pdf, data, read, ds):
         axis3 = axis.twinx()
         axis3.yaxis.label.set_color('red')
         axis3.spines['right'].set_color('red')
-        axis3.tick_params(axis='y', direction='out', left='off', colors='red')
         plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
+        axis3.tick_params(axis='y', direction='out', left='off', colors='red')
         figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
         
         # Load and plot the data #
@@ -883,13 +885,13 @@ def AGN_feedback_kernel(pdf, data, read, ds):
         blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
         # Plot the evolution of black hole radius and the volume ratio of gas cells within that #
-        # axis3.scatter(lookback_times, blackhole_hsmls * 1e3, edgecolor='None', color=colors[1])
+        axis3.scatter(lookback_times, blackhole_hsmls * 1e3, edgecolor='None', color=colors[1])
         axis.scatter(lookback_times, nsf_gas_volumes / gas_volumes, edgecolor='None', color=colors[0])
         
         # Plot median and 1-sigma lines #
         x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
                                                                        n_bins=len(lookback_times) / 2, log=False)
-        axis.plot(x_value, median, color=colors[3], linewidth=3)
+        axis.plot(x_value, median, color=colors[0], linewidth=3)
         axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3')
         
         x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_type='equal_width', n_bins=10,
@@ -1019,7 +1021,9 @@ def blackhole_masses(pdf, data, read):
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
                 continue
-            
+            else:
+                print("Analysing halo:", str(s.haloname))
+                
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
             redshift_mask, = np.where(redshifts <= redshift_cut)
