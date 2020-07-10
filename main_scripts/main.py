@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_06" % self.directory)
+        haloes = glob.glob("%shalo_" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -302,7 +302,7 @@ class AurigaPdf:
         # Galaxy #
         # evolution.sfr(pdf, self, read=False)
         # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
-        # evolution.sfr_stars_gas_regimes(pdf, self, region='inner', read=True)
+        # evolution.sfr_stars_gas_regimes(pdf, self, region='inner', read=False)
         # evolution.bar_strength(pdf, self, read=False)
         # evolution.gas_temperature_regimes(pdf, self, read=False)
         # AGN #
@@ -312,24 +312,14 @@ class AurigaPdf:
         # evolution.blackhole_masses(pdf, self, read=False)
         
         # Global galactic relations #
-        # galaxy.circularity(pdf, self, redshift, read=False)
-        galaxy.tully_fisher(pdf, self, redshift, read=True)
-        # TODO remove: set_axes, level, centerat - add: read, data-exist-check
-        # galaxy.stellar_vs_total(pdf, self, [level])
-        # galaxy.gas_fraction(pdf, self, [level])
-        # galaxy.central_bfld(pdf, self, [level])
-        # galaxy.bar_strength(pdf, self, read=False)
-        # galaxy.stellar_surface_density_decomposition(pdf, self, redshift)
-        # galaxy.circular_velocity_curves(pdf, self, redshift)
-        # galaxy.gas_temperature_histogram(pdf, self, read=False)
-        # galaxy.gas_distance_temperature(pdf, self, redshift, read=True)
-        
-        # Metallicities #
-        # metallicities.ratios(pdf, self, [level], 0.)
-        
-        # Profiles #
-        # profiles.radial_profiles(pdf, self, level, redshift)
-        # profiles.vertical_profiles(pdf, self, level, redshift)
+        # galaxy.circularity_distribution(pdf, self, redshift, read=False)
+        # galaxy.tully_fisher(pdf, self, redshift, read=False)
+        # galaxy.stellar_vs_halo_mass(pdf, self, redshift, read=False)
+        # galaxy.gas_fraction_vs_magnitude(pdf, self, redshift, read=False)
+        # galaxy.bar_strength_profiles(pdf, self, redshift, read=False)
+        # galaxy.stellar_surface_density_profile(pdf, self, redshift, read=False)
+        # galaxy.circular_velocity_curves(pdf, self, redshift, read=False)
+        # galaxy.gas_temperature_vs_distance(pdf, self, redshift, read=False)
         
         # Movies #
         # movies.gas_movie(self, read=True)

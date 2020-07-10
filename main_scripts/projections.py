@@ -275,7 +275,7 @@ def stellar_density(pdf, data, redshift, read):
         # Plot the stellar density projections #
         pcm = axis01.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap=cmap)
         axis11.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap=cmap)
-        plot_tools.create_colorbar(axiscbar, pcm, r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
         
         # Plot the contour lines #
         axis00.contour(np.log10(face_on_count).T, colors='black', extent=[-30, 30, -30, 30], levels=np.arange(0.0, 5.0 + 0.5, 0.25))
@@ -501,7 +501,7 @@ def gas_density(pdf, data, redshift, read):
         # Plot the gas density projections #
         pcm = axis00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap='magma')
         axis10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap='magma')
-        plot_tools.create_colorbar(axiscbar, pcm, '$\mathrm{\Sigma_{gas}/(M_\odot\;kpc^{-2})}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{gas}/(M_\odot\;kpc^{-2})}$')
         
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -585,7 +585,7 @@ def gas_temperature(pdf, data, redshift, read):
         # Plot the density-weighted gas temperature projections #
         pcm = axis00.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
         axis10.pcolormesh(x, 0.5 * y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), cmap='viridis', rasterized=True)
-        plot_tools.create_colorbar(axiscbar, pcm, r'$\mathrm{T/K}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
         
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -659,7 +659,7 @@ def gas_metallicity(pdf, data, redshift, read):
         # Plot the gas metallicity projections #
         pcm = axis00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), rasterized=True, cmap='viridis')
         axis10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), rasterized=True, cmap='viridis')
-        plot_tools.create_colorbar(axiscbar, pcm, r'$\mathrm{Z/Z_\odot}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{Z/Z_\odot}$')
         
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -925,7 +925,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         # Plot the density-weighted gas temperature projections #
         pcm = axis00.pcolormesh(x * 1e3, z * 1e3, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=2e7), rasterized=True,
                                 cmap='Spectral_r')
-        plot_tools.create_colorbar(axiscbar, pcm, r'$\mathrm{T/K}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
         
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -1002,7 +1002,7 @@ def magnetic_field(pdf, data, redshift, read):
         # Plot the magnetic field projections #
         pcm = axis00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=1e2), rasterized=True, cmap='CMRmap')
         axis10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=1e2), rasterized=True, cmap='CMRmap')
-        plot_tools.create_colorbar(axiscbar, pcm, '$\mathrm{B/\mu G}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{B/\mu G}$')
         
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -1084,7 +1084,7 @@ def dark_matter_density(pdf, data, redshift, read):
         # Plot the dark matter density projection #
         pcm = axis00.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), rasterized=True, cmap='Greys')
         axis10.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), rasterized=True, cmap='Greys')
-        plot_tools.create_colorbar(axiscbar, pcm, '$\mathrm{\Sigma_{DM}/(M_\odot\;kpc^{-2})}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{DM}/(M_\odot\;kpc^{-2})}$')
         
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')

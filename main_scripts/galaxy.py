@@ -4,7 +4,6 @@ import glob
 import calcGrid
 import plot_tools
 import matplotlib
-
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
@@ -13,6 +12,7 @@ from const import *
 from sfigure import *
 from loadmodules import *
 from scipy.special import gamma
+from matplotlib import gridspec
 from scipy.optimize import curve_fit
 from scripts.gigagalaxy.util import plot_helper
 from parse_particledata import parse_particledata
@@ -25,9 +25,9 @@ Msunabs = [5.61, 5.48, 4.83, 3.30, 5.12, 4.68, 4.57, 4.60]
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
-def circularity(pdf, data, redshift, read):
+def circularity_distribution(pdf, data, redshift, read):
     """
-    Plot orbital circularity distribution for Auriga halo(es).
+    Plot the orbital circularity distribution for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
@@ -127,14 +127,14 @@ def circularity(pdf, data, redshift, read):
         disc_fraction = np.load(path + 'disc_fraction_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         stellar_masses = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        # Plot orbital circularity distribution #
+        # Plot the orbital circularity distribution #
         y_data, edges = np.histogram(epsilon, weights=stellar_masses / np.sum(stellar_masses), bins=100, range=[-1.7, 1.7])
         y_data /= edges[1:] - edges[:-1]
-        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=next(color_array), label=r'$\mathrm{D/T = %.2f}$' % disc_fraction)
+        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[0], label=r'$\mathrm{D/T = %.2f}$' % disc_fraction)
         
         # Create the legend, save and close the figure #
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-        pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+        pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
 
@@ -159,7 +159,7 @@ def pizagno_convert_color_to_mass(color, magnitude, band=5):
     """
     mass_to_light = 10 ** (-0.306 + 1.097 * color)
     luminosity = 10 ** (2.0 * (Msunabs[band] - magnitude) / 5.0)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 Msun.
+    stellar_mass = np.log10(mass_to_light * luminosity * 1e-10)  # In 1e10 Msun.
     stellar_mass = (stellar_mass - 0.230) / 0.922  # Convert in the MPA stellar masses eq. 20 of Dutton et al. 2011.
     return 10 ** stellar_mass
 
@@ -174,7 +174,7 @@ def verheijen_convert_color_to_mass(color, magnitude, band=1):
     """
     mass_to_light = 10 ** (-0.976 + 1.111 * color)
     luminosity = 10 ** (2.0 * (Msunabs[band] - magnitude) / 5.0)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 Msun.
+    stellar_mass = np.log10(mass_to_light * luminosity * 1e-10)  # In 1e10 Msun.
     stellar_mass = (stellar_mass - 0.230) / 0.922
     return 10 ** stellar_mass
 
@@ -187,21 +187,20 @@ def courteau_convert_luminosity_to_mass(loglum):
     """
     mass_to_light = 10 ** (0.172 + 0.144 * (loglum - 10.3))
     luminosity = 10 ** (loglum)
-    stellar_mass = np.log10(mass_to_light * luminosity * 1.0e-10)  # In 1e10 Msun.
+    stellar_mass = np.log10(mass_to_light * luminosity * 1e-10)  # In 1e10 Msun.
     stellar_mass = (stellar_mass - 0.230) / 0.922
     return 10 ** stellar_mass
 
 
 def tully_fisher(pdf, data, redshift, read):
     """
-    Plot the Tully-Fisher relation
+    Plot the Tully-Fisher relation for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.
     :return: None
     """
-    
     path = '/u/di43/Auriga/plots/data/' + 'tf/'
     
     # Read the data #
@@ -211,29 +210,27 @@ def tully_fisher(pdf, data, redshift, read):
             os.makedirs(path)
         
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-        particle_type = [4]
-        attributes = ['age', 'mass', 'pot', 'pos', 'type']
-        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        attributes = ['age', 'mass']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
-            # else:
-            #     print("Analysing halo:", str(s.haloname))
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo:", str(s.haloname))
             
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            # Select the halo and do not rotate it #
             s.calc_sf_indizes(s.subfind)
-            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            s.select_halo(s.subfind, rotate_disk=False)
             
-            # Mask the data: select all and stellar particles inside 0.1*R200c #
+            # Mask the data: select stellar particles inside 0.1*R200c #
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
             stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))
-            stellar_mass = np.sum(s.data['mass'][stellar_mask])
             
             # Calculate the cumulative mass and circular velocity #
             mass, edges = np.histogram(s.r(), weights=s.data['mass'], bins=100, range=[0., 0.025])
@@ -241,15 +238,15 @@ def tully_fisher(pdf, data, redshift, read):
             circular_velocity = np.sqrt(G * cumulative_mass * 1e10 * msol / (edges[1:] * 1e6 * parsec)) / 1e5
             
             # Calculate the cumulative stellar mass and total circular velocity #
-            smass, edges = np.histogram(s.r()[stellar_mask], weights=s.data['mass'][stellar_mask], bins=100, range=[0., 0.025])
-            cumulative_stellar_mass = np.cumsum(smass)
-            total_circular_velocity = circular_velocity[np.abs(cumulative_stellar_mass - 0.8 * stellar_mass).argmin()]
+            stellar_mass, edges = np.histogram(s.r()[stellar_mask], weights=s.data['mass'][stellar_mask], bins=100, range=[0., 0.025])
+            cumulative_stellar_mass = np.cumsum(stellar_mass)
+            total_circular_velocity = circular_velocity[np.abs(cumulative_stellar_mass - 0.8 * np.sum(s.data['mass'][stellar_mask])).argmin()]
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
-            np.save(path + 'stellar_mass_' + str(s.haloname), stellar_mass)
+            np.save(path + 'stellar_mass_' + str(s.haloname), np.sum(s.data['mass'][stellar_mask]))
             np.save(path + 'total_circular_velocity_' + str(s.haloname), total_circular_velocity)
-        
+    
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
     names.sort()
@@ -258,7 +255,7 @@ def tully_fisher(pdf, data, redshift, read):
     for i in range(len(names)):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$',
+        plot_tools.set_axis(axis, xlim=[1e8, 1e12], ylim=[1.4, 2.6], xscale='log', xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$',
                             ylabel=r'$\mathrm{log_{10}(v_{circ}/(km\;s^{-1}))}$', aspect=None)
         figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
                     transform=axis.transAxes)
@@ -267,49 +264,50 @@ def tully_fisher(pdf, data, redshift, read):
         stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         total_circular_velocity = np.load(path + 'total_circular_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        axis.semilogx(stellar_mass * 1e10, np.log10(total_circular_velocity), color=next(color_array), linestyle="None", marker='*', ms=15.0)
-        axis.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1)
+        plt.scatter(stellar_mass * 1e10, np.log10(total_circular_velocity), color=colors[0], s=200, zorder=5,
+                    marker='*')  # Plot the Tully-Fisher relation.
         
-        # plot Pizagno et al. 2007 sample
-        tablename = "./data/pizagno.txt"
-        rmag_p = np.genfromtxt(tablename, comments='#', usecols=3)
-        vcirc_p = np.genfromtxt(tablename, comments='#', usecols=9)
-        color_p = np.genfromtxt(tablename, comments='#', usecols=5)
+        # Plot Pizagno et al. 2007 sample #
+        table = "./data/pizagno.txt"
+        rmag_p = np.genfromtxt(table, comments='#', usecols=3)
+        vcirc_p = np.genfromtxt(table, comments='#', usecols=9)
+        color_p = np.genfromtxt(table, comments='#', usecols=5)
         mass_p = pizagno_convert_color_to_mass(color_p, rmag_p)
+        plt.scatter(1e10 * mass_p, np.log10(vcirc_p), color='lightgray', s=10, marker='^', label=r'$\mathrm{Pizagno+\;07}$')
         
-        axis.semilogx(1.0e10 * mass_p, np.log10(vcirc_p), '^', mfc='lightgray', ms=2.5, mec='None')
-        
-        # plot Verheijen 2001 sample
-        tablename = "./data/verheijen.txt"
-        Bmag_v = np.genfromtxt(tablename, comments='#', usecols=1)
-        Rmag_v = np.genfromtxt(tablename, comments='#', usecols=2)
-        vcirc_v = np.genfromtxt(tablename, comments='#', usecols=7)
+        # Plot Verheijen 2001 sample #
+        table = "./data/verheijen.txt"
+        Bmag_v = np.genfromtxt(table, comments='#', usecols=1)
+        Rmag_v = np.genfromtxt(table, comments='#', usecols=2)
+        vcirc_v = np.genfromtxt(table, comments='#', usecols=7)
         color_v = Bmag_v - Rmag_v
         mass_v = verheijen_convert_color_to_mass(color_v, Bmag_v)
+        plt.scatter(1e10 * mass_v, np.log10(vcirc_v), color='lightgray', s=10, marker='s', label=r'$\mathrm{Verheijen\;01}$')
         
-        axis.semilogx(1.0e10 * mass_v, np.log10(vcirc_v), 's', mfc='lightgray', ms=2.5, mec='None')
-        
-        # plot Courteau et al. 2007 sample
-        tablename = "./data/courteau.txt"
-        loglum_c = np.genfromtxt(tablename, comments='#', usecols=6)
-        vcirc_c = np.genfromtxt(tablename, comments='#', usecols=8)
+        # Plot Courteau et al. 2007 sample #
+        table = "./data/courteau.txt"
+        loglum_c = np.genfromtxt(table, comments='#', usecols=6)
+        vcirc_c = np.genfromtxt(table, comments='#', usecols=8)
         mass_c = courteau_convert_luminosity_to_mass(loglum_c)
+        plt.scatter(1e10 * mass_c, vcirc_c, color='lightgray', s=10, marker='o', label=r'$\mathrm{Courteau+\;07}$')
         
-        axis.semilogx(1.0e10 * mass_c, vcirc_c, 'o', mfc='lightgray', ms=2.5, mec='None')
+        # Plot best fit from Dutton et al. 2011 #
+        masses = np.arange(0.1, 50.0)
+        plt.plot(1e10 * masses, np.log10(obs_tullyfisher_fit(masses)), color='darkgray', lw=0.8, ls='--', label=r'$\mathrm{Dutton+\;11}$')
         
-        # Plot best fit from Dutton et al. (2011)
-        masses = np.arange(0.1, 50.)
-        axis.semilogx(1.0e10 * masses, np.log10(obs_tullyfisher_fit(masses)), ls='--', color='darkgray', lw=0.8)
-        label = ['Pizagno+ 07', 'Verheijen 01', 'Courteau+ 07']
-        l1 = axis.legend(label, loc='upper right', fontsize=16, frameon=False, numpoints=1)
-        
-        pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+        # Create the legend, save and close the figure #
+        axis.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1)
+        pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
 
 
 def guo_abundance_matching(mass):
-    # equation 3 of Guo et al. 2010. Mass MUST be given in 10^10 Msun
+    """
+    # Abundance matching from equation 3 of Guo et al. 2010.
+    :param mass: mass in 10^10 Msun
+    :return: val
+    """
     c = 0.129
     M_zero = 10 ** 1.4
     alpha = -0.926
@@ -320,63 +318,90 @@ def guo_abundance_matching(mass):
     return val
 
 
-def stellar_vs_total(pdf, data, levels):
-    nlevels = len(levels)
+def stellar_vs_halo_mass(pdf, data, redshift, read):
+    """
+    Plot the abundance matching relation for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    path = '/u/di43/Auriga/plots/data/' + 'svt/'
     
-    # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='gray', linestyle='-')
-    plt.xlabel("$\\rm{M_{halo}\\,[M_\\odot]}$")
-    plt.ylabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
-    
-    masses = np.arange(15., 300.)
-    cosmic_baryon_frac = 0.048 / 0.307
-    
-    axis.loglog(1.0e10 * masses, 1.0e10 * masses * cosmic_baryon_frac, 'k--', )
-    
-    guo_high = guo_abundance_matching(masses) * 10 ** (+0.2)
-    guo_low = guo_abundance_matching(masses) * 10 ** (-0.2)
-    
-    axis.fill_between(1.0e10 * masses, 1.0e10 * guo_low, 1.0e10 * guo_high, color='lightgray', edgecolor='None')
-    
-    axis.loglog(1.0e10 * masses, 1.0e10 * guo_abundance_matching(masses), 'k:')
-    
-    labels = ["$\\rm{M_{200}\\,\\,\\,\\Omega_b / \\Omega_m}$", "Guo+ 10"]
-    l1 = axis.legend(labels, loc='upper right', fontsize=16, frameon=False)
-    
-    for il in range(nlevels):
-        default_level = levels[il]
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        if not os.path.exists(path):
+            os.makedirs(path)
         
-        data.select_haloes(default_level, 0.)
-        nhalos = data.selected_current_nsnaps
-        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        attributes = ['age', 'mass']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonly=attributes)
         
-        mstar = np.zeros(nhalos)
-        mhalo = np.zeros(nhalos)
-        
-        data.select_haloes(default_level, 0., loadonlyhalo=0)
-        
-        ihalo = 0
+        # Loop over all available haloes #
         for s in data:
-            s.centerat(s.subfind.data['fpos'][0, :])
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo:", str(s.haloname))
             
+            # Select the halo and do not rotate it #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=False)
+            
+            # Mask the data: select all and stellar particles inside 0.1*R200c #
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.))
-            mstar[ihalo] = s.data['mass'][istars].sum()
-            
+            stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))
             all_mask, = np.where(s.r() < s.subfind.data['frc2'][0])
-            mhalo[ihalo] = s.data['mass'][all_mask].sum()
             
-            axis.loglog(mhalo[ihalo] * 1e10, mstar[ihalo] * 1e10, color=next(colors), linestyle="None", marker='*', ms=15.0,
-                        label="Au%s" % s.haloname)
-            axis.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1)
-            axis.add_artist(l1)
+            # Calculate the halo and stellar mass #
+            stellar_mass = np.sum(s.data['mass'][stellar_mask])
+            halo_mass = np.sum(s.data['mass'][all_mask])
             
-            ihalo += 1
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'halo_mass_' + str(s.haloname), halo_mass)
+            np.save(path + 'stellar_mass_' + str(s.haloname), stellar_mass)
     
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
-    plt.close()
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and set its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+        plot_tools.set_axis(axis, xlim=[1e11, 1e13], ylim=[1e9, 1e12], xscale='log', yscale='log', xlabel=r'$\mathrm{M_{halo}/M_{\odot}}$',
+                            ylabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', aspect=None)
+        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis.transAxes)
+        
+        # Load the data #
+        halo_mass = np.load(path + 'halo_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=colors[0], s=200, zorder=5, marker='*')  # Plot the abundance matching relation.
+        
+        # Plot the cosmic baryon fraction relation #
+        masses = np.arange(15., 300.)
+        cosmic_baryon_frac = 0.048 / 0.307
+        plt.plot(1e10 * masses, 1e10 * masses * cosmic_baryon_frac, color='k', ls='--', label=r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$')
+        
+        # Plot the Guo+10 relation #
+        guo_high = guo_abundance_matching(masses) * 10 ** (+0.2)
+        guo_low = guo_abundance_matching(masses) * 10 ** (-0.2)
+        plt.fill_between(1e10 * masses, 1e10 * guo_low, 1e10 * guo_high, color='lightgray', edgecolor='None')
+        plt.plot(1e10 * masses, 1e10 * guo_abundance_matching(masses), color='k', ls=':', label=r'$\mathrm{Guo+\;10}$')
+        
+        # Create the legend, save and close the figure #
+        axis.legend(loc='upper right', fontsize=16, frameon=False)
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
     return None
 
 
@@ -391,139 +416,134 @@ def convert_rband_to_Rband_mag(r, g):
     return R
 
 
-def gas_fraction(pdf, data, levels):
-    nlevels = len(levels)
-    
-    # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='gray', linestyle='-')
-    plt.xlabel("$\\rm{M_{R}\\,[mag]}$", size=16)
-    plt.ylabel("$\\rm{f_{gas}}$", size=16)
-    
-    for il in range(nlevels):
-        default_level = levels[il]
-        
-        data.select_haloes(default_level, 0.)
-        nhalos = data.selected_current_nsnaps
-        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-        
-        MR = np.zeros(nhalos)
-        fgas = np.zeros(nhalos)
-        
-        data.select_haloes(default_level, 0., loadonlyhalo=0)
-        
-        ihalo = 0
-        for s in data:
-            s.centerat(s.subfind.data['fpos'][0, :])
-            
-            age = np.zeros(s.npartall)
-            age[s.data['type'] == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
-            # Calculate the bolometric R-band magnitude in units of the bolometric magnitude of the Sun #
-            Rband = convert_rband_to_Rband_mag(s.data['gsph'][istars, 5], s.data['gsph'][istars, 4])
-            MR[ihalo] = -2.5 * np.log10((10. ** (- 2.0 * Rband / 5.0)).sum())
-            
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.))
-            mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 0))
-            fgas[ihalo] = s.data['mass'][mask].sum() / (s.data['mass'][mask].sum() + s.data['mass'][istars].sum())
-            
-            axis.plot(MR[ihalo], fgas[ihalo], color=next(colors), linestyle="None", marker='*', ms=15.0, label="Au%s" % s.haloname)
-            axis.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1)
-            
-            ihalo += 1
-    
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
-    plt.close()
-    return None
-
-
-def central_bfld(pdf, data, levels):
-    nlevels = len(levels)
-    
-    figure = plt.figure(figsize=(8.2, 8.2))
-    plt.grid(True, color='gray', linestyle='-')
-    axis = figure.iaxes(1.0, 1.0, 6.8, 6.8, top=True)
-    axis.set_xlabel("$\\rm{M_{stars}\\,[M_\\odot]}$")
-    axis.set_ylabel("$B_\mathrm{r<1\,kpc}\,\mathrm{[\mu G]}$")
-    
-    for il in range(nlevels):
-        default_level = levels[il]
-        
-        data.select_haloes(default_level, 0.)
-        nhalos = data.selected_current_nsnaps
-        colors = iter(cm.rainbow(np.linspace(0, 1, nhalos)))
-        
-        mstar = np.zeros(nhalos)
-        bfld = np.zeros(nhalos)
-        
-        data.select_haloes(default_level, 0., loadonlyhalo=0, loadonlytype=[0, 4])
-        
-        ihalo = 0
-        for s in data:
-            s.centerat(s.subfind.data['fpos'][0, :])
-            
-            i, = np.where((s.r() < 0.001) & (s.data['type'] == 0))
-            bfld[ihalo] = np.sqrt(((s.data['bfld'][i, :] ** 2.).sum(axis=1) * s.data['vol'][i]).sum() / s.data['vol'][i].sum()) * bfac
-            
-            age = np.zeros(s.npartall)
-            age[s.data['type'] == 4] = s.data['age']
-            istars, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]) & (s.data['type'] == 4) & (age > 0.))
-            mstar[ihalo] = s.data['mass'][istars].sum()
-            
-            axis.loglog(mstar[ihalo] * 1e10, bfld[ihalo] * 1e6, color=next(colors), linestyle="None", marker='*', ms=15.0,
-                        label="Au%s-%d" % (s.haloname, levels[0]))
-            axis.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1)
-            
-            ihalo += 1
-    
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
-    plt.close()
-    return None
-
-
-def bar_strength(pdf, data, read):
+def gas_fraction_vs_magnitude(pdf, data, redshift, read):
     """
-    Calculate bar strength from Fourier modes of surface density
+    Plot the gas fraction (gas to stellar plus gas mass ratio) as a function R-band magnitude for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.
     :return: None
     """
+    path = '/u/di43/Auriga/plots/data/' + 'gfvm/'
+    
     # Read the data #
     if read is True:
         # Check if a folder to save the data exists, if not create one #
-        path = '/u/di43/Auriga/plots/data/' + 'bs/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['age', 'mass']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        
+        # Loop over all available haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo:", str(s.haloname))
+            
+            # Select the halo and do not rotate it #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=False)
+            
+            # Mask the data: stellar particles inside 0.1*R200c #
+            age = np.zeros(s.npartall)
+            age[s.data['type'] == 4] = s.data['age']
+            stellar_mask, = np.where((s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.)) - s.nparticlesall[:4].sum()
+            
+            # Calculate the bolometric R-band magnitude in units of the bolometric magnitude of the Sun #
+            Rband = convert_rband_to_Rband_mag(s.data['gsph'][stellar_mask, 5], s.data['gsph'][stellar_mask, 4])
+            M_R = -2.5 * np.log10((10. ** (- 2.0 * Rband / 5.0)).sum())
+            
+            stellar_mask, = np.where((s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.))
+            gas_mask, = np.where((s.data['type'] == 0) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))
+            gas_fraction = np.sum(s.data['mass'][gas_mask]) / (np.sum(s.data['mass'][gas_mask]) + np.sum(s.data['mass'][stellar_mask]))
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'M_R_' + str(s.haloname), M_R)
+            np.save(path + 'gas_fraction_' + str(s.haloname), gas_fraction)
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and set its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+        plot_tools.set_axis(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$', ylabel=r'$\mathrm{f_{gas}}$', aspect=None)
+        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis.transAxes)
+        
+        # Load the data #
+        gas_fraction = np.load(path + 'gas_fraction_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        M_R = np.load(path + 'M_R_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        plt.scatter(M_R, gas_fraction, color=colors[0], s=200, zorder=5, marker='*')  # Plot the gas fraction as a function R-band magnitude.
+        
+        # Save and close the figure #
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
+    return None
+
+
+def bar_strength_profile(pdf, data, redshift, read):
+    """
+    Plot the bar strength radial profile from Fourier modes of surface density for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    path = '/u/di43/Auriga/plots/data/' + 'bs/'
+    
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not create one #
         if not os.path.exists(path):
             os.makedirs(path)
         
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'mass', 'pos']
-        data.select_haloes(default_level, 0, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
         
         # Loop over all available haloes #
         for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo:", str(s.haloname))
+            
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            
             mask, = np.where(s.data['age'] > 0.)  # Mask the data: select stellar particles.
+            
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
-                                                                    s.data['pos'][mask, 2] * 1e3)  # Distances are in Mpc.
+                                                                    s.data['pos'][mask, 2] * 1e3)  # In Mpc.
             s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
             
-            # Split up galaxy in radius bins and calculate the Fourier components #
+            # Split up galaxy in radial bins and calculate the Fourier components #
             n_bins = 40  # Number of radial bins.
             r = np.sqrt(x[:] ** 2 + y[:] ** 2)  # Radius of each particle.
             
             # Initialise Fourier components #
-            r_m = np.zeros(n_bins)
-            beta_2 = np.zeros(n_bins)
-            alpha_0 = np.zeros(n_bins)
-            alpha_2 = np.zeros(n_bins)
+            r_m, beta_2, alpha_0, alpha_2 = np.zeros(n_bins), np.zeros(n_bins), np.zeros(n_bins), np.zeros(n_bins)
             
-            # Split up galaxy in radius bins and calculate Fourier components #
+            # Split up galaxy in radial bins and calculate Fourier components #
             for i in range(0, n_bins):
                 r_s = float(i) * 0.25
                 r_b = float(i) * 0.25 + 0.25
@@ -544,296 +564,288 @@ def bar_strength(pdf, data, read):
             np.save(path + 'r_m_' + str(s.haloname), r_m)
             np.save(path + 'name_' + str(s.haloname), s.haloname)
     
-    # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plt.grid(True, color='gray', linestyle='-')
-    plt.ylim(-0.2, 1.2)
-    plt.xlim(0, 10)
-    plt.ylabel(r'$\mathrm{A_{2}}$', size=16)
-    plt.xlabel(r'$\mathrm{R\,[kpc]}$', size=16)
-    
-    # Plot bar strength as a function of radius plot r_m versus A2 #
-    names = glob.glob(path + '/name_18*')
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
     names.sort()
-    colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
     
     # Loop over all available haloes #
     for i in range(len(names)):
-        A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        r_m = np.load(path + 'r_m_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        plt.plot(r_m, A2, color=next(colors), label='Au-%s bar strength: %.2f' % (str(re.split('_|.npy', names[i])[1]), max(A2)))
-        plt.plot([r_m[np.where(A2 == max(A2))], r_m[np.where(A2 == max(A2))]], [-0.0, max(A2)], color=next(colors), linestyle='dashed',
-                 label='Au-%s bar length= %.2f kpc' % (str(re.split('_|.npy', names[i])[1]), r_m[np.where(A2 == max(A2))]))
-    
-    axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
-    
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
-    plt.close()
-    return None
-
-
-def stellar_surface_density_decomposition(pdf, data, redshift):
-    particle_type = [4]
-    attributes = ['pos', 'vel', 'mass', 'age', 'gsph']
-    data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
-    
-    # Loop over all available haloes #
-    for s in data:
-        # Generate the figure and set its parameters #
-        figure = plt.figure(0, figsize=(10, 7.5))
-        plt.ylim(1e0, 1e6)
-        plt.xlim(0.0, 30.0)
-        plt.grid(True, color='gray', linestyle='-')
-        plt.xlabel("$\mathrm{R [kpc]}$", size=16)
-        plt.ylabel("$\mathrm{\Sigma [M_{\odot} pc^{-2}]}$", size=16)
-        plt.tick_params(direction='out', which='both', top='on', right='on')
-        
-        s.calc_sf_indizes(s.subfind)
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-        
-        g = parse_particledata(s, s.subfind, attributes, radialcut=0.1 * s.subfind.data['frc2'][0])
-        g.prep_data()
-        sdata = g.sgdata['sdata']
-        
-        # Define the radial and vertical cuts and calculate the mass surface density #
-        radial_cut = 0.1 * s.subfind.data['frc2'][0]  # Radial cut in Mpc.
-        ii, = np.where((abs(sdata['pos'][:, 0]) < 0.005))  # Vertical cut in Mpc.
-        rad = np.sqrt((sdata['pos'][:, 1:] ** 2).sum(axis=1))
-        mass, edges = np.histogram(rad[ii], bins=50, range=(0., radial_cut), weights=sdata['mass'][ii])
-        surface = np.zeros(len(edges) - 1)
-        surface[:] = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
-        sden = np.divide(mass, surface)
-        
-        x = np.zeros(len(edges) - 1)
-        x[:] = 0.5 * (edges[1:] + edges[:-1])
-        sden *= 1e-6
-        r = x * 1e3
-        
-        sdlim = 1.0
-        indy = find_nearest(sden * 1e4, [sdlim]).astype('int64')
-        rfit = x[indy] * 1e3
-        sdfit = sden[:indy]
-        r = r[:indy][sdfit > 0.0]
-        sdfit = sdfit[sdfit > 0.0]
-        p = plot_helper.plot_helper()  # Load the helper.
-        
-        try:
-            sigma = 0.1 * sdfit
-            bounds = ([0.01, 0.0, 0.01, 0.5, 0.25], [1.0, 6.0, 10.0, 2.0, 10.0])
-            (popt, pcov) = curve_fit(p.total_profile, r, sdfit, sigma=sigma, bounds=bounds)
-            
-            # Compute component masses from the fit #
-            disc_mass = 2.0 * np.pi * popt[0] * popt[1] * popt[1]
-            bulge_mass = np.pi * popt[2] * popt[3] * popt[3] * gamma(2.0 / popt[4] + 1)
-            disc_to_total = disc_mass / (bulge_mass + disc_mass)
-        
-        except:
-            popt = np.zeros(5)
-            print('Fitting failed')
-        
-        plt.axvline(rfit, color='gray', linestyle='--')
-        plt.semilogy(r, 1e10 * sdfit * 1e-6, 'o', markersize=5, color='k', linewidth=0.0)
-        plt.semilogy(r, 1e10 * p.exp_prof(r, popt[0], popt[1]) * 1e-6, 'b-')
-        plt.semilogy(r, 1e10 * p.sersic_prof1(r, popt[2], popt[3], popt[4]) * 1e-6, 'r-')
-        plt.semilogy(r, 1e10 * p.total_profile(r, popt[0], popt[1], popt[2], popt[3], popt[4]) * 1e-6, 'k-')
-        
-        figure.text(0.15, 0.8, 'Au-%s' '\n' r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
-            s.haloname, 1. / popt[4], popt[1], popt[3] * p.sersic_b_param(1.0 / popt[4]) ** (1.0 / popt[4])))
-        
-        pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
-        plt.close()
-    return None
-
-
-def circular_velocity_curves(pdf, data, redshift):
-    particle_type = [0, 1, 4, 5]
-    attributes = ['pos', 'vel', 'mass', 'age']
-    data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
-    
-    # Loop over all available haloes #
-    for s in data:
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plt.xlim(0.0, 24.0)
-        plt.ylim(0.0, 700.0)
-        plt.grid(True, color='gray', linestyle='-')
-        plt.xlabel("$\mathrm{R [kpc]}$", size=16)
-        plt.ylabel("$\mathrm{V_{c} [km\, s^{-1}]}$", size=16)
-        plt.tick_params(direction='out', which='both', top='on', right='on')
-        axis.set_yticks([150, 160, 170, 180], minor=True)
-        figure.text(0.0, 1.01, 'Au-' + str(s.haloname), color='k', fontsize=16, transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[0, 10], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{A_{2}}$', aspect=None)
+        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis.transAxes)
         
-        s.calc_sf_indizes(s.subfind)
-        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+        # Load the data #
+        A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        r_m = np.load(path + 'r_m_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        nshells = 400
-        radius = 0.04
-        dr = radius / nshells
+        # Plot the bar strength radial profile and get an estimate for the bar length from the maximum strength #
+        plt.plot(r_m, A2, color=colors[0], label=r'$\mathrm{bar\;strength:%.2f}$' % max(A2))
+        plt.plot([r_m[np.where(A2 == max(A2))], r_m[np.where(A2 == max(A2))]], [-0.0, max(A2)], color=colors[0], linestyle='dashed',
+                 label=r'$\mathrm{bar\;length=%.2fkpc}$' % r_m[np.where(A2 == max(A2))])
         
-        na = s.nparticlesall
-        end = na.copy()
-        
-        for i in range(1, len(end)):
-            end[i] += end[i - 1]
-        
-        start = np.zeros(len(na), dtype='int32')
-        for i in range(1, len(start)):
-            start[i] = end[i - 1]
-        
-        shmass = np.zeros((nshells, 6))
-        shvel = np.zeros((nshells, 6))
-        for i in range(6):
-            rp = calcGrid.calcRadialProfile(s.data['pos'][start[i]:end[i], :].astype('float64'), s.data['mass'][start[i]:end[i]].astype('float64'), 0,
-                                            nshells, dr, s.center[0], s.center[1], s.center[2])
-            
-            radius = rp[1, :]
-            shmass[:, i] = rp[0, :]
-            for j in range(1, nshells):
-                shmass[j, i] += shmass[j - 1, i]
-            shvel[:, i] = np.sqrt(G * shmass[:, i] * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
-        
-        rp = calcGrid.calcRadialProfile(s.data['pos'].astype('float64'), s.data['mass'].astype('float64'), 0, nshells, dr, s.center[0], s.center[1],
-                                        s.center[2])
-        radius = rp[1, :]
-        mtot = rp[0, :]
-        
-        for j in range(1, nshells):
-            mtot[j] += mtot[j - 1]
-        
-        vtot = np.sqrt(G * mtot * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
-        plt.plot(radius * 1e3, vtot, 'k-', linewidth=4, label='Total')
-        plt.plot(radius * 1e3, shvel[:, 0], 'b--', linewidth=4, label='Gas')
-        plt.plot(radius * 1e3, shvel[:, 4], 'g:', linewidth=4, label='Stars')
-        plt.plot(radius * 1e3, shvel[:, 1], 'r-.', linewidth=4, label='Dark matter')
+        # Create the legend, save and close the figure #
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-        
-        pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+        pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
 
 
-def gas_temperature_histogram(pdf, data, read):
+def stellar_surface_density_profiles(pdf, data, redshift, read):
     """
-    Mass- and volume-weighted histograms of gas temperature
-    :param pdf: path to save the pdf from main.make_pdf
-    :param data: data from main.make_pdf
-    :param read: boolean to read new data.
-    :return: None
-    """
-    # Read the data #
-    if read is True:
-        volumes, masses, temperatures = [], [], []  # Declare empty arrays to store the data.
-        
-        # Check if a folder to save the data exists, if not create one #
-        path = '/u/di43/Auriga/plots/data/' + 'gth/'
-        if not os.path.exists(path):
-            os.makedirs(path)
-        
-        # Get all available redshifts #
-        haloes = data.get_haloes(default_level)
-        for name, halo in haloes.items():
-            redshifts = halo.get_redshifts()
-        
-        for i in range(0, 1):
-            redshift = np.flip(redshifts)[i]
-            
-            # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-            particle_type = [0, 4]
-            attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
-            data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
-            
-            # Loop over all available haloes #
-            for s in data:
-                # Check if any of the haloes' data already exists, if not then read and save it #
-                names = glob.glob(path + '/name_*')
-                names = [re.split('_|.npy', name)[1] for name in names]
-                # if str(s.haloname) in names:
-                #     continue
-                
-                # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
-                s.calc_sf_indizes(s.subfind)
-                s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-                
-                # Mask the data: select gas cells within the virial radius R200 #
-                mask, = np.where((s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))
-                
-                # Calculate the temperature of the gas cells #
-                ne = s.data['ne'][mask]
-                metallicity = s.data['gz'][mask]
-                XH = s.data['gmet'][mask, element['H']]
-                yhelium = (1 - XH - metallicity) / (4 * XH)
-                mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-                temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
-                
-                # Append the properties for all redshifts #
-                temperatures.append(temperature)
-                volumes.append(s.data['vol'][mask])
-                masses.append(s.data['mass'][mask])
-        
-        # Save data for each halo in numpy arrays #
-        np.save(path + 'masses_' + str(s.haloname), masses)
-        np.save(path + 'volumes_' + str(s.haloname), volumes)
-        np.save(path + 'name_' + str(s.haloname), s.haloname)
-        np.save(path + 'temperatures_' + str(s.haloname), temperatures)
-    
-    # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 7.5))
-    plt.grid(True, color='gray', linestyle='-')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel(r'Temperature [K]')
-    plt.tick_params(direction='out', which='both', top='on', right='on')
-    
-    # Load and plot the data #
-    names = glob.glob(path + '/name_06*')
-    names.sort()
-    
-    # Loop over all available haloes #
-    for i in range(len(names)):
-        masses = np.load(path + 'masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        volumes = np.load(path + 'volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        
-        # for i in range(len(masses)):
-        #     print(len(masses[i]))
-        # average_masses = np.sum(masses, axis=0) / 10
-        # average_volumes = np.sum(volumes, axis=0) / 10
-        # average_temperatures = np.sum(temperatures,axis=0) / 10
-        
-        # y_data, edges = np.histogram(average_temperatures, weights=average_masses / np.sum(average_masses), bins=100)
-        # plt.plot(0.5 * (edges[1:] + edges[:-1]), y_data, label='Mass-weighted')
-        
-        # Convert bin centres to log space and plot #
-        l = np.sort(temperatures)
-        print(l[0, :100])
-        y_data, edges = np.histogram(temperatures, weights=masses / np.sum(masses), bins=100)
-        print(np.sort(edges))
-        bin_centres = 10 ** (0.5 * (np.log10(edges[1:]) + np.log10(edges[:-1])))
-        plt.plot(bin_centres, y_data, label='Mass-weighted', color=colors[3])
-        
-        y_data, edges = np.histogram(temperatures, weights=volumes / np.sum(volumes), bins=100)
-        bin_centres = 10 ** (0.5 * (np.log10(edges[1:]) + np.log10(edges[:-1])))
-        plt.plot(bin_centres, y_data, label='Volume-weighted', color=colors[2])
-    
-    plt.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
-    pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
-    plt.close()
-    return None
-
-
-def gas_distance_temperature(pdf, data, redshift, read):
-    """
-    Temperature as a function of distance of gas cells.
+    Plot the stellar surface density profiles for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.
     :return: None
     """
+    path = '/u/di43/Auriga/plots/data/' + 'ssdp/'
+    
     # Read the data #
     if read is True:
         # Check if a folder to save the data exists, if not create one #
-        path = '/u/di43/Auriga/plots/data/' + 'gdt/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [4]
+        attributes = ['pos', 'mass']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        
+        # Loop over all available haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo:", str(s.haloname))
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            g = parse_particledata(s, s.subfind, attributes, radialcut=0.1 * s.subfind.data['frc2'][0])
+            g.prep_data()
+            sdata = g.sgdata['sdata']
+            
+            # Define the radial and vertical cuts and calculate the mass surface density #
+            radial_cut = 0.1 * s.subfind.data['frc2'][0]  # Radial cut in Mpc.
+            vertical_mask, = np.where((abs(sdata['pos'][:, 0]) < 0.005))  # Vertical cut in Mpc.
+            r_xy = np.sqrt((sdata['pos'][:, 1:] ** 2).sum(axis=1))
+            
+            mass, edges = np.histogram(r_xy[vertical_mask], bins=50, range=(0., radial_cut), weights=sdata['mass'][vertical_mask])
+            surface = np.zeros(len(edges) - 1)
+            surface[:] = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
+            surface_density = np.divide(mass, surface)
+            
+            # Get the bin centres and convert surface density to Msun pc^-2 and radius to pc #
+            x = np.zeros(len(edges) - 1)
+            x[:] = 0.5 * (edges[1:] + edges[:-1])
+            surface_density *= 1e-6
+            r = x * 1e3
+            
+            sdlim = 1.0
+            indy = find_nearest(surface_density * 1e4, [sdlim]).astype('int64')
+            rfit = x[indy] * 1e3
+            sdfit = surface_density[:indy]
+            r = r[:indy][sdfit > 0.0]
+            sdfit = sdfit[sdfit > 0.0]
+            p = plot_helper.plot_helper()  # Load the helper.
+            
+            # Fit a total (exponential plus Sersic) profile #
+            try:
+                sigma = 0.1 * sdfit
+                bounds = ([0.01, 0.0, 0.01, 0.5, 0.25], [1.0, 6.0, 10.0, 2.0, 10.0])
+                (popt, pcov) = curve_fit(p.total_profile, r, sdfit, sigma=sigma, bounds=bounds)
+                
+                # Compute component masses from the fit #
+                disc_mass = 2.0 * np.pi * popt[0] * popt[1] * popt[1]
+                bulge_mass = np.pi * popt[2] * popt[3] * popt[3] * gamma(2.0 / popt[4] + 1)
+                disc_to_total = disc_mass / (bulge_mass + disc_mass)
+            
+            except:
+                popt = np.zeros(5)
+                print('Fitting failed')
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'r_' + str(s.haloname), r)
+            np.save(path + 'rfit_' + str(s.haloname), rfit)
+            np.save(path + 'sdfit_' + str(s.haloname), sdfit)
+            np.save(path + 'popt0_' + str(s.haloname), popt[0])
+            np.save(path + 'popt1_' + str(s.haloname), popt[1])
+            np.save(path + 'popt2_' + str(s.haloname), popt[2])
+            np.save(path + 'popt3_' + str(s.haloname), popt[3])
+            np.save(path + 'popt4_' + str(s.haloname), popt[4])
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and set its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+        plot_tools.set_axis(axis, xlim=[0, 30], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
+                            ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None)
+        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis.transAxes)
+        
+        # Load the data #
+        r = np.load(path + 'r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        rfit = np.load(path + 'rfit_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        sdfit = np.load(path + 'sdfit_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt0 = np.load(path + 'popt0_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt1 = np.load(path + 'popt1_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt2 = np.load(path + 'popt2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt3 = np.load(path + 'popt3_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt4 = np.load(path + 'popt4_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the bar strength radial profile and get an estimate for the bar length from the maximum strength #
+        p = plot_helper.plot_helper()  # Load the helper.
+        plt.axvline(rfit, color='gray', linestyle='--')
+        plt.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors[0], linewidth=0.0)
+        plt.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors[3])
+        plt.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1])
+        plt.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0])
+        
+        figure.text(0.8, 0.82, r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
+            1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16, transform=axis.transAxes)
+        
+        # Save and close the figure #
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
+    return None
+
+
+def circular_velocity_curves(pdf, data, redshift, read):
+    """
+    Plot the circular velocity curve for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    path = '/u/di43/Auriga/plots/data/' + 'cvc/'
+    
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 1, 4, 5]
+        attributes = ['pos', 'vel', 'mass', 'age']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        
+        # Loop over all available haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then read and save it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo:", str(s.haloname))
+            
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            
+            # Split up galaxy in radial bins #
+            n_shells = 400
+            radius = 0.04
+            dr = radius / n_shells
+            
+            na = s.nparticlesall
+            end = na.copy()
+            for i in range(1, len(end)):
+                end[i] += end[i - 1]
+            
+            start = np.zeros(len(na), dtype='int32')
+            for i in range(1, len(start)):
+                start[i] = end[i - 1]
+            
+            # Calculate the radial profiles #
+            shell_mass = np.zeros((n_shells, 6))
+            shell_velocity = np.zeros((n_shells, 6))
+            for i in range(6):
+                rp = calcGrid.calcRadialProfile(s.data['pos'][start[i]:end[i], :].astype('float64'),
+                                                s.data['mass'][start[i]:end[i]].astype('float64'), 0, n_shells, dr, s.center[0], s.center[1],
+                                                s.center[2])
+                radius = rp[1, :]
+                shell_mass[:, i] = rp[0, :]
+                for j in range(1, n_shells):
+                    shell_mass[j, i] += shell_mass[j - 1, i]
+                shell_velocity[:, i] = np.sqrt(G * shell_mass[:, i] * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
+            
+            rp = calcGrid.calcRadialProfile(s.data['pos'].astype('float64'), s.data['mass'].astype('float64'), 0, n_shells, dr, s.center[0],
+                                            s.center[1], s.center[2])
+            radius = rp[1, :]
+            total_mass = rp[0, :]
+            
+            # Calculate the total mass in all shells #
+            for j in range(1, n_shells):
+                total_mass[j] += total_mass[j - 1]
+            
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'radius_' + str(s.haloname), radius)
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'total_mass_' + str(s.haloname), total_mass)
+            np.save(path + 'shell_velocity_' + str(s.haloname), shell_velocity)
+    
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and set its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$',
+                            aspect=None)
+        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis.transAxes)
+        
+        # Load the data #
+        radius = np.load(path + 'radius_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        total_mass = np.load(path + 'total_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        shell_velocity = np.load(path + 'shell_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the circular velocity curve #
+        vtot = np.sqrt(G * total_mass * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
+        plt.plot(radius * 1e3, vtot, color=colors[0], linewidth=4, label=r'$\mathrm{Total}$')
+        plt.plot(radius * 1e3, shell_velocity[:, 0], color=colors[3], linestyle='--', linewidth=3, label=r'$\mathrm{Gas}$')
+        plt.plot(radius * 1e3, shell_velocity[:, 4], color=colors[2], linestyle='--', linewidth=3, label=r'$\mathrm{Stars}$')
+        plt.plot(radius * 1e3, shell_velocity[:, 1], color=colors[1], linestyle='--', linewidth=3, label=r'$\mathrm{Dark\;matter}$')
+        
+        # Create the legend, save and close the figure #
+        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
+    return None
+
+
+def gas_temperature_vs_distance(pdf, data, redshift, read):
+    """
+    Plot the temperature as a function of distance of gas cells for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    path = '/u/di43/Auriga/plots/data/' + 'gdt/'
+    
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not create one #
         if not os.path.exists(path):
             os.makedirs(path)
         
@@ -847,14 +859,16 @@ def gas_distance_temperature(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Analysing halo:", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             mask, = np.where(
-                (s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells within the virial radius R200 #
+                (s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius R200c.
             
             # Calculate the temperature of the gas cells #
             ne = s.data['ne'][mask]
@@ -862,7 +876,7 @@ def gas_distance_temperature(pdf, data, redshift, read):
             XH = s.data['gmet'][mask, element['H']]
             yhelium = (1 - XH - metallicity) / (4. * XH)
             mu = (1 + 4 * yhelium) / (1 + yhelium + ne)
-            temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1.0e10 * mu * PROTONMASS / BOLTZMANN
+            temperature = GAMMA_MINUS1 * s.data['u'][mask] * 1e10 * mu * PROTONMASS / BOLTZMANN
             
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -870,33 +884,32 @@ def gas_distance_temperature(pdf, data, redshift, read):
             np.save(path + 'spherical_distance_' + str(s.haloname), s.r()[mask])
     
     # Load and plot the data #
-    names = glob.glob(path + '/name_18N*')
+    names = glob.glob(path + '/name_*')
     names.sort()
     
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and set its parameters #
-        figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plt.grid(True, color='gray', linestyle='-')
-        plt.xscale('log')
-        plt.yscale('log')
-        plt.ylim(1e1, 1e8)
-        plt.xlim(1e-2, 2e2)
-        cmap = matplotlib.cm.get_cmap('jet')
-        axis.set_facecolor(cmap(0))
-        plt.xlabel(r'$\mathrm{Radius\;[kpc]}$')
-        plt.ylabel(r'$\mathrm{Temperature\;[K]}$')
-        plt.tick_params(direction='out', which='both', top='on', right='on')
-        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]), color='k', fontsize=16, transform=axis.transAxes)
+        figure = plt.figure(figsize=(10, 7.5))
+        gs = gridspec.GridSpec(1, 2, wspace=0.22, width_ratios=[1, 0.05])
+        axis00, axis01 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1])
         
+        cmap = matplotlib.cm.get_cmap('jet')
+        axis00.set_facecolor(cmap(0))
+        plot_tools.set_axis(axis00, xlim=[1e-2, 2e2], ylim=[1e1, 1e8], xscale='log', yscale='log', xlabel=r'$\mathrm{R/kpc}$',
+                            ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major')
+        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    color='w', transform=axis00.transAxes)
+        
+        # Load the data #
         temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         
-        hb = plt.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log')
-        cb2 = plt.colorbar(hb)
-        cb2.set_label(r'$\mathrm{Counts\;per\;hexbin}$', size=16)
+        # Plot the temperature as a function of distance of gas cells #
+        hb = axis00.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log')
+        plot_tools.create_colorbar(axis01, hb, label=r'$\mathrm{Counts\;per\;hexbin}$')
         
-        pdf.savefig(figure, bbox_inches='tight')  # Save the figure.
+        pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
 

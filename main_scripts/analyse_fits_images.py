@@ -152,9 +152,9 @@ def fit_isophotal_ellipses(name, ellipticity):
     centre = get_image_centre(name)
     
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array #
-    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=0.0)
+    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
-    isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3, fix_pa=True   )
+    isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
     print(isolist.to_table())  # Print the isophote values as a table sorted by the semi-major axis length.
     
     # Plot the ellipticity, position angle, and the center x and y position as a function of the semi-major axis length.
@@ -249,7 +249,7 @@ for name, min_intensity, ellipticity in zip(names, min_intensities, ellipticitie
 
     # Use Imfit to the image #
     name = re.split('Au-|.png', name)[1]
-    os.system('../imfit -c config_%s.dat --nm --model-errors --cashstat --bootstrap 5 ../../plots/projections/Imfit/%s_ctf.fits '
+    os.system('../imfit -c config_%s.dat --nm --model-errors --cashstat --bootstrap 1 ../../plots/projections/Imfit/%s_ctf.fits '
               '--save-model=model_%s.fits --save-residual=resid_%s.fits '
               '--save-params bestfit_%s.dat' % (name, name, name, name, name))
     

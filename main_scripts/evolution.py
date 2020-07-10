@@ -78,7 +78,7 @@ def sfr(pdf, data, read):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 45], ylabel='$\mathrm{Sfr/(M_\odot\,yr^{-1})}$', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 45], ylabel='$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
         figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
         
         # Load the data #
@@ -187,7 +187,7 @@ def delta_sfr_regimes(pdf, data, region, read):
     for axis in [axis01, axis02, axis11, axis12]:
         axis.set_yticklabels([])
     axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$')
-    axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\,yr^{-1})}$')
+    axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$')
     
     # Loop over all radial limits #
     top_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12]
@@ -351,10 +351,10 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             axis20 = plt.subplot(gs[2, 0])
             
             axis002 = axis00.twiny()
-            plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8), ylabel=r'$\mathrm{Sfr/(M_\odot\,yr^{-1})}$', aspect=None)
+            plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8), ylabel=r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
             axis00.set_xticklabels([])
             axis003 = axis00.twinx()
-            plot_tools.set_axis(axis003, ylim=(1e55, 1e61), yscale='log', ylabel=r'$\mathrm{(Feedback\;energy\/)ergs}$', aspect=None, which='major')
+            plot_tools.set_axis(axis003, ylim=(1e55, 1e61), yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$', aspect=None, which='major')
             plot_tools.set_axis(axis10, xlim=(13, 0), ylim=(1e6, 1e11), yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None, which='major')
             axis10.set_xticklabels([])
             plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1), ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{look}/Gyr}$',
@@ -401,7 +401,6 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             # Create the legends, save and close the figure #
             axis10.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, ncol=2)
             axis20.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
-            # plt.savefig('/u/di43/Auriga/plots/' + 'Auriga-' + pdf + '.png', bbox_inches='tight')
             pdf.savefig(figure, bbox_inches='tight')
             plt.close()
     return None
@@ -541,7 +540,7 @@ def get_gtr_data(snapshot_ids, halo):
     
     # Calculate the temperature of the gas cells #
     gas_mask, = np.where(
-        (s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius R200.
+        (s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius R200c.
     ne = s.data['ne'][gas_mask]
     metallicity = s.data['gz'][gas_mask]
     XH = s.data['gmet'][gas_mask, element['H']]
@@ -624,7 +623,7 @@ def gas_temperature_regimes(pdf, data, read):
         plt.plot(lookback_times, wg_ratios, color='green', label=r'$\mathrm{Warm\;gas}$')
         
         # Create the legend, save and close the figure #
-        plt.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
@@ -742,7 +741,7 @@ def AGN_modes_distribution(date, data, read):
         
         for axis, axiscbar, mode in zip(axes, axescbar, modes):
             hb = axis.hexbin(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], bins='log', yscale='log', cmap='hot_r')
-            plot_tools.create_colorbar(axiscbar, hb, r'$\mathrm{Counts\;per\;hexbin}$', orientation='horizontal')
+            plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$', orientation='horizontal')
             x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
             axis.plot(x_value, sum / time_bin_width, color=colors[0], label=r'$\mathrm{Sum}$')
             figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
@@ -1023,7 +1022,7 @@ def blackhole_masses(pdf, data, read):
                 continue
             else:
                 print("Analysing halo:", str(s.haloname))
-                
+            
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
             redshift_mask, = np.where(redshifts <= redshift_cut)
@@ -1071,7 +1070,7 @@ def blackhole_masses(pdf, data, read):
         
         plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH}/M_\odot}$')
         plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH,mode}/M_\odot}$')
-        plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\; Gyr^{-1})}$')
+        plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\;Gyr^{-1})}$')
         plot_tools.set_axes_evolution(axis11, axis112, yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$')
         
         # Load the data #
