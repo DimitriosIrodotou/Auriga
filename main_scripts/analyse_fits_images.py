@@ -3,7 +3,6 @@ import os
 import PIL
 import time
 import glob
-import skimage
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,7 +12,6 @@ from matplotlib import gridspec
 from scipy.optimize import curve_fit
 from matplotlib.patches import Circle
 from photutils.isophote import Ellipse
-from photutils import EllipticalAperture
 from photutils.isophote import EllipseGeometry
 from scipy.ndimage.filters import gaussian_filter
 from photutils.isophote import build_ellipse_model
@@ -39,8 +37,6 @@ def convert_for_fit(name, min_intensity):
     # Add flat background noise, with specified local variance at each point #
     image_fits = fits.getdata(plots_path + str(name) + '_ctf.fits', ext=0)
     image_fits = image_fits + min_intensity / 255
-    # image_fits = skimage.util.random_noise(image_fits, mode='gaussian', seed=10, clip=True)
-    # plt.imsave(plots_path + str(name) + '_an.png', image_fits, cmap='gray')
     
     # Add Gaussian blur #
     FWHM = 3
@@ -245,11 +241,12 @@ print(names)
 for name, min_intensity, ellipticity in zip(names, min_intensities, ellipticities):
     # Prepare the image and fit isophotal ellipses #
     # convert_for_fit(plots_path + name, min_intensity)
-    # fit_isophotal_ellipses(name, 0.5)
-
+    # fit_isophotal_ellipses(name, ellipticity)
+    
     # Use Imfit to the image #
     name = re.split('Au-|.png', name)[1]
-    os.system('../imfit -c config_%s.dat --nm --model-errors --cashstat --bootstrap 1 ../../plots/projections/Imfit/%s_ctf.fits '
+    # --bootstrap 5
+    os.system('../imfit -c config_%s.dat --nm --model-errors --cashstat ../../plots/projections/Imfit/%s_ctf.fits '
               '--save-model=model_%s.fits --save-residual=resid_%s.fits '
               '--save-params bestfit_%s.dat' % (name, name, name, name, name))
     
