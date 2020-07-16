@@ -183,6 +183,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     popt, pcov = curve_fit(fit_exponential_profile, isolist.sma, isolist.intens, p0=[isolist.intens[0], 1])
     print('I_0:', popt[0], 'h:', popt[1])
     axis12.plot(isolist.sma, fit_exponential_profile(isolist.sma, popt[0], popt[1]), 'b-')
+    axis12.axvline(x=popt[1])
     plt.savefig(plots_path + name + '_fie_isolist_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
     
     # Build an elliptical model #
@@ -231,7 +232,7 @@ def fit_exponential_profile(x, I_0, R_d):
 # Define the paths to the images #
 output_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
-min_intensities = [47.45]  # , 61.24, 36.13, 52.20, 32.42, 86.66, 51.92]
+min_intensities = [52.14]  # , 61.24, 36.13, 52.20, 32.42, 86.66, 51.92]
 ellipticities = [0.70]  # , 0.40, 0.35, 0.50, 0.09, 0.34, 0.44]
 
 # Loop over all Auriga rbm images, convert them to the appropriate fit format and fit isophotal ellipses #
@@ -240,15 +241,15 @@ names = [re.split('Imfit/|.png', name)[1] for name in names]
 print(names)
 for name, min_intensity, ellipticity in zip(names, min_intensities, ellipticities):
     # Prepare the image and fit isophotal ellipses #
-    # convert_for_fit(plots_path + name, min_intensity)
-    # fit_isophotal_ellipses(name, ellipticity)
+    convert_for_fit(plots_path + name, min_intensity)
+    fit_isophotal_ellipses(name, ellipticity)
     
     # Use Imfit to the image #
     name = re.split('Au-|.png', name)[1]
     # --bootstrap 5
-    os.system('../imfit -c config_%s.dat --nm --model-errors --cashstat ../../plots/projections/Imfit/%s_ctf.fits '
-              '--save-model=model_%s.fits --save-residual=resid_%s.fits '
-              '--save-params bestfit_%s.dat' % (name, name, name, name, name))
+    # os.system('../imfit -c config_%s.dat --nm --model-errors --cashstat ../../plots/projections/Imfit/%s_ctf.fits '
+    #           '--save-model=model_%s.fits --save-residual=resid_%s.fits '
+    #           '--save-params bestfit_%s.dat' % (name, name, name, name, name))
     
-    plot_fits_image(output_path + 'resid_' + str(name) + '.fits')
-    plot_fits_image(output_path + 'model_' + str(name) + '.fits')
+    # plot_fits_image(output_path + 'resid_' + str(name) + '.fits')
+    # plot_fits_image(output_path + 'model_' + str(name) + '.fits')

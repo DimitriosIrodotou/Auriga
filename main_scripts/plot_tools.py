@@ -145,12 +145,13 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     # Set axis labels #
     if xlabel:
         axis.set_xlabel(xlabel, size=size)
-    else:
-        axis.set_xticklabels([])
     if ylabel:
         axis.set_ylabel(ylabel, size=size)
-    else:
-        axis.set_yticklabels([])
+    
+    if not xlim and not xlabel:
+        axis.set_xticklabels([])
+    if not ylim and not ylabel:
+        axis.set_7ticklabels([])
     
     # Set axis scales #
     if xscale:
@@ -222,6 +223,107 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     axis2.tick_params(direction='out', which=which, top='on', left='on', right='on', labelsize=size)
     
     return None
+
+
+def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
+                             multiple3=False):
+    """
+    Generate plot axes.
+    :param res: resolution
+    :param boxsize: boxsize
+    :param contour: contour
+    :param colorbar: colorbar
+    :param velocity_vectors: velocity_vectors
+    :param multiple: multiple
+    :return: axes
+    """
+    
+    # Set the axis values #
+    x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
+    y = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
+    y2 = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res / 2 + 1)
+    
+    area = (boxsize / res) ** 2  # Calculate the area.
+    
+    # Generate the panels #
+    if contour is True:
+        gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 1, 0.05])
+        axis00 = plt.subplot(gs[0, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axis10 = plt.subplot(gs[1, 0])
+        axis11 = plt.subplot(gs[1, 1])
+        axiscbar = plt.subplot(gs[:, 2])
+        
+        return axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area
+    
+    elif colorbar is True:
+        gs = gridspec.GridSpec(2, 2, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 0.05])
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
+        axiscbar = plt.subplot(gs[:, 1])
+        
+        return axis00, axis10, axiscbar, x, y, y2, area
+    
+    elif velocity_vectors is True:
+        gs = gridspec.GridSpec(2, 1, hspace=0.05)
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
+        
+        return axis00, axis10, x, y, y2, area
+    
+    elif multiple is True:
+        gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
+        axis00 = plt.subplot(gs[0, 0])
+        axiscbar = plt.subplot(gs[1, 0])
+        axis20 = plt.subplot(gs[2, 0])
+        axis01 = plt.subplot(gs[0, 1])
+        axiscbar1 = plt.subplot(gs[1, 1])
+        axis21 = plt.subplot(gs[2, 1])
+        axis02 = plt.subplot(gs[0, 2])
+        axiscbar2 = plt.subplot(gs[1, 2])
+        axis22 = plt.subplot(gs[2, 2])
+        axis03 = plt.subplot(gs[0, 3])
+        axiscbar3 = plt.subplot(gs[1, 3])
+        axis23 = plt.subplot(gs[2, 3])
+        axis04 = plt.subplot(gs[0, 4])
+        axiscbar4 = plt.subplot(gs[1, 4])
+        axis24 = plt.subplot(gs[2, 4])
+        axis05 = plt.subplot(gs[0, 5])
+        axiscbar5 = plt.subplot(gs[1, 5])
+        axis25 = plt.subplot(gs[2, 5])
+        
+        return axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, \
+               axis24, axis05, axiscbar5, axis25, x, y, area
+    
+    elif multiple2 is True:
+        gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0)
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
+        axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
+        axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+               axis51, axis52, x, y, y2, area
+    
+    elif multiple3 is True:
+        gs = gridspec.GridSpec(6, 4, hspace=0.1, wspace=0.1, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
+        axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
+        axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
+        axiscbar = plt.subplot(gs[:, 3])
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+               axis51, axis52, axiscbar, x, y, y2, area
+    
+    else:
+        gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
+        
+        return axis00, axis10, x, y, y2, area
 
 
 def rotate_bar(z, y, x):

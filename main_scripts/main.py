@@ -325,9 +325,11 @@ class AurigaPdf:
         # movies.gas_movie(self, read=True)
         
         # Combinations #
-        # combinations.AGN_modes_distribution(date, pdf)
-        # combinations.gas_density_combination(pdf, redshift)
         # combinations.stellar_light_combination(pdf, redshift)
+        # combinations.stellar_density_combination(pdf, redshift)
+        # combinations.gas_temperature_combination(pdf, redshift)
+        combinations.gas_metallicity_combination(pdf, redshift)
+        # combinations.AGN_modes_distribution(date, pdf)
         # combinations.central_combination(pdf, self, redshift, read=False)
         
         pdf.close()

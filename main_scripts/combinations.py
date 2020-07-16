@@ -2,7 +2,7 @@ import os
 import re
 import glob
 import matplotlib
-import projections
+import plot_tools
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
@@ -11,219 +11,293 @@ from const import *
 from sfigure import *
 from loadmodules import *
 from matplotlib import gridspec
-from scripts.gigagalaxy.util import satellite_utilities
 
 res = 512
 level = 4
 boxsize = 0.06
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
-# names = glob.glob(path + '/name_18*')
-# names.sort()
-# colors = iter(cm.rainbow(np.linspace(0, 1, len(names))))
-
-def create_axes(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False, multiple3=False):
-    """
-    Generate plot axes.
-    :param res: resolution
-    :param boxsize: boxsize
-    :param contour: contour
-    :param colorbar: colorbar
-    :param velocity_vectors: velocity_vectors
-    :param multiple: multiple
-    :return: axes
-    """
-    
-    # Set the axis values #
-    x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
-    y = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
-    y2 = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res / 2 + 1)
-    
-    area = (boxsize / res) ** 2  # Calculate the area.
-    
-    # Generate the panels #
-    if contour is True:
-        gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 1, 0.05])
-        axis00 = plt.subplot(gs[0, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axis10 = plt.subplot(gs[1, 0])
-        axis11 = plt.subplot(gs[1, 1])
-        axiscbar = plt.subplot(gs[:, 2])
-        
-        return axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area
-    
-    elif colorbar is True:
-        gs = gridspec.GridSpec(2, 2, hspace=0.05, wspace=0.05, height_ratios=[1, 0.5], width_ratios=[1, 0.05])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        axiscbar = plt.subplot(gs[:, 1])
-        
-        return axis00, axis10, axiscbar, x, y, y2, area
-    
-    elif velocity_vectors is True:
-        gs = gridspec.GridSpec(2, 1, hspace=0.05)
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        
-        return axis00, axis10, x, y, y2, area
-    
-    elif multiple is True:
-        gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
-        axis00 = plt.subplot(gs[0, 0])
-        axiscbar = plt.subplot(gs[1, 0])
-        axis20 = plt.subplot(gs[2, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axiscbar1 = plt.subplot(gs[1, 1])
-        axis21 = plt.subplot(gs[2, 1])
-        axis02 = plt.subplot(gs[0, 2])
-        axiscbar2 = plt.subplot(gs[1, 2])
-        axis22 = plt.subplot(gs[2, 2])
-        axis03 = plt.subplot(gs[0, 3])
-        axiscbar3 = plt.subplot(gs[1, 3])
-        axis23 = plt.subplot(gs[2, 3])
-        axis04 = plt.subplot(gs[0, 4])
-        axiscbar4 = plt.subplot(gs[1, 4])
-        axis24 = plt.subplot(gs[2, 4])
-        axis05 = plt.subplot(gs[0, 5])
-        axiscbar5 = plt.subplot(gs[1, 5])
-        axis25 = plt.subplot(gs[2, 5])
-        
-        return axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, \
-               axis24, axis05, axiscbar5, axis25, x, y, area
-    
-    elif multiple2 is True:
-        gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        axis20 = plt.subplot(gs[2, 0])
-        axis30 = plt.subplot(gs[3, 0])
-        axis40 = plt.subplot(gs[4, 0])
-        axis50 = plt.subplot(gs[5, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axis11 = plt.subplot(gs[1, 1])
-        axis21 = plt.subplot(gs[2, 1])
-        axis31 = plt.subplot(gs[3, 1])
-        axis41 = plt.subplot(gs[4, 1])
-        axis51 = plt.subplot(gs[5, 1])
-        axis02 = plt.subplot(gs[0, 2])
-        axis12 = plt.subplot(gs[1, 2])
-        axis22 = plt.subplot(gs[2, 2])
-        axis32 = plt.subplot(gs[3, 2])
-        axis42 = plt.subplot(gs[4, 2])
-        axis52 = plt.subplot(gs[5, 2])
-        return axis00, axis10, axis20, axis30, axis40, axis50, axis01, axis11, axis21, axis31, axis41, axis51, axis02, axis12, axis22, axis32, \
-               axis42, axis52, x, y, y2, area
-    
-    elif multiple3 is True:
-        gs = gridspec.GridSpec(4, 4, hspace=0.05, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        axis20 = plt.subplot(gs[2, 0])
-        axis30 = plt.subplot(gs[3, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axis11 = plt.subplot(gs[1, 1])
-        axis21 = plt.subplot(gs[2, 1])
-        axis31 = plt.subplot(gs[3, 1])
-        axis02 = plt.subplot(gs[0, 2])
-        axis12 = plt.subplot(gs[1, 2])
-        axis22 = plt.subplot(gs[2, 2])
-        axis32 = plt.subplot(gs[3, 2])
-        axiscbar = plt.subplot(gs[:, 3])
-        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area
-    
-    else:
-        gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
-        axis00 = plt.subplot(gs[0, 0])
-        axis10 = plt.subplot(gs[1, 0])
-        
-        return axis00, axis10, x, y, y2, area
 
 
-def create_colorbar(axis, pcm, label, orientation='vertical'):
+def stellar_light_combination(pdf, redshift):
     """
-    Generate a colorbar.
-    :param axis: colorbar axis from create_axes
-    :param pcm: pseudocolor plot
-    :param label: colorbar label
-    :param orientation: colorbar orientation
+    Plot a combination of stellar light projections for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
-    # Set the colorbar axes #
-    cb = plt.colorbar(pcm, cax=axis, orientation=orientation)
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/''sl/' + str(redshift)
+    names = glob.glob(path + '/name_*')
+    names.sort()
     
-    # Set the colorbar parameters #
-    cb.set_label(label, size=12)
-    # cb.tick_params(direction='out', which='both')
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(10, 20))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, axis52,\
+    x, y, y2, area = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple2=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50,
+                 axis51, axis52]:
+        axis.set_yticklabels([])
+        axis.set_xticklabels([])
+    plt.rcParams['savefig.facecolor'] = 'black'
     
+    # Loop over all available haloes #
+    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
+    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
+    for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        
+        # Load the data #
+        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the stellar light projections #
+        axis_face_on.imshow(face_on, interpolation='nearest', aspect='equal')
+        axis_edge_on.imshow(edge_on, interpolation='nearest', aspect='equal')
+        
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=16, transform=axis_face_on.transAxes)
+    
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
     return None
 
 
-def get_names_sorted(names):
-    if list(names)[0].find("_"):
-        names_sorted = np.array(list(names))
-        names_sorted.sort()
+def stellar_density_combination(pdf, redshift):
+    """
+    Plot a combination of stellar density projections for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :return: None
+    """
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'sd/' + str(redshift)
+    names = glob.glob(path + '/name_*')
+    names.sort()
+    
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(10, 15))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, axis52,\
+    axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple3=True)
+    cmap = matplotlib.cm.get_cmap('twilight')
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+                 axis51, axis52]:
+        axis.set_facecolor(cmap(0))
+        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=12)
+    for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
+        axis.set_ylim([-15, 15])
+    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
+        axis.set_xticklabels([])
+        axis.set_yticklabels([])
+    for axis in [axis00, axis10, axis20, axis30, axis40]:
+        axis.set_xticklabels([])
+    for axis in [axis51, axis52]:
+        axis.set_yticklabels([])
+    for axis in [axis50, axis51, axis52]:
+        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=12)
+    for axis in [axis00, axis20, axis40]:
+        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=12)
+    for axis in [axis10, axis30, axis50]:
+        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=12)
+    
+    # Loop over all available haloes #
+    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
+    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
+    for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
         
-        return names_sorted
-    else:
-        values = np.zeros(len(names))
-        for i in range(len(names)):
-            name = names[i]
-            value = 0
-            while not name[0].isdigit():
-                value = value * 256 + ord(name[0])
-                name = name[1:]
-            values[i] = value * 256 + np.int32(name)
-        isort = values.argsort()
-        return np.array(names)[isort]
+        # Load the data #
+        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the stellar density projections #
+        pcm = axis_face_on.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap=cmap)
+        axis_edge_on.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap=cmap)
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
+        
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
+    
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
+    return None
 
 
-def create_axis(figure, idx, ncol=5):
-    ix = idx % ncol
-    iy = idx // ncol
+def gas_density_combination(pdf, redshift):
+    """
+    Plot a combination of gas density projections for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :return: None
+    """
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'gd/' + str(redshift)
+    names = glob.glob(path + '/name_*')
+    names.sort()
     
-    s = 1.
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(10, 15))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, axis52,\
+    axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple3=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+                 axis51, axis52]:
+        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=12)
+    for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
+        axis.set_ylim([-15, 15])
+    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
+        axis.set_xticklabels([])
+        axis.set_yticklabels([])
+    for axis in [axis00, axis10, axis20, axis30, axis40]:
+        axis.set_xticklabels([])
+    for axis in [axis51, axis52]:
+        axis.set_yticklabels([])
+    for axis in [axis50, axis51, axis52]:
+        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=12)
+    for axis in [axis00, axis20, axis40]:
+        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=12)
+    for axis in [axis10, axis30, axis50]:
+        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=12)
     
-    axis = figure.iaxes(0.5 + ix * (s + 0.5), 0.3 + s + iy * (s + 0.6), s, s, top=False)
-    axis2 = axis.twiny()
-    return axis, axis2
+    # Loop over all available haloes #
+    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
+    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
+    for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        
+        # Load the data #
+        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the gas density projections #
+        pcm = axis_face_on.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap='magma')
+        axis_edge_on.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap='magma')
+        plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{gas}/(M_\odot\;kpc^{-2})}$')
+        
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
+    
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
+    return None
 
 
-def set_axis(s, axis, axis2, ylabel, ylim=None):
-    z = np.array([5., 3., 2., 1., 0.5, 0.2, 0.0])
-    a = 1. / (1 + z)
+def gas_temperature_combination(pdf, redshift):
+    """
+    Plot a combination of gas temperature projections for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :return: None
+    """
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'gt/' + str(redshift)
+    names = glob.glob(path + '/name_*')
+    names.sort()
     
-    times = np.zeros(len(a))
-    for i in range(len(a)):
-        times[i] = s.cosmology_get_lookback_time_from_a(a[i])
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(10, 15))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, axis52,\
+    axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple3=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+                 axis51, axis52]:
+        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=12)
+    for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
+        axis.set_ylim([-15, 15])
+    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
+        axis.set_xticklabels([])
+        axis.set_yticklabels([])
+    for axis in [axis00, axis10, axis20, axis30, axis40]:
+        axis.set_xticklabels([])
+    for axis in [axis51, axis52]:
+        axis.set_yticklabels([])
+    for axis in [axis50, axis51, axis52]:
+        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=12)
+    for axis in [axis00, axis20, axis40]:
+        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=12)
+    for axis in [axis10, axis30, axis50]:
+        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=12)
     
-    lb = []
-    for v in z:
-        if v >= 1.0:
-            lb += ["%.0f" % v]
-        else:
-            if v != 0:
-                lb += ["%.1f" % v]
-            else:
-                lb += ["%.0f" % v]
+    # Loop over all available haloes #
+    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
+    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
+    for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        
+        # Load the data #
+        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on_rho = np.load(path + '/face_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on_rho = np.load(path + '/edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the density-weighted gas temperature projections #
+        pcm = axis_face_on.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), rasterized=True,
+                                      cmap='viridis')
+        axis_edge_on.pcolormesh(x, 0.5 * y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7), rasterized=True,
+                                cmap='viridis')
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
+        
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
     
-    axis.set_xlim(0., 13.)
-    axis.invert_xaxis()
-    axis2.set_xlim(axis.get_xlim())
-    axis2.set_xticks(times)
-    axis2.set_xticklabels(lb)
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
+    return None
+
+
+def gas_metallicity_combination(pdf, redshift):
+    """
+    Plot a combination of gas metallicity projections for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :return: None
+    """
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'gm/' + str(redshift)
+    names = glob.glob(path + '/name_*')
+    names.sort()
     
-    axis.set_ylabel(ylabel, size=6)
-    axis.set_xlabel(r'$\mathrm{t_{look}\;[Gyr]}$', size=6)
-    axis2.set_xlabel(r'$\mathrm{z}$', size=6)
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(10, 15))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, axis52,\
+    axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple3=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+                 axis51, axis52]:
+        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=12)
+    for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
+        axis.set_ylim([-15, 15])
+    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
+        axis.set_xticklabels([])
+        axis.set_yticklabels([])
+    for axis in [axis00, axis10, axis20, axis30, axis40]:
+        axis.set_xticklabels([])
+    for axis in [axis51, axis52]:
+        axis.set_yticklabels([])
+    for axis in [axis50, axis51, axis52]:
+        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=12)
+    for axis in [axis00, axis20, axis40]:
+        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=12)
+    for axis in [axis10, axis30, axis50]:
+        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=12)
     
-    for axis in [axis, axis2]:
-        for label in axis.xaxis.get_ticklabels():
-            label.set_size(6)
-        for label in axis.yaxis.get_ticklabels():
-            label.set_size(6)
+    # Loop over all available haloes #
+    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
+    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
+    for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        
+        # Load the data #
+        # Load the data #
+        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        
+        # Plot the gas metallicity projections #
+        pcm = axis_face_on.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), rasterized=True, cmap='viridis')
+        axis_edge_on.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), rasterized=True, cmap='viridis')
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{Z/Z_\odot}$')
+        
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
     
-    if ylim is not None:
-        axis.set_ylim(ylim)
-    
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
     return None
 
 
@@ -327,7 +401,7 @@ def AGN_modes_distribution(date, data):
         axis00.legend([sum00], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
         axis02.legend([sum02], [r'$\mathrm{Sum}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
         figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[0])[1]), color='k', fontsize=16, transform=axis00.transAxes)
-
+        
         # Save and close the figure #
         plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')
         plt.close()
@@ -497,32 +571,32 @@ def central_combination(pdf, data, redshift, read):
         # Plot the gas density projections #
         pcm = axis00.pcolormesh(x, y, density_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
         axis20.pcolormesh(x, y, density_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='magma', rasterized=True)
-        create_colorbar(axiscbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$", orientation='horizontal')
+        plot_tools.create_colorbar(axiscbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$", orientation='horizontal')
         
         # Plot the gas temperature projections #
         pcm = axis01.pcolormesh(x, y, (temperature_face_on / temperature_face_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis',
                                 rasterized=True)
         axis21.pcolormesh(x, y, (temperature_edge_on / temperature_edge_on_rho).T, norm=matplotlib.colors.LogNorm(), cmap='viridis', rasterized=True)
-        create_colorbar(axiscbar1, pcm, "$\mathrm{T\;[K]}$", orientation='horizontal')
+        plot_tools.create_colorbar(axiscbar1, pcm, "$\mathrm{T\;[K]}$", orientation='horizontal')
         
         # Plot the magnetic field projections #
         pcm = axis02.pcolormesh(x, y, bfld_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
         axis22.pcolormesh(x, y, bfld_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='CMRmap', rasterized=True)
-        create_colorbar(axiscbar2, pcm, "$\mathrm{B\;[\mu G]}$", orientation='horizontal')
+        plot_tools.create_colorbar(axiscbar2, pcm, "$\mathrm{B\;[\mu G]}$", orientation='horizontal')
         
         # Plot the sfr projections #
         pcm = axis03.pcolormesh(x, y, sfr_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
         axis23.pcolormesh(x, y, sfr_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='gist_heat', rasterized=True)
-        create_colorbar(axiscbar3, pcm, "$\mathrm{SFR\;[M_\odot\;yr^{-1}]}$", orientation='horizontal')
+        plot_tools.create_colorbar(axiscbar3, pcm, "$\mathrm{SFR\;[M_\odot\;yr^{-1}]}$", orientation='horizontal')
         
         # Plot the gas total pressure projections #
         pcm = axis04.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
         axis24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
-        create_colorbar(axiscbar4, pcm, "$\mathrm{P\;[K\;cm^{-3}]}$", orientation='horizontal')
+        plot_tools.create_colorbar(axiscbar4, pcm, "$\mathrm{P\;[K\;cm^{-3}]}$", orientation='horizontal')
         
         pcm = axis05.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
         axis25.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
-        create_colorbar(axiscbar5, pcm, "$\mathrm{Velocity\;[km\;s^{-1}]}$", orientation='horizontal')
+        plot_tools.create_colorbar(axiscbar5, pcm, "$\mathrm{Velocity\;[km\;s^{-1}]}$", orientation='horizontal')
         
         for axis in [axiscbar, axiscbar1, axiscbar2, axiscbar3, axiscbar4, axiscbar5]:
             axis.xaxis.tick_top()
@@ -535,98 +609,4 @@ def central_combination(pdf, data, redshift, read):
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
-    return None
-
-
-def stellar_light_combination(pdf, redshift):
-    """
-    Plot a combination of stellar light projections for Auriga halo(es).
-    :param pdf: path to save the pdf from main.make_pdf
-    :param redshift: redshift from main.make_pdf
-    :return: None
-    """
-    # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/'
-    names = glob.glob(path + 'sl/' + str(redshift) + '/name_*')
-    names.sort()
-    
-    # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 10))
-    axis00, axis10, axis20, axis30, axis40, axis50, axis01, axis11, axis21, axis31, axis41, axis51, axis02, axis12, axis22, axis32, axis42, axis52,\
-    x, y, y2, area = create_axes(
-        res=res, boxsize=boxsize * 1e3, multiple2=True)
-    
-    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
-    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
-    # Loop over all available haloes #
-    for i, a, a2 in zip(range(len(names)), axes_face_on, axes_edge_on):
-        for axis in [a, a2]:
-            axis.set_yticklabels([])
-            axis.set_xticklabels([])
-        
-        # Load and plot the data #
-        face_on = np.load(path + 'sl/' + str(redshift) + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + 'sl/' + str(redshift) + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        
-        axis.imshow(face_on, interpolation='nearest', aspect='equal')
-        a2.imshow(edge_on, interpolation='nearest', aspect='equal')
-        
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=axis.transAxes)
-    
-    # Save and close the figure #
-    pdf.savefig(figure, bbox_inches='tight')
-    plt.close()
-    return None
-
-
-def gas_density_combination(pdf, redshift):
-    """
-    Plot a combination of gas density projections for Auriga halo(es).
-    :param pdf: path to save the pdf from main.make_pdf
-    :param redshift: redshift from main.make_pdf
-    :return: None
-    """
-    # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/'
-    names = glob.glob(path + 'gd/' + str(redshift) + '/name_*')
-    names.sort()
-    
-    # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 10))
-    axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area = create_axes(res=res,
-                                                                                                                                           boxsize=boxsize * 1e3,
-                                                                                                                                           multiple3=True)
-    axes_face_on = [axis00, axis20, axis01, axis21, axis02, axis22]
-    axes_edge_on = [axis10, axis30, axis11, axis31, axis12, axis32]
-    for axis in [axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32]:
-        axis.tick_params(direction='out', which='both', top='on', right='on')
-    for axis in [axis01, axis11, axis21, axis02, axis12, axis22]:
-        axis.set_xticklabels([])
-        axis.set_yticklabels([])
-    for axis in [axis00, axis10, axis20]:
-        axis.set_xticklabels([])
-    for axis in [axis30, axis31, axis32]:
-        axis.set_xlabel(r'$x\;\mathrm{[kpc]}$', size=16)
-    for axis in [axis00, axis20]:
-        axis.set_ylabel(r'$y\;\mathrm{[kpc]}$', size=16)
-    for axis in [axis10, axis30]:
-        axis.set_ylabel(r'$z\;\mathrm{[kpc]}$', size=16)
-    
-    # Loop over all available haloes #
-    for i, axis, a2 in zip(range(len(names)), axes_face_on, axes_edge_on):
-        
-        # Load and plot the data #
-        face_on = np.load(path + 'gd/' + str(redshift) + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + 'gd/' + str(redshift) + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        
-        # Plot the projections #
-        pcm = axis.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
-        a2.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), cmap='magma', rasterized=True)
-        create_colorbar(axiscbar, pcm, "$\mathrm{\Sigma_{gas}\;[M_\odot\;kpc^{-2}]}$")
-        
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=12, transform=axis.transAxes)
-    
-    # Save and close the figure #
-    pdf.savefig(figure, bbox_inches='tight')
-    plt.close()
     return None
