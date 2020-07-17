@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
         
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_" % self.directory)
+        haloes = glob.glob("%shalo_*" % self.directory)
         self.nhalos = len(haloes)
         
         print("Found %d halo(es)" % self.nhalos)
@@ -300,11 +300,11 @@ class AurigaPdf:
         
         # Evolution #
         # Galaxy #
-        # evolution.sfr(pdf, self, read=False)
-        # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
-        # evolution.sfr_stars_gas_regimes(pdf, self, region='inner', read=False)
-        # evolution.bar_strength(pdf, self, read=False)
-        # evolution.gas_temperature_regimes(pdf, self, read=False)
+        evolution.sfr(pdf, self, read=True)
+        evolution.delta_sfr_regimes(pdf, self, region='outer', read=True)
+        evolution.sfr_stars_gas_regimes(pdf, self, region='inner', read=True)
+        evolution.bar_strength(pdf, self, read=True)
+        evolution.gas_temperature_regimes(pdf, self, read=True)
         # AGN #
         # evolution.AGN_modes_distribution(date, self, read=False)
         # evolution.AGN_feedback_kernel(date, self, read=True, ds=False)
@@ -328,7 +328,7 @@ class AurigaPdf:
         # combinations.stellar_light_combination(pdf, redshift)
         # combinations.stellar_density_combination(pdf, redshift)
         # combinations.gas_temperature_combination(pdf, redshift)
-        combinations.gas_metallicity_combination(pdf, redshift)
+        # combinations.gas_metallicity_combination(pdf, redshift)
         # combinations.AGN_modes_distribution(date, pdf)
         # combinations.central_combination(pdf, self, redshift, read=False)
         

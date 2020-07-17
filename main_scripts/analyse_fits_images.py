@@ -22,6 +22,7 @@ date = time.strftime("%d_%m_%y_%H%M")
 def convert_for_fit(name, min_intensity):
     """
     Add Gaussian noise, Gaussian blur, convert to gray scale and save an image in 512x512 along with its fits version.
+    :param min_intensity: the minimum intensity used to add noise to the image.
     :param name: name of the file.
     :return:
     """
@@ -30,13 +31,12 @@ def convert_for_fit(name, min_intensity):
     image_png = image_png.resize((512, 512), PIL.Image.NEAREST)
     
     # Create and save a fits version of the gray scaled image #
-    name = re.split('Au-|.png', name)[1]
     hdu = fits.PrimaryHDU(image_png)
-    hdu.writeto(plots_path + str(name) + '_ctf.fits', overwrite=True)
+    hdu.writeto(name + '_ctf.fits', overwrite=True)
     
     # Add flat background noise, with specified local variance at each point #
-    image_fits = fits.getdata(plots_path + str(name) + '_ctf.fits', ext=0)
-    image_fits = image_fits + min_intensity / 255
+    image_fits = fits.getdata(name + '_ctf.fits', ext=0)
+    image_fits = image_fits + min_intensity
     
     # Add Gaussian blur #
     FWHM = 3
@@ -50,88 +50,12 @@ def convert_for_fit(name, min_intensity):
     axis.set_aspect('equal')
     
     # Create and save a gray scaled version of the image #
-    plt.imsave(plots_path + str(name) + '_ctf.png', array, cmap='gray')
+    plt.imsave(name + '_ctf.png', array, cmap='gray')
     plt.close()
     
     # Create and save a fits version of the image #
     hdu = fits.PrimaryHDU(array)
-    hdu.writeto(plots_path + str(name) + '_ctf.fits', overwrite=True)
-    return None
-
-
-def plot_fits_image(name):
-    """
-    Load and show a fits image.
-    :param name: name of the file.
-    :return: None
-    """
-    # Load the fits image and show it #
-    image_fits = fits.getdata(name, ext=0)
-    
-    # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
-    plt.axis('off')
-    axis.set_aspect('equal')
-    
-    # Create and save a gray scaled version of the image #
-    plt.imsave(name + '_pfi_' + str(date) + '.png', image_fits, cmap='gray')
-    plt.close()
-    return None
-
-
-def get_image_centre(name):
-    """
-    Get the centre of the image in pixels.
-    :param name: name of the file.
-    :return: centre
-    """
-    # Load the png image and calculate the centre #
-    im = Image.open(plots_path + name + '_ctf.png')
-    
-    (X, Y) = im.size
-    centre = X / 2, Y / 2
-    return centre
-
-
-def get_image_intensity(name):
-    """
-    Get the centre of the image in pixels.
-    :param name: name of the file.
-    :return: None
-    """
-    # Load the png image and calculate the centre #
-    im = Image.open(plots_path + str(name) + '.png').convert("L")
-    
-    intensity = np.array([[pixel, value] for pixel, value in enumerate(im.histogram())])
-    print(1 / intensity[0, 1])
-    plt.bar(intensity[:, 0], intensity[:, 1], width=2, log=True)
-    plt.show()
-    return None
-
-
-def plot_fit_data(h=0.0, R_eff=0.0):
-    """
-    Over-plot the scale length and effective radius on the fits image.
-    :return: None
-    """
-    # Load the fits image and show it #
-    image_fits = fits.getdata(name + '.fits', ext=0)
-    
-    # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
-    plt.axis('off')
-    axis.set_aspect('equal')
-    
-    axis.imshow(image_fits, cmap='gray')
-    centre = get_image_centre()
-    # Plot the scale length
-    for radius in [h, R_eff]:
-        circle = Circle((centre[0], centre[1]), radius, color='tab:red', fill=False)
-        axis.add_patch(circle)
-    
-    # Create and save a gray scaled version of the image #
-    plt.savefig(name + '_2_' + str(date) + '.png', cmap='gray', bbox_inches='tight')
-    plt.close()
+    hdu.writeto(name + '_ctf.fits', overwrite=True)
     return None
 
 
@@ -143,8 +67,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     :return: None
     """
     # Load the fits image and calculate the centre #
-    name = re.split('Au-|.png', name)[1]
-    image_fits = fits.getdata(plots_path + name + '_ctf.fits', ext=0)
+    image_fits = fits.getdata(name + '_ctf.fits', ext=0)
     centre = get_image_centre(name)
     
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array #
@@ -168,7 +91,8 @@ def fit_isophotal_ellipses(name, ellipticity):
     y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA\;[\deg]}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$', r'$\mathrm{x_{0}\;[pix]}$',
                 r'$\mathrm{y_{0}\;[pix]}$', r'$\mathrm{Mean\,intensity}$']
     y_values = [isolist.eps, isolist.pa / np.pi * 180., isolist.tflux_e, isolist.x0, isolist.y0, isolist.intens]
-    y_lims = [(0, 1), (-20, 200), (1e0, 1e7), (250, 260), (250, 260), (50, 260)]
+    y_lims = [(0, 1), (-20, 200), (0.9 * min(isolist.tflux_e), 1.1 * max(isolist.tflux_e)), (250, 260), (250, 260),
+              (0.9 * min(isolist.intens), 1.1 * max(isolist.intens))]
     y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.x0_err, isolist.y0_err, isolist.int_err]
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.set_ylim(y_lim)
@@ -184,7 +108,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     print('I_0:', popt[0], 'h:', popt[1])
     axis12.plot(isolist.sma, fit_exponential_profile(isolist.sma, popt[0], popt[1]), 'b-')
     axis12.axvline(x=popt[1])
-    plt.savefig(plots_path + name + '_fie_isolist_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
+    plt.savefig(name + '_isolist_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
     
     # Build an elliptical model #
     # model_image = build_ellipse_model(image_fits.shape, isolist)
@@ -200,7 +124,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     # axis11 = plt.subplot(gs[1, 1])
     
     axes = [axis00, axis01]  # , axis10, axis11]
-    titles = [r'$\mathrm{Auriga-}$' + str(name), r'$\mathrm{Sample\;of\;isophotes}$']  # , r'$\mathrm{Ellipse\;model}$', r'$\mathrm{Residual}$']
+    titles = [r'$\mathrm{Auriga-}$' + name, r'$\mathrm{Sample\;of\;isophotes}$']  # , r'$\mathrm{Ellipse\;model}$', r'$\mathrm{Residual}$']
     images = [image_fits, image_fits]  # , model_image, residual]
     for axis, title, image in zip(axes, titles, images):
         axis.grid(True, color='gray', linestyle='-')
@@ -213,7 +137,7 @@ def fit_isophotal_ellipses(name, ellipticity):
         x, y, = iso.sampled_coordinates()
         axis01.plot(x, y, color='tab:red')
     
-    plt.savefig(plots_path + name + '_fie_model_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
+    plt.savefig(name + '_model_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
     
     return None
 
@@ -229,27 +153,91 @@ def fit_exponential_profile(x, I_0, R_d):
     return I_0 * np.exp(-x / R_d)
 
 
-# Define the paths to the images #
-output_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
-plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
-min_intensities = [52.14]  # , 61.24, 36.13, 52.20, 32.42, 86.66, 51.92]
-ellipticities = [0.70]  # , 0.40, 0.35, 0.50, 0.09, 0.34, 0.44]
+def get_image_centre(name):
+    """
+    Get the centre of the image in pixels.
+    :param name: name of the file.
+    :return: centre
+    """
+    # Load the png image and calculate the centre #
+    im = Image.open(name + '_ctf.png')
+    
+    (X, Y) = im.size
+    centre = X / 2, Y / 2
+    return centre
 
-# Loop over all Auriga rbm images, convert them to the appropriate fit format and fit isophotal ellipses #
-names = glob.glob(plots_path + 'Au-06NOA*')
-names = [re.split('Imfit/|.png', name)[1] for name in names]
-print(names)
-for name, min_intensity, ellipticity in zip(names, min_intensities, ellipticities):
+
+def plot_fits_image(name):
+    """
+    Load and show a fits image.
+    :param name: name of the file.
+    :return: None
+    """
+    # Load the fits image and show it #
+    image_fits = fits.getdata(name + '.fits', ext=0)
+    
+    # Generate the figure and set its parameters #
+    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
+    plt.axis('off')
+    axis.set_aspect('equal')
+    
+    # Create and save a gray scaled version of the image #
+    plt.imsave(name + str(date) + '.png', image_fits, cmap='gray')
+    plt.close()
+    return None
+
+
+def plot_fit_data(h=0.0, R_eff=0.0):
+    """
+    Over-plot the scale length and effective radius on the fits image.
+    :return: None
+    """
+    # Load the fits image and show it #
+    image_fits = fits.getdata(name + '.fits', ext=0)
+    
+    # Generate the figure and set its parameters #
+    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
+    plt.axis('off')
+    axis.set_aspect('equal')
+    
+    axis.imshow(image_fits, cmap='gray')
+    centre = get_image_centre(name)
+    # Plot the scale length
+    for radius in [h, R_eff]:
+        circle = Circle((centre[0], centre[1]), radius, color='tab:red', fill=False)
+        axis.add_patch(circle)
+    
+    # Create and save a gray scaled version of the image #
+    plt.savefig(name + '_2_' + str(date) + '.png', cmap='gray', bbox_inches='tight')
+    plt.close()
+    return None
+
+
+# Define the paths to the images #
+Imfit_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
+plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
+
+# Get the names and sort them #
+names = glob.glob(plots_path + 'Au-06NoRNoQ')
+names = [re.split('/Imfit|/', name)[-1] for name in names]
+names.sort()
+
+# Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
+for name in names:
+    os.chdir(plots_path + name)  # Change to each halo's plots directory
     # Prepare the image and fit isophotal ellipses #
-    convert_for_fit(plots_path + name, min_intensity)
-    fit_isophotal_ellipses(name, ellipticity)
+    # min_intensity = 47.86  # {'Au-06':85.57, 'Au-06NoRNoQ':47.86}
+    # convert_for_fit(name, min_intensity)
+    # ellipticity = 0.6  # {'Au-06NoRNoQ':0.6}
+    # fit_isophotal_ellipses(name, ellipticity)
     
-    # Use Imfit to the image #
-    name = re.split('Au-|.png', name)[1]
-    # --bootstrap 5
-    # os.system('../imfit -c config_%s.dat --nm --model-errors --cashstat ../../plots/projections/Imfit/%s_ctf.fits '
-    #           '--save-model=model_%s.fits --save-residual=resid_%s.fits '
-    #           '--save-params bestfit_%s.dat' % (name, name, name, name, name))
+    # Use Imfit to analyse the image #
+    # --bootstrap 15
+    os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory
+    os.system(
+        '../../imfit -c %s_config.dat --nm --model-errors --cashstat ../../../plots/projections/Imfit/%s/%s_ctf.fits --save-model=%s_model.fits '
+        '--save-residual=%s_resid.fits --save-params=%s_bestfit.dat' % (name, name, name, name, name, name))
     
-    # plot_fits_image(output_path + 'resid_' + str(name) + '.fits')
-    # plot_fits_image(output_path + 'model_' + str(name) + '.fits')
+    # Plot the image model and residual  #
+    plot_fits_image(name + '_resid')
+    plot_fits_image(name + '_model')

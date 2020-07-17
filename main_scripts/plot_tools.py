@@ -148,16 +148,18 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     if ylabel:
         axis.set_ylabel(ylabel, size=size)
     
-    if not xlim and not xlabel:
-        axis.set_xticklabels([])
-    if not ylim and not ylabel:
-        axis.set_7ticklabels([])
-    
     # Set axis scales #
     if xscale:
         axis.set_xscale(xscale)
     if yscale:
         axis.set_yscale(yscale)
+    
+    if not xlim and not xlabel:
+        axis.set_xticks([])
+        axis.set_xticklabels([])
+    if not ylim and not ylabel:
+        axis.set_yticks([])
+        axis.set_yticklabels([])
     
     # Set grid and tick parameters #
     if aspect is not None:
