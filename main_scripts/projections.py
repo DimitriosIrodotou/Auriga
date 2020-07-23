@@ -112,6 +112,7 @@ def stellar_light(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking stellar_light")
     path = '/u/di43/Auriga/plots/data/' + 'sl/' + str(redshift) + '/'
     
     # Read the data #
@@ -192,6 +193,7 @@ def stellar_density(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking stellar_density")
     path = '/u/di43/Auriga/plots/data/' + 'sd/' + str(redshift) + '/'
     
     # Read the data #
@@ -294,6 +296,7 @@ def stellar_light_fit(data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking stellar_light_fit")
     path = '/u/di43/Auriga/plots/data/' + 'slf/' + str(redshift) + '/'
     
     # Read the data #
@@ -367,6 +370,7 @@ def r_band_magnitude(data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking r_band_magnitude")
     path = '/u/di43/Auriga/plots/data/' + 'rbm/' + str(redshift) + '/'
     
     # Read the data #
@@ -443,6 +447,7 @@ def gas_density(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking gas_density")
     path = '/u/di43/Auriga/plots/data/' + 'gd/' + str(redshift) + '/'
     
     # Read the data #
@@ -518,6 +523,7 @@ def gas_temperature(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking gas_temperature")
     path = '/u/di43/Auriga/plots/data/' + 'gt/' + str(redshift) + '/'
     
     # Read the data #
@@ -603,6 +609,7 @@ def gas_metallicity(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking gas_metallicity")
     path = '/u/di43/Auriga/plots/data/' + 'gm/' + str(redshift) + '/'
     
     # Read the data #
@@ -678,6 +685,7 @@ def gas_slice(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking gas_slice")
     boxsize = 0.08  # Increase the boxsize.
     path = '/u/di43/Auriga/plots/data/' + 'gs/' + str(redshift) + '/'
     
@@ -863,6 +871,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking gas_temperature_edge_on")
     boxsize = 0.2  # Increase the boxsize.
     path = '/u/di43/Auriga/plots/data/' + 'gteo/' + str(redshift) + '/'
     
@@ -944,6 +953,7 @@ def magnetic_field(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking magnetic_field")
     path = '/u/di43/Auriga/plots/data/' + 'mf/' + str(redshift) + '/'
     
     # Read the data #
@@ -1022,6 +1032,7 @@ def dark_matter_density(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking dark_matter_density")
     boxsize = 0.4  # Increase the boxsize.
     path = '/u/di43/Auriga/plots/data/' + 'dmd/' + str(redshift) + '/'
     

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib import gridspec
-# from scripts.gigagalaxy.util import satellite_utilities
+from scripts.gigagalaxy.util import satellite_utilities
 
 res = 512
 boxsize = 0.06
@@ -229,15 +229,19 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 
 
 def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
-                             multiple3=False):
+                             multiple3=False, multiple4=False, multiple5=False):
     """
     Generate plot axes.
     :param res: resolution
     :param boxsize: boxsize
-    :param contour: contour
-    :param colorbar: colorbar
-    :param velocity_vectors: velocity_vectors
-    :param multiple: multiple
+    :param contour: 2x3 matrix
+    :param colorbar: 2x2 matrix
+    :param velocity_vectors: 2x1 matrix
+    :param multiple: 3x6 matrix
+    :param multiple2: 6x2 matrix
+    :param multiple3: 6x4 matrix
+    :param multiple4: 1x3 matrix
+    :param multiple5: 3x3 matrix
     :return: axes
     """
 
@@ -320,6 +324,18 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axiscbar = plt.subplot(gs[:, 3])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
                axis51, axis52, axiscbar, x, y, y2, area
+
+    elif multiple4 is True:
+        gs = gridspec.GridSpec(1, 3, hspace=0, wspace=0)
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        return axis00, axis01, axis02, x, y, y2, area
+
+    elif multiple5 is True:
+        gs = gridspec.GridSpec(3, 3, hspace=0, wspace=0)
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, x, y, y2, area
 
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])

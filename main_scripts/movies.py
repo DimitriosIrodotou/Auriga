@@ -25,7 +25,8 @@ def gas_movie(data, read):
     :param read: boolean to read new data.
     :return: None
     """
-    
+    print("Invoking gas_movie")
+
     # Check if a folder to save the data exists, if not create one #
     path = '/u/di43/Auriga/plots/data/' + 'gm/' + '/'
     if not os.path.exists(path):

@@ -34,7 +34,8 @@ def circularity_distribution(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    path = '/u/di43/Auriga/plots/data/' + 'c/'
+    print("Invoking circularity_distribution")
+    path = '/u/di43/Auriga/plots/data/' + 'cd/'
     
     # Read the data #
     if read is True:
@@ -201,6 +202,7 @@ def tully_fisher(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking tully_fisher")
     path = '/u/di43/Auriga/plots/data/' + 'tf/'
     
     # Read the data #
@@ -327,6 +329,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking stellar_vs_halo_mass")
     path = '/u/di43/Auriga/plots/data/' + 'svt/'
     
     # Read the data #
@@ -425,6 +428,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking gas_fraction_vs_magnitude")
     path = '/u/di43/Auriga/plots/data/' + 'gfvm/'
     
     # Read the data #
@@ -503,7 +507,8 @@ def bar_strength_profile(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    path = '/u/di43/Auriga/plots/data/' + 'bs/'
+    print("Invoking bar_strength_profile")
+    path = '/u/di43/Auriga/plots/data/' + 'bsp/'
     
     # Read the data #
     if read is True:
@@ -601,6 +606,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking stellar_surface_density_profiles")
     path = '/u/di43/Auriga/plots/data/' + 'ssdp/'
     
     # Read the data #
@@ -731,6 +737,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking circular_velocity_curves")
     path = '/u/di43/Auriga/plots/data/' + 'cvc/'
     
     # Read the data #
@@ -841,6 +848,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
+    print("Invoking gas_temperature_vs_distance")
     path = '/u/di43/Auriga/plots/data/' + 'gdt/'
     
     # Read the data #
@@ -859,10 +867,10 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then read and save it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if str(s.haloname) in names:
-            #     continue
-            # else:
-            #     print("Analysing halo:", str(s.haloname))
+            if str(s.haloname) in names:
+                continue
+            else:
+                print("Analysing halo:", str(s.haloname))
             
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
