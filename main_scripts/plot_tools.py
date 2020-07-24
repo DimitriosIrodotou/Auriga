@@ -212,8 +212,6 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     # Set axis labels #
     if ylabel:
         axis.set_ylabel(ylabel, size=size)
-    else:
-        axis.set_yticklabels([])
 
     axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=size)
     axis2.set_xlabel(r'$\mathrm{z}$', size=size)
@@ -229,19 +227,21 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 
 
 def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
-                             multiple3=False, multiple4=False, multiple5=False):
+                             multiple3=False, multiple4=False, multiple5=False, multiple6=False, multiple7=False):
     """
     Generate plot axes.
     :param res: resolution
     :param boxsize: boxsize
-    :param contour: 2x3 matrix
-    :param colorbar: 2x2 matrix
+    :param contour: 2x2 matrix plus colorbar
+    :param colorbar: 2x1 matrix plus colorbar
     :param velocity_vectors: 2x1 matrix
-    :param multiple: 3x6 matrix
-    :param multiple2: 6x2 matrix
-    :param multiple3: 6x4 matrix
+    :param multiple: 2x6 matrix plus 6 colorbars
+    :param multiple2: 6x3 matrix
+    :param multiple3: 5x4 matrix plus colorbar
     :param multiple4: 1x3 matrix
-    :param multiple5: 3x3 matrix
+    :param multiple5: 3x3 matrix plus colorbar
+    :param multiple6: 3x3 matrix plus colorbar
+    :param multiple7: 3x3 matrix plus 9 colorbars
     :return: axes
     """
 
@@ -280,27 +280,15 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
 
     elif multiple is True:
         gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
-        axis00 = plt.subplot(gs[0, 0])
-        axiscbar = plt.subplot(gs[1, 0])
-        axis20 = plt.subplot(gs[2, 0])
-        axis01 = plt.subplot(gs[0, 1])
-        axiscbar1 = plt.subplot(gs[1, 1])
-        axis21 = plt.subplot(gs[2, 1])
-        axis02 = plt.subplot(gs[0, 2])
-        axiscbar2 = plt.subplot(gs[1, 2])
-        axis22 = plt.subplot(gs[2, 2])
-        axis03 = plt.subplot(gs[0, 3])
-        axiscbar3 = plt.subplot(gs[1, 3])
-        axis23 = plt.subplot(gs[2, 3])
-        axis04 = plt.subplot(gs[0, 4])
-        axiscbar4 = plt.subplot(gs[1, 4])
-        axis24 = plt.subplot(gs[2, 4])
-        axis05 = plt.subplot(gs[0, 5])
-        axiscbar5 = plt.subplot(gs[1, 5])
-        axis25 = plt.subplot(gs[2, 5])
+        axis00, axis01, axis02, axis03, axis04, axis05 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(
+            gs[0, 3]), plt.subplot(gs[0, 4]), plt.subplot(gs[0, 5])
+        axis10, axis11, axis12, axis13, axis14, axis15 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2]), plt.subplot(
+            gs[1, 3]), plt.subplot(gs[1, 4]), plt.subplot(gs[1, 5])
+        axis20, axis21, axis22, axis23, axis24, axis25 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2]), plt.subplot(
+            gs[2, 3]), plt.subplot(gs[2, 4]), plt.subplot(gs[2, 5])
 
-        return axis00, axiscbar, axis20, axis01, axiscbar1, axis21, axis02, axiscbar2, axis22, axis03, axiscbar3, axis23, axis04, axiscbar4, \
-               axis24, axis05, axiscbar5, axis25, x, y, area
+        return axis00, axis01, axis02, axis03, axis04, axis05, axis10, axis11, axis12, axis13, axis14, axis15, axis20, axis21, axis22, axis23, \
+               axis24, axis25, x, y, area
 
     elif multiple2 is True:
         gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0)
@@ -311,7 +299,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
-               axis51, axis52, x, y, y2, area
+               axis51, axis52
 
     elif multiple3 is True:
         gs = gridspec.GridSpec(6, 4, hspace=0.1, wspace=0.1, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
@@ -328,14 +316,33 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
     elif multiple4 is True:
         gs = gridspec.GridSpec(1, 3, hspace=0, wspace=0)
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
-        return axis00, axis01, axis02, x, y, y2, area
+        return axis00, axis01, axis02
 
     elif multiple5 is True:
         gs = gridspec.GridSpec(3, 3, hspace=0, wspace=0)
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
-        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, x, y, y2, area
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22
+
+    elif multiple6 is True:
+        gs = gridspec.GridSpec(3, 4, hspace=0, wspace=0, width_ratios=[1, 1, 1, 0.1])
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        axiscbar = plt.subplot(gs[:, 3])
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar
+
+    elif multiple7 is True:
+        gs = gridspec.GridSpec(6, 3, hspace=0.4, wspace=0, height_ratios=[0.05, 1, 0.05, 1, 0.05, 1])
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
+        axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
+        axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+               axis51, axis52
 
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])

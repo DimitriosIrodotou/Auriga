@@ -349,8 +349,8 @@ def get_dsr_data(snapshot_ids, halo, radial_limit_min, radial_limit_max):
 
     # Convert radial limits to physical units i.e., keep them constant in co-moving space. #
     a = 1 / (1 + s.redshift)
-    gas_mask, = np.where((s.data['sfr'] > 0.0) & (s.r()[s.data['type'] == 0] > radial_limit_min * a) & (
-        s.r()[s.data['type'] == 0] <= radial_limit_max * a))  # Mask the data: select gas cells inside different physical spatial regimes.
+    gas_mask, = np.where((s.data['sfr'] > 0.0) & (s.r()[s.data['type'] == 0] > radial_limit_min) & (
+        s.r()[s.data['type'] == 0] <= radial_limit_max))  # Mask the data: select gas cells inside different physical spatial regimes.
     SFR = np.sum(s.data['sfr'][gas_mask])
 
     return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), SFR
@@ -370,7 +370,7 @@ def delta_sfr_regimes(pdf, data, region, read):
 
     # Get limits based on the region #
     if region == 'outer':
-        radial_limits_min, radial_limits_max = (7.5e-4, 1e-3, 5e-3), (1e-3, 5e-3, 15e-3)
+        radial_limits_min, radial_limits_max = (0.0, 1e-3, 5e-3), (1e-3, 5e-3, 15e-3)
     elif region == 'inner':
         radial_limits_min, radial_limits_max = (0.0, 2.5e-4, 5e-4), (2.5e-4, 5e-4, 7.5e-4)
 
@@ -448,7 +448,7 @@ def delta_sfr_regimes(pdf, data, region, read):
 
             figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.0f<r/ckpc\leq%.0f}$' % (
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)), fontsize=16,
-                transform=axis00.transAxes)
+                        transform=axis00.transAxes)
 
     # Create the legend, save and close the figure #
     axis00.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
@@ -481,10 +481,10 @@ def get_ssgr_data(snapshot_ids, halo, radial_limit_min, radial_limit_max):
     a = 1 / (1 + s.redshift)
     age = np.zeros(s.npartall)
     age[s.data['type'] == 4] = s.data['age']
-    gas_mask, = np.where((s.data['type'] == 0) & (s.r() > radial_limit_min * a) & (
-        s.r() <= radial_limit_max * a))  # Mask the data: select gas cells inside different physical spatial regimes.
-    stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.0) & (s.r() > radial_limit_min * a) & (
-        s.r() <= radial_limit_max * a))  # Mask the data: select stellar particles inside different physical spatial regimes.
+    gas_mask, = np.where((s.data['type'] == 0) & (s.r() > radial_limit_min) & (
+        s.r() <= radial_limit_max))  # Mask the data: select gas cells inside different physical spatial regimes.
+    stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.0) & (s.r() > radial_limit_min) & (
+        s.r() <= radial_limit_max))  # Mask the data: select stellar particles inside different physical spatial regimes.
 
     # Calculate the temperature of the gas cells #
     ne = s.data['ne'][gas_mask]
@@ -590,10 +590,10 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             plot_tools.set_axis(axis10, xlim=(13, 0), ylim=(1e6, 1e11), yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None, which='major')
             axis10.set_xticklabels([])
             plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1), ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{look}/Gyr}$',
-                aspect=None)
+                                aspect=None)
             figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.2f<r/ckpc\leq%.2f}$' % (
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)), fontsize=16,
-                transform=axis00.transAxes)
+                        transform=axis00.transAxes)
 
             # Load and plot the data #
             SFRs = np.load(path + 'SFRs_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -714,11 +714,11 @@ def AGN_modes_distribution(date, data, read):
 
     axis102, axis112, axis122 = axis10.twiny(), axis11.twiny(), axis12.twiny()
     plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylim=[1e51, 1e61], ylabel=r'$\mathrm{(Mechanical\;feedback\;energy)/ergs}$',
-        aspect=None, which='major')
+                                  aspect=None, which='major')
     plot_tools.set_axes_evolution(axis11, axis112, ylim=[1e51, 1e61], ylabel=r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', aspect=None,
-        which='major')
+                                  which='major')
     plot_tools.set_axes_evolution(axis12, axis122, ylim=[1e51, 1e61], ylabel=r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', aspect=None,
-        which='major')
+                                  which='major')
 
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
@@ -729,12 +729,12 @@ def AGN_modes_distribution(date, data, read):
         # Load the data #
         if i == 0:
             mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            # Transform the arrays to comma separated strings and convert each element to float #
+            mechanicals = ','.join(mechanicals)
+            mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         # Transform the arrays to comma separated strings and convert each element to float #
-        if i == 0:
-            mechanicals = ','.join(mechanicals)
-            mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         thermals = ','.join(thermals)
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
 
@@ -900,12 +900,12 @@ def AGN_feedback_kernel(pdf, data, ds, read):
 
         # Plot median and 1-sigma lines #
         x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
-            n_bins=len(lookback_times) / 2, log=False)
+                                                                       n_bins=len(lookback_times) / 2, log=False)
         axis.plot(x_value, median, color=colors[0], linewidth=3)
         axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3')
 
         x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_type='equal_width', n_bins=10,
-            log=False)
+                                                                       log=False)
         axis3.plot(x_value, median, color=colors[1], linewidth=3)
         axis3.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3')
 
@@ -955,7 +955,7 @@ def AGN_feedback_smoothed(pdf):
 
         # Calculate and plot the thermals energy sum #
         y_data, edges = np.histogram(lookback_times_modes[np.where(thermals > 0)], weights=thermals[np.where(thermals > 0)],
-            bins=np.quantile(np.sort(lookback_times), np.linspace(0, 1, len(lookback_times) + 1)))
+                                     bins=np.quantile(np.sort(lookback_times), np.linspace(0, 1, len(lookback_times) + 1)))
         y_data /= edges[1:] - edges[:-1]  # Normalise the values wrt the bin width.
         axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[1])
         axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data * np.flip(nsf_gas_volumes / gas_volumes), color=colors[4])
@@ -1002,8 +1002,8 @@ def get_bm_data(snapshot_ids, halo, blackhole_id):
                                                                                                                                                0, \
                                                                                                                                                0, 0, 0
     return s.cosmology_get_lookback_time_from_a(s.time,
-        is_flat=True), black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, black_hole_dmass_radio, \
-           black_hole_dmass_quasar
+                                                is_flat=True), black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, \
+           black_hole_dmass_radio, black_hole_dmass_quasar
 
 
 def blackhole_masses(pdf, data, read):
@@ -1133,7 +1133,7 @@ def blackhole_masses(pdf, data, read):
             axis11.plot(x_value, sum, color=colors[1 + i])
 
         axis10.legend([plt10, plt102, plt101], [r'$\mathrm{BH}$', r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='lower right', fontsize=16,
-            frameon=False, numpoints=1)
+                      frameon=False, numpoints=1)
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
