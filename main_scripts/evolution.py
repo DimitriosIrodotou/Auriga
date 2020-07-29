@@ -47,7 +47,7 @@ def sfr(pdf, data, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -167,7 +167,7 @@ def bar_strength(pdf, data, read):
         # Loop over all available haloes #
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
@@ -269,7 +269,7 @@ def gas_temperature_regimes(pdf, data, read):
         # Loop over all available haloes #
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
@@ -366,7 +366,8 @@ def delta_sfr_regimes(pdf, data, region, read):
     :return: None
     """
     print("Invoking delta_sfr_regimes")
-    redshift_cut = 7
+    n_bins = 130
+    time_bin_width = (13 - 0) / n_bins  # In Gyr.
 
     # Get limits based on the region #
     if region == 'outer':
@@ -376,39 +377,46 @@ def delta_sfr_regimes(pdf, data, region, read):
 
     # Read the data #
     if read is True:
-        # Loop over all spatial regimes #
-        for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
-            # Check if a folder to save the data exists, if not create one #
-            path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_limit_max) + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [4]
+        attributes = ['age', 'gima', 'mass', 'pos']
+        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-            # Loop over all available haloes #
-            haloes = data.get_haloes(default_level)
-            for name, halo in haloes.items():
-                # Check if any of the haloes' data already exists, if not then read and save it #
+        # Loop over all available haloes #
+        for s in data:
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+
+            # Loop over all spatial regimes #
+            for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
+                # Check if a folder to save the data exists, if not create one #
+                path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_limit_max) + '/'
+                if not os.path.exists(path):
+                    os.makedirs(path)
+
+                # Check if any of the haloes' data already exists, if not then create it #
                 names = glob.glob(path + '/name_*')
                 names = [re.split('_|.npy', name)[1] for name in names]
-                if name in names:
+                if str(s.haloname) in names:
                     continue
                 else:
-                    print("Analysing halo:", name)
+                    print("Analysing halo:", str(s.haloname))
 
-                # Get all snapshots with redshift less than the redshift cut #
-                redshifts = halo.get_redshifts()
-                redshift_mask, = np.where(redshifts <= redshift_cut)
-                snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
-
-                dsr_data = np.array(get_dsr_data(snapshot_ids, halo, radial_limit_min, radial_limit_max))  # Get delta SFR regimes data.
+                # Get the lookback times and calculate the initial masses #
+                stellar_mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_limit_min) & (
+                    s.r() <= radial_limit_max))  # Mask the data: select stellar particles inside radial limits.
+                lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True)  # In Gyr.
+                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr^-1.
 
                 # Save data for each halo in numpy arrays #
-                np.save(path + 'name_' + str(name), name)
-                np.save(path + 'lookback_times_' + str(name), dsr_data[:, 0])
-                np.save(path + 'SFRs_' + str(name), dsr_data[:, 1])
+                np.save(path + 'name_' + str(s.haloname), s.haloname)
+                np.save(path + 'weights_' + str(s.haloname), weights)
+                np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
 
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(16, 9))
-    gs = gridspec.GridSpec(2, 3, hspace=0.3, wspace=0.05)
+    gs = gridspec.GridSpec(2, 3, hspace=0.5, wspace=0.05)
     axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
     axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
 
@@ -416,42 +424,45 @@ def delta_sfr_regimes(pdf, data, region, read):
         axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1, linscaley=0.1)
     for axis in [axis01, axis02, axis11, axis12]:
         axis.set_yticklabels([])
-    axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$')
-    axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$')
+    for axis in [axis00, axis01, axis02]:
+        axis2 = axis.twiny()
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 15], aspect=None)
+    for axis in [axis10, axis11, axis12]:
+        axis2 = axis.twiny()
+        plot_tools.set_axes_evolution(axis, axis2, ylim=(-1.1, 2e1), aspect=None)
+    axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', size=16)
+    axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$', size=16)
 
     # Loop over all radial limits #
     top_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12]
     for radial_limit_min, radial_limit_max, top_axis, bottom_axis in zip(radial_limits_min, radial_limits_max, top_axes, bottom_axes):
         # Get the names and sort them #
-        path = '/u/di43/Auriga/plots/data/' + 'dsh/' + str(radial_limit_max) + '/'
-        names = glob.glob(path + '/name_*')
+        path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_limit_max) + '/'
+        names = glob.glob(path + '/name_06*')
         names.sort()
 
         # Loop over all available haloes #
         for i in range(len(names)):
             # Load the data #
-            SFR = np.load(path + 'SFRs_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
             # Plot the evolution of SFR and the normalised delta SFR #
-            top_axis.plot(lookback_times, SFR, color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
-            axis2 = top_axis.twiny()
-            plot_tools.set_axes_evolution(top_axis, axis2, ylim=[0, 22], aspect=None)
+            counts, bins, bars = top_axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins, range=[0, 13], color=colors[i],
+                                               label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+            if i == 0:
+                original_bins, original_counts = bins, counts
+            else:
+                bottom_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)), color=colors[i],
+                                 label="Au-" + (str(re.split('_|.npy', names[i])[1])))
 
-            # Calculate and plot the normalised delta SFR #
-            if i == 1:
-                original_times, original_SFR = lookback_times, SFR
-            if i == 2:
-                bottom_axis.plot(original_times, (np.divide(SFR - original_SFR, original_SFR)), color=colors[i])
-                axis2 = bottom_axis.twiny()
-                plot_tools.set_axes_evolution(bottom_axis, axis2, ylim=(-1.1, 5e1), aspect=None)
+        # Add the text and create the legend #
+        figure.text(0.0, 0.92, r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)),
+                    fontsize=16, transform=top_axis.transAxes)
+        top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+        bottom_axis.legend(loc='upper center', fontsize=12, frameon=False, numpoints=1, ncol=2)
 
-            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.0f<r/ckpc\leq%.0f}$' % (
-                str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)), fontsize=16,
-                        transform=axis00.transAxes)
-
-    # Create the legend, save and close the figure #
-    axis00.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+    # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
     return None
@@ -529,40 +540,65 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 
     # Read the data #
     if read is True:
-        # Loop over all spatial regimes #
-        for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
-            # Check if a folder to save the data exists, if not create one #
-            path = '/u/di43/Auriga/plots/data/' + 'ssgr/' + str(radial_limit_max) + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [4]
+        attributes = ['age', 'gima', 'mass', 'pos']
+        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-            # Loop over all available haloes #
-            haloes = data.get_haloes(default_level)
-            for name, halo in haloes.items():
-                # Check if any of the haloes' data already exists, if not then read and save it #
+        # Loop over all available haloes #
+        for s in data:
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+
+            # Loop over all spatial regimes #
+            for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
+                # Check if a folder to save the data exists, if not create one #
+                path = '/u/di43/Auriga/plots/data/' + 'ssgr/' + str(radial_limit_max) + '/'
+                if not os.path.exists(path):
+                    os.makedirs(path)
+
+                # Check if any of the haloes' data already exists, if not then create it #
                 names = glob.glob(path + '/name_*')
                 names = [re.split('_|.npy', name)[1] for name in names]
-                if name in names:
+                if str(s.haloname) in names:
                     continue
                 else:
-                    print("Analysing halo:", name)
+                    print("Analysing halo:", str(s.haloname))
 
-                # Get all snapshots with redshift less than the redshift cut #
-                redshifts = halo.get_redshifts()
-                redshift_mask, = np.where(redshifts <= redshift_cut)
-                snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
-
-                ssgr_data = np.array(get_ssgr_data(snapshot_ids, halo, radial_limit_min, radial_limit_max))  # Get SFR stars gas regimes data.
+                # Get the lookback times and calculate the initial masses #
+                stellar_mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_limit_min) & (
+                    s.r() <= radial_limit_max))  # Mask the data: select stellar particles inside radial limits.
+                lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True)  # In Gyr.
+                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr^-1.
 
                 # Save data for each halo in numpy arrays #
-                np.save(path + 'name_' + str(name), name)
-                np.save(path + 'lookback_times_' + str(name), ssgr_data[:, 0])
-                np.save(path + 'SFRs_' + str(name), ssgr_data[:, 1])
-                np.save(path + 'sfg_ratios_' + str(name), ssgr_data[:, 2])
-                np.save(path + 'wg_ratios_' + str(name), ssgr_data[:, 3])
-                np.save(path + 'hg_ratios_' + str(name), ssgr_data[:, 4])
-                np.save(path + 'gas_masses_' + str(name), ssgr_data[:, 5])
-                np.save(path + 'stellar_masses_' + str(name), ssgr_data[:, 6])
+                np.save(path + 'name_' + str(s.haloname), s.haloname)
+                np.save(path + 'weights_' + str(s.haloname), weights)
+                np.save(path + 'lookback_times_SFR_' + str(s.haloname), lookback_times)
+
+            # Loop over all spatial regimes #
+            for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
+                # Check if a folder to save the data exists, if not create one #
+                path = '/u/di43/Auriga/plots/data/' + 'ssgr/' + str(radial_limit_max) + '/'
+
+                # Loop over all available haloes #
+                haloes = data.get_haloes(default_level)
+                for name, halo in haloes.items():
+                    # Get all snapshots with redshift less than the redshift cut #
+                    redshifts = halo.get_redshifts()
+                    redshift_mask, = np.where(redshifts <= redshift_cut)
+                    snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
+
+                    ssgr_data = np.array(get_ssgr_data(snapshot_ids, halo, radial_limit_min, radial_limit_max))  # Get SFR stars gas regimes data.
+
+                    # Save data for each halo in numpy arrays #
+                    np.save(path + 'lookback_times_' + str(s.haloname), ssgr_data[:, 0])
+                    np.save(path + 'sfg_ratios_' + str(name), ssgr_data[:, 2])
+                    np.save(path + 'wg_ratios_' + str(name), ssgr_data[:, 3])
+                    np.save(path + 'hg_ratios_' + str(name), ssgr_data[:, 4])
+                    np.save(path + 'gas_masses_' + str(name), ssgr_data[:, 5])
+                    np.save(path + 'stellar_masses_' + str(name), ssgr_data[:, 6])
 
     # Loop over all radial limits #
     for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
@@ -570,7 +606,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
         path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
 
         # Get the names and sort them #
-        names = glob.glob(path + '/name_*')
+        names = glob.glob(path + '/name_06.*')
         names.sort()
 
         # Loop over all available haloes #
@@ -582,29 +618,41 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             axis10 = plt.subplot(gs[1, 0])
             axis20 = plt.subplot(gs[2, 0])
 
-            axis002 = axis00.twiny()
-            plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8), ylabel=r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
-            axis00.set_xticklabels([])
+            for axis in [axis00, axis10, axis20]:
+                axis2 = axis.twiny()
+                plot_tools.set_axes_evolution(axis, axis2, ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None, size=20)
+                if axis in [axis10, axis20]:
+                    axis2.set_xlabel('')
+                    axis2.set_xticklabels([])
+            for axis in [axis00, axis10]:
+                axis.set_xlabel('')
+                axis.set_xticklabels([])
+
+            # axis002 = axis00.twiny()
+            # plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8), ylabel=r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
+            # axis00.set_xticklabels([])
             axis003 = axis00.twinx()
             plot_tools.set_axis(axis003, ylim=(1e55, 1e61), yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$', aspect=None, which='major')
-            plot_tools.set_axis(axis10, xlim=(13, 0), ylim=(1e6, 1e11), yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None, which='major')
-            axis10.set_xticklabels([])
-            plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1), ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{look}/Gyr}$',
-                                aspect=None)
-            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.2f<r/ckpc\leq%.2f}$' % (
+            # plot_tools.set_axis(axis10, xlim=(13, 0), ylim=(1e6, 1e11), yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None,
+            # which='major')
+            # axis10.set_xticklabels([])
+            # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1), ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{look}/Gyr}$',
+            #                     aspect=None)
+            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.2f<r/kpc\leq%.2f}$' % (
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)), fontsize=16,
                         transform=axis00.transAxes)
 
             # Load and plot the data #
-            SFRs = np.load(path + 'SFRs_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             gas_masses = np.load(path + 'gas_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            stellar_masses = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            stellar_masses = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            lookback_times_SFR = np.load(path + 'lookback_times_SFR_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
             # Transform the arrays to comma separated strings and convert each element to float #
@@ -613,7 +661,9 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             thermals = np.fromstring(thermals, dtype=np.float, sep=',')
             mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
 
-            axis00.plot(lookback_times, SFRs, color=colors[i])  # Plot SFR.
+            # Plot the evolution of SFR #
+            axis00.hist(lookback_times_SFR, weights=weights, histtype='step', bins=n_bins, range=[0, 13], color=colors[i],
+                        label="Au-" + (str(re.split('_|.npy', names[i])[1])))
 
             # Plot the feedback modes binned sum line #
             for mode, label, color in zip([mechanicals, thermals], [r'$\mathrm{Mechanical}$', r'$\mathrm{Thermal}$'], [colors[4], colors[5]]):
@@ -662,7 +712,7 @@ def AGN_modes_distribution(date, data, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -841,7 +891,7 @@ def AGN_feedback_kernel(pdf, data, ds, read):
         # Loop over all available haloes #
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
@@ -1029,7 +1079,7 @@ def blackhole_masses(pdf, data, read):
         # Loop over all available haloes #
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:

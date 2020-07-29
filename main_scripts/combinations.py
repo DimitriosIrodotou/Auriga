@@ -86,7 +86,7 @@ def stellar_density_combination(pdf, redshift):
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50,
                  axis51, axis52]:
         axis.set_facecolor(cmap(0))
-        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=12)
+        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30])
     for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
         axis.set_ylim([-15, 15])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
@@ -97,11 +97,13 @@ def stellar_density_combination(pdf, redshift):
     for axis in [axis51, axis52]:
         axis.set_yticklabels([])
     for axis in [axis50, axis51, axis52]:
-        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=12)
+        labels = ['', '-20', '', '0', '', '20', '']
+        axis.set_xticklabels(labels)
+        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=16)
     for axis in [axis00, axis20, axis40]:
-        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=12)
+        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=16)
     for axis in [axis10, axis30, axis50]:
-        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=12)
+        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=16)
 
     # Loop over all available haloes #
     axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
@@ -968,7 +970,7 @@ def central_combination(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:

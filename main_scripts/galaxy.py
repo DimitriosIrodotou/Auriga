@@ -50,7 +50,7 @@ def circularity_distribution(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -217,7 +217,7 @@ def tully_fisher(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -344,7 +344,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -444,7 +444,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -523,7 +523,7 @@ def bar_strength_profile(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -622,7 +622,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -753,7 +753,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -864,7 +864,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
         
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then read and save it #
+            # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
