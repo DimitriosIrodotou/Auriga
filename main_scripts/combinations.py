@@ -577,7 +577,8 @@ def bar_strength_profile_combination(pdf):
     figure = plt.figure(figsize=(20, 7.5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     for axis in [axis00, axis01, axis02]:
-        plot_tools.set_axis(axis, xlim=[0, 11], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{A_{2}}$', aspect=None)
+        plot_tools.set_axis(axis, xlim=[0, 11], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{\sqrt{a_{2}^{2}+b_{2}^{2}}/a_{0}}$',
+                            aspect=None)
     for axis in [axis01, axis02]:
         axis.set_ylabel('')
         axis.set_yticklabels([])
@@ -589,14 +590,14 @@ def bar_strength_profile_combination(pdf):
         # Loop over all available flavours #
         for j in range(len(names_flavours)):
             # Load the data #
-            A2 = np.load(path + 'A2_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            ratio = np.load(path + 'ratio_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             r_m = np.load(path + 'r_m_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
             # Plot the bar strength radial profile and get an estimate for the bar length from the maximum strength #
-            axis.plot(r_m, A2, color=colors[j],
-                      label=r'$\mathrm{Au-%s:bar\;strength=%.2f}$' % (str(re.split('_|.npy', names_flavours[j])[1]), max(A2)))
-            axis.plot([r_m[np.where(A2 == max(A2))], r_m[np.where(A2 == max(A2))]], [-0.0, max(A2)], color=colors[j], linestyle='dashed',
-                      label=r'$\mathrm{bar\;length=%.2fkpc}$' % r_m[np.where(A2 == max(A2))])
+            A2 = max(ratio)
+            axis.plot(r_m, ratio, color=colors[j], label=r'$\mathrm{Au-%s:A_{2}=%.2f}$' % (str(re.split('_|.npy', names_flavours[j])[1]), A2))
+            axis.plot([r_m[np.where(ratio == A2)], r_m[np.where(ratio == A2)]], [-0.0, A2], color=colors[j], linestyle='dashed',
+                      label=r'$\mathrm{r_{A_{2}}=%.2fkpc}$' % r_m[np.where(ratio == A2)])
 
             axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
@@ -726,7 +727,7 @@ def gas_temperature_vs_distance_combination(pdf):
         plot_tools.set_axis(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log', xlabel=r'$\mathrm{R/kpc}$',
                             ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major', size=20)
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
-        plot_tools.set_axis(axis, xlim=[2e-2, 2e2], ylim=[1e3, 1e8], xscale='log', yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None,
+        plot_tools.set_axis(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None,
                             which='major', size=20)
 
     # Loop over all available haloes #
@@ -736,9 +737,9 @@ def gas_temperature_vs_distance_combination(pdf):
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the temperature as a function of distance of gas cells #
-        hb = axis.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log', cmap='hot_r')
+        hb = axis.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log', cmap='gist_earth_r')
 
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.02, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
         axis.set_yticklabels([])

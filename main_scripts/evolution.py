@@ -577,28 +577,28 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
                 np.save(path + 'weights_' + str(s.haloname), weights)
                 np.save(path + 'lookback_times_SFR_' + str(s.haloname), lookback_times)
 
+        # Loop over all available haloes #
+        haloes = data.get_haloes(default_level)
+        for name, halo in haloes.items():
             # Loop over all spatial regimes #
             for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
                 # Check if a folder to save the data exists, if not create one #
                 path = '/u/di43/Auriga/plots/data/' + 'ssgr/' + str(radial_limit_max) + '/'
 
-                # Loop over all available haloes #
-                haloes = data.get_haloes(default_level)
-                for name, halo in haloes.items():
-                    # Get all snapshots with redshift less than the redshift cut #
-                    redshifts = halo.get_redshifts()
-                    redshift_mask, = np.where(redshifts <= redshift_cut)
-                    snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
+                # Get all snapshots with redshift less than the redshift cut #
+                redshifts = halo.get_redshifts()
+                redshift_mask, = np.where(redshifts <= redshift_cut)
+                snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
 
-                    ssgr_data = np.array(get_ssgr_data(snapshot_ids, halo, radial_limit_min, radial_limit_max))  # Get SFR stars gas regimes data.
+                ssgr_data = np.array(get_ssgr_data(snapshot_ids, halo, radial_limit_min, radial_limit_max))  # Get SFR stars gas regimes data.
 
-                    # Save data for each halo in numpy arrays #
-                    np.save(path + 'lookback_times_' + str(s.haloname), ssgr_data[:, 0])
-                    np.save(path + 'sfg_ratios_' + str(name), ssgr_data[:, 2])
-                    np.save(path + 'wg_ratios_' + str(name), ssgr_data[:, 3])
-                    np.save(path + 'hg_ratios_' + str(name), ssgr_data[:, 4])
-                    np.save(path + 'gas_masses_' + str(name), ssgr_data[:, 5])
-                    np.save(path + 'stellar_masses_' + str(name), ssgr_data[:, 6])
+                # Save data for each halo in numpy arrays #
+                np.save(path + 'lookback_times_' + str(name), ssgr_data[:, 0])
+                np.save(path + 'sfg_ratios_' + str(name), ssgr_data[:, 2])
+                np.save(path + 'wg_ratios_' + str(name), ssgr_data[:, 3])
+                np.save(path + 'hg_ratios_' + str(name), ssgr_data[:, 4])
+                np.save(path + 'gas_masses_' + str(name), ssgr_data[:, 5])
+                np.save(path + 'stellar_masses_' + str(name), ssgr_data[:, 6])
 
     # Loop over all radial limits #
     for radial_limit_min, radial_limit_max in zip(radial_limits_min, radial_limits_max):
@@ -606,7 +606,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
         path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
 
         # Get the names and sort them #
-        names = glob.glob(path + '/name_06.*')
+        names = glob.glob(path + '/name_17.*')
         names.sort()
 
         # Loop over all available haloes #
@@ -638,7 +638,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             # axis10.set_xticklabels([])
             # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1), ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{look}/Gyr}$',
             #                     aspect=None)
-            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.2f<r/kpc\leq%.2f}$' % (
+            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % (
                 str(re.split('_|.npy', names[i])[1]), (np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)), fontsize=16,
                         transform=axis00.transAxes)
 
