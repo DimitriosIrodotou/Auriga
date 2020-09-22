@@ -16,7 +16,9 @@ res = 512
 level = 4
 boxsize = 0.06
 colors = ['black', 'tab:red', 'tab:green', 'tab:blue']
-color_array = iter(matplotlib.cm.jet(np.linspace(0, 1, 9)))
+color_array = [iter(matplotlib.cm.Reds_r(np.linspace(0.1, 0.7, 3))), iter(matplotlib.cm.Greens_r(np.linspace(0.1, 0.7, 3))),
+               iter(matplotlib.cm.Blues_r(np.linspace(0.1, 0.7, 3)))]
+marker_array = iter(['o', 'o', 'o', '^', '^', '^', 's', 's', 's'])
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
@@ -465,10 +467,10 @@ def tully_fisher_combination(pdf):
         total_circular_velocity = np.load(path + 'total_circular_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the Tully-Fisher relation #
-        plt.scatter(stellar_mass * 1e10, np.log10(total_circular_velocity), color=next(color_array), s=200, zorder=5, marker='*',
-                    label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
+        plt.scatter(stellar_mass * 1e10, np.log10(total_circular_velocity), color=next(color_array[int(np.floor(i / 3))]), s=100, zorder=5,
+                    marker=next(marker_array), label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-        plt.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1, scatterpoints=1)  # Create the legend.
+        plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -516,10 +518,10 @@ def stellar_vs_halo_mass_combination(pdf):
         stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the abundance matching relation #
-        plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=next(color_array), s=200, zorder=5, marker='*',
+        plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=next(color_array[int(np.floor(i / 3))]), s=100, zorder=5, marker=next(marker_array),
                     label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-        plt.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1, scatterpoints=1)  # Create the legend.
+        plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -550,10 +552,10 @@ def gas_fraction_vs_magnitude_combination(pdf):
         M_R = np.load(path + 'M_R_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the gas fraction as a function R-band magnitude #
-        plt.scatter(M_R, gas_fraction, color=next(color_array), s=200, zorder=5, marker='*',
+        plt.scatter(M_R, gas_fraction, color=next(color_array[int(np.floor(i / 3))]), s=100, zorder=5, marker=next(marker_array),
                     label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-        plt.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, scatterpoints=1)  # Create the legend.
+        plt.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')

@@ -99,7 +99,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', markersize=3)
         plot_tools.set_axis(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{Semi-major\;axis\;length\;[pix]}$',
-            ylabel=y_label, which='major', aspect=None)
+                            ylabel=y_label, which='major', aspect=None)
     axis02.set_yscale('log')
 
     # Fit a Sersic plus exponential profile #
