@@ -457,7 +457,7 @@ def delta_sfr_regimes(pdf, data, region, read):
                                  label="Au-" + (str(re.split('_|.npy', names[i])[1])))
 
         # Add the text and create the legend #
-        figure.text(0.0, 0.92, r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)),
+        figure.text(0.01, 0.92, r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_limit_min) * 1e3), (np.float(radial_limit_max) * 1e3)),
                     fontsize=16, transform=top_axis.transAxes)
         top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
         bottom_axis.legend(loc='upper center', fontsize=12, frameon=False, numpoints=1, ncol=2)

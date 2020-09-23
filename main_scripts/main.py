@@ -337,9 +337,9 @@ class AurigaPdf:
         # combinations.circularity_distribution_combination(pdf)
         # combinations.tully_fisher_combination(pdf)
         # combinations.stellar_vs_halo_mass_combination(pdf)
-        combinations.gas_fraction_vs_magnitude_combination(pdf)
+        # combinations.gas_fraction_vs_magnitude_combination(pdf)
         # combinations.bar_strength_profile_combination(pdf)
-        # combinations.stellar_surface_density_profiles_combination(pdf)
+        combinations.stellar_surface_density_profiles_combination(pdf)
         # combinations.circular_velocity_curves_combination(pdf)
         # combinations.gas_temperature_vs_distance_combination(pdf)
         # Evolution #

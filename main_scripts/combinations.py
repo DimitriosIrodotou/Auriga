@@ -16,8 +16,7 @@ res = 512
 level = 4
 boxsize = 0.06
 colors = ['black', 'tab:red', 'tab:green', 'tab:blue']
-color_array = [iter(matplotlib.cm.Reds_r(np.linspace(0.1, 0.7, 3))), iter(matplotlib.cm.Greens_r(np.linspace(0.1, 0.7, 3))),
-               iter(matplotlib.cm.Blues_r(np.linspace(0.1, 0.7, 3)))]
+colors2 = ['black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green']
 marker_array = iter(['o', 'o', 'o', '^', '^', '^', 's', 's', 's'])
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
@@ -467,8 +466,8 @@ def tully_fisher_combination(pdf):
         total_circular_velocity = np.load(path + 'total_circular_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the Tully-Fisher relation #
-        plt.scatter(stellar_mass * 1e10, np.log10(total_circular_velocity), color=next(color_array[int(np.floor(i / 3))]), s=100, zorder=5,
-                    marker=next(marker_array), label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
+        plt.scatter(stellar_mass * 1e10, np.log10(total_circular_velocity), color=colors2[i], s=100, zorder=5, marker=next(marker_array),
+                    label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
         plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
 
@@ -518,7 +517,7 @@ def stellar_vs_halo_mass_combination(pdf):
         stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the abundance matching relation #
-        plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=next(color_array[int(np.floor(i / 3))]), s=100, zorder=5, marker=next(marker_array),
+        plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=colors2[i], s=100, zorder=5, marker=next(marker_array),
                     label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
         plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
@@ -552,7 +551,7 @@ def gas_fraction_vs_magnitude_combination(pdf):
         M_R = np.load(path + 'M_R_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the gas fraction as a function R-band magnitude #
-        plt.scatter(M_R, gas_fraction, color=next(color_array[int(np.floor(i / 3))]), s=100, zorder=5, marker=next(marker_array),
+        plt.scatter(M_R, gas_fraction, color=colors2[i], s=100, zorder=5, marker=next(marker_array),
                     label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
         plt.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
@@ -653,7 +652,7 @@ def stellar_surface_density_profiles_combination(pdf):
         axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1])
         axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0])
 
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -700,7 +699,7 @@ def circular_velocity_curves_combination(pdf):
         axis.plot(radius * 1e3, shell_velocity[:, 4], color=colors[2], linestyle='--', linewidth=3, label=r'$\mathrm{Stars}$')
         axis.plot(radius * 1e3, shell_velocity[:, 1], color=colors[1], linestyle='--', linewidth=3, label=r'$\mathrm{Dark\;matter}$')
 
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -741,7 +740,7 @@ def gas_temperature_vs_distance_combination(pdf):
         # Plot the temperature as a function of distance of gas cells #
         hb = axis.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log', cmap='gist_earth_r')
 
-        figure.text(0.02, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
         axis.set_yticklabels([])
@@ -839,7 +838,7 @@ def gas_temperature_regimes_combination(pdf):
         axis.plot(lookback_times, sfg_ratios, color='blue', label=r'$\mathrm{Cold\;gas}$')
         axis.plot(lookback_times, wg_ratios, color='green', label=r'$\mathrm{Warm\;gas}$')
 
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -933,7 +932,7 @@ def AGN_modes_distribution_combination(date):
                 plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$', orientation='horizontal', size=20)
                 x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
                 axis.plot(x_value, sum / time_bin_width, color=colors[0], label=r'$\mathrm{Sum}$')
-                figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names_flavours[j])[1]), fontsize=16, transform=axis.transAxes)
+                figure.text(0.01, 0.92, 'Au-' + str(re.split('_|.npy', names_flavours[j])[1]), fontsize=16, transform=axis.transAxes)
 
             for axis in [axis11, axis12, axis31, axis32, axis51, axis52]:
                 axis.set_yticklabels([])
