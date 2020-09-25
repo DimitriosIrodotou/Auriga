@@ -4,17 +4,23 @@ import glob
 import galaxy
 import matplotlib
 import plot_tools
+
 import numpy as np
+import healpy as hlp
+import astropy.units as u
 import matplotlib.pyplot as plt
 
 from const import *
 from sfigure import *
 from loadmodules import *
+from astropy_healpix import HEALPix
+from plot_tools import RotateCoordinates
 from scripts.gigagalaxy.util import plot_helper
 
 res = 512
 level = 4
 boxsize = 0.06
+default_level = 4
 colors = ['black', 'tab:red', 'tab:green', 'tab:blue']
 colors2 = ['black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green']
 marker_array = iter(['o', 'o', 'o', '^', '^', '^', 's', 's', 's'])
@@ -749,6 +755,129 @@ def gas_temperature_vs_distance_combination(pdf):
 
     # Add a colorbar, save and close the figure #
     plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$', size=20)
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
+    return None
+
+
+def decomposition_IT20_combination(pdf, data, redshift):
+    """
+    Plot the angular momentum maps and calculate D/T_IT20 for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :return: None
+    """
+    print("Invoking decomposition_IT20_combination")
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'dic/' + str(redshift) + '/'
+
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(20, 20))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar = plot_tools.create_axes_combinations(res=res,
+                                                                                                                           boxsize=boxsize * 1e3,
+                                                                                                                           mollweide=True)
+    axes = [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]
+    for axis in axes:
+        axis.set_xlabel(r'$\mathrm{\alpha/\degree}$', size=20)
+        axis.set_ylabel(r'$\mathrm{\delta/\degree}$', size=20)
+        axis.set_yticklabels(['', '-60', '', '-30', '', '0', '', '30', '', '60', ''], size=20)
+        axis.set_xticklabels(['', '-120', '', '-60', '', '0', '', '60', '', '120', ''], size=20)
+
+    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    particle_type = [4]
+    attributes = ['age', 'mass', 'pos']
+    data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+
+    # Loop over all available haloes #
+    for s, axis in zip(data, axes):
+        # Check if any of the haloes' data already exists, if not then create it #
+        names = glob.glob(path + '/name_*')
+        names = [re.split('_|.npy', name)[1] for name in names]
+        if str(s.haloname) in names:
+            continue
+        else:
+            print("Analysing halo:", str(s.haloname))
+
+        # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+        s.calc_sf_indizes(s.subfind)
+        s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+
+        # Rotate the data and plot the projections #
+        stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
+        sp_mass = s.data['mass'][stellar_mask]
+
+        # Calculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the galactic angular momentum vector #
+        prc_angular_momentum = s.data['mass'][stellar_mask, np.newaxis] * np.cross(s.data['pos'][stellar_mask],
+                                                                                   s.data['vel'][stellar_mask])  # In Msun kpc km s^-1.
+        glx_angular_momentum = np.sum(prc_angular_momentum, axis=0)
+        glx_unit_vector = glx_angular_momentum / np.linalg.norm(glx_angular_momentum)
+
+        # Rotate coordinates and velocities of stellar particles so the galactic angular momentum points along the x axis #
+        # coordinates, velocities, sp_am_unit_vector, glx_unit_vector = RotateCoordinates.rotate_X(s.data, glx_unit_vector)
+        sp_am_unit_vector = prc_angular_momentum / np.linalg.norm(prc_angular_momentum)
+        # Step (ii) in Section 2.2 Decomposition of IT20 #
+        # Calculate the azimuth (alpha) and elevation (delta) angle of the angular momentum of all stellar particles #
+        alpha = np.degrees(np.arctan2(sp_am_unit_vector[:, 1], sp_am_unit_vector[:, 2]))  # In degrees.
+        delta = np.degrees(np.arcsin(sp_am_unit_vector[:, 0]))  # In degrees.
+
+        # Step (ii) in Section 2.2 Decomposition of IT20 #
+        # Generate the pixelisation of the angular momentum map #
+        nside = 2 ** 4  # Define the resolution of the grid (number of divisions along the side of a base-resolution grid cell).
+        hp = HEALPix(nside=nside)  # Initialise the HEALPix pixelisation class.
+        indices = hp.lonlat_to_healpix(alpha * u.deg, delta * u.deg)  # Create a list of HEALPix indices from particles's alpha and delta.
+        densities = np.bincount(indices, minlength=hp.npix)  # Count number of data points in each HEALPix grid cell.
+
+        # Step (iii) in Section 2.2 Decomposition of IT20 #
+        # Smooth the angular momentum map with a top-hat filter of angular radius 30 degrees #
+        smoothed_densities = np.zeros(hp.npix)
+        # Loop over all grid cells #
+        for i in range(hp.npix):
+            mask = hlp.query_disc(nside, hlp.pix2vec(nside, i), np.pi / 6.0)  # Do a 30 degree cone search around each grid cell.
+            smoothed_densities[i] = np.mean(densities[mask])  # Average the densities of the ones inside and assign this value to the grid cell.
+
+        # Step (iii) in Section 2.2 Decomposition of IT20 #
+        # Find the location of the density maximum #
+        index_densest = np.argmax(smoothed_densities)
+        alpha_densest = (hp.healpix_to_lonlat([index_densest])[0].value + np.pi) % (2 * np.pi) - np.pi  # In radians.
+        delta_densest = (hp.healpix_to_lonlat([index_densest])[1].value + np.pi / 2) % (2 * np.pi) - np.pi / 2  # In radians.
+
+        # Step (iv) in Section 2.2 Decomposition of IT20 #
+        # Calculate the angular separation of each stellar particle from the centre of the densest grid cell #
+        Delta_theta = np.arccos(np.sin(delta_densest) * np.sin(np.radians(delta)) + np.cos(delta_densest) * np.cos(np.radians(delta)) * np.cos(
+            alpha_densest - np.radians(alpha)))  # In radians.
+
+        # Step (v) in Section 2.2 Decomposition of IT20 #
+        # Calculate the disc mass fraction as the mass within 30 degrees from the densest grid cell #
+        disc_mask_IT20, = np.where(Delta_theta < (np.pi / 6.0))
+        spheroid_mask_IT20, = np.where(Delta_theta >= (np.pi / 6.0))
+        disc_fraction_IT20 = np.sum(sp_mass[disc_mask_IT20]) / np.sum(sp_mass)
+
+        # Step (vi) in Section 2.2 Decomposition of IT20 #
+        # Normalise the disc fractions #
+        chi = 0.5 * (1 - np.cos(np.pi / 6))
+        disc_fraction_IT20 = np.divide(1, 1 - chi) * (disc_fraction_IT20 - chi)
+
+        # Sample a 360x180 grid in ra/el #
+        ra = np.linspace(-180.0, 180.0, num=360) * u.deg
+        el = np.linspace(-90.0, 90.0, num=180) * u.deg
+        ra_grid, el_grid = np.meshgrid(ra, el)
+
+        # Find density at each coordinate position #
+        coordinate_index = hp.lonlat_to_healpix(ra_grid, el_grid)
+        density_map = densities[coordinate_index]
+
+        # Display data on a 2D regular raster and create a pseudo-color plot #
+        pcm = axis.pcolormesh(np.radians(ra), np.radians(el), density_map, cmap='nipy_spectral_r')
+
+        # Define the figure parameters #
+        axis.axis('off')
+        # plt.text(0.0, 0.95, color='red', fontsize=14, transform=axis.transAxes)
+
+    # Add a colorbar, save and close the figure #
+    # cbar = plt.colorbar(pcm, ax=axis, orientation='horizontal')
+    # cbar.ax.tick_params(labelsize=14)
+    plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{Counts\;per\;hexbin}$', size=20)
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
     return None

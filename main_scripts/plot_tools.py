@@ -227,7 +227,7 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 
 
 def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
-                             multiple3=False, multiple4=False, multiple5=False, multiple6=False, multiple7=False):
+                             multiple3=False, multiple4=False, multiple5=False, multiple6=False, multiple7=False, mollweide=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -343,6 +343,16 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
                axis51, axis52
+    elif mollweide is True:
+        gs = gridspec.GridSpec(3, 4, hspace=0, wspace=0, width_ratios=[1, 1, 1, 0.1])
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0], projection='mollweide'), plt.subplot(gs[0, 1], projection='mollweide'), plt.subplot(gs[0, 2],
+                                                                                                                                           projection='mollweide')
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0], projection='mollweide'), plt.subplot(gs[1, 1], projection='mollweide'), plt.subplot(gs[1, 2],
+                                                                                                                                           projection='mollweide')
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0], projection='mollweide'), plt.subplot(gs[2, 1], projection='mollweide'), plt.subplot(gs[2, 2],
+                                                                                                                                           projection='mollweide')
+        axiscbar = plt.subplot(gs[:, 3])
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar
 
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
@@ -482,3 +492,38 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
         axis10 = plt.subplot(gs[1, 0])
 
         return axis00, axis10, x, y, y2, area
+
+
+class RotateCoordinates:
+    """
+    Rotate coordinates and velocities wrt different quantities.
+    """
+
+
+    @staticmethod
+    def rotate_X(data, glx_unit_vector):
+        """
+        Rotate first about z-axis to set y=0 and then about the y-axis to set z=0
+        :param data: halo data.
+        :param glx_unit_vector: halo unit vector of stellar angular momentum.
+        :return: data['pos'], data['vel'], prc_unit_vector, glx_unit_vector
+        """
+        # Calculate the rotation matrices and combine them #
+        ra = np.arctan2(glx_unit_vector[1], glx_unit_vector[2])
+        el = np.arcsin(glx_unit_vector[0])
+
+        Rz = np.array([[np.cos(ra), np.sin(ra), 0], [-np.sin(ra), np.cos(ra), 0], [0, 0, 1]])
+        Ry = np.array([[np.cos(el), 0, np.sin(el)], [0, 1, 0], [-np.sin(el), 0, np.cos(el)]])
+        Ryz = np.matmul(Ry, Rz)
+
+        # Rotate the coordinates and velocities of stellar particles #
+        coordinates = np.matmul(Ryz, data['pos'][..., None]).squeeze()
+        velocities = np.matmul(Ryz, data['vel'][..., None]).squeeze()
+
+        # Recalculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the galactic angular momentum vector #
+        prc_angular_momentum = data['mass'][:, np.newaxis] * np.cross(coordinates, velocities)  # In Msun kpc km s^-1.
+        glx_angular_momentum = np.sum(prc_angular_momentum, axis=0)  # In Msun kpc km s^-1.
+        glx_unit_vector = glx_angular_momentum / np.linalg.norm(glx_angular_momentum)
+        prc_unit_vector = prc_angular_momentum / np.linalg.norm(prc_angular_momentum, axis=1)[:, np.newaxis]
+
+        return coordinates, velocities, prc_unit_vector, glx_unit_vector

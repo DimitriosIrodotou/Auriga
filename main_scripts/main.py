@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
 
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_" % self.directory)
+        haloes = glob.glob("%shalo_06" % self.directory)
         self.nhalos = len(haloes)
 
         print("Found %d halo(es)" % self.nhalos)
@@ -307,6 +307,7 @@ class AurigaPdf:
         # galaxy.stellar_surface_density_profiles(pdf, self, redshift, read=False)
         # galaxy.circular_velocity_curves(pdf, self, redshift, read=False)
         # galaxy.gas_temperature_vs_distance(pdf, self, redshift, read=False)
+        galaxy.decomposition_IT20(pdf, self, redshift, read=True)
 
         # Evolution #
         # Galaxy #
@@ -339,9 +340,10 @@ class AurigaPdf:
         # combinations.stellar_vs_halo_mass_combination(pdf)
         # combinations.gas_fraction_vs_magnitude_combination(pdf)
         # combinations.bar_strength_profile_combination(pdf)
-        combinations.stellar_surface_density_profiles_combination(pdf)
+        # combinations.stellar_surface_density_profiles_combination(pdf)
         # combinations.circular_velocity_curves_combination(pdf)
         # combinations.gas_temperature_vs_distance_combination(pdf)
+        # combinations.decomposition_IT20_combination(pdf, self, redshift)
         # Evolution #
         # combinations.bar_strength_combination(pdf)
         # combinations.gas_temperature_regimes_combination(pdf)

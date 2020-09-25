@@ -5,14 +5,17 @@ import calcGrid
 import plot_tools
 import matplotlib
 import numpy as np
+import healpy as hlp
+import astropy.units as u
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
 from const import *
 from sfigure import *
 from loadmodules import *
-from scipy.special import gamma
 from matplotlib import gridspec
+from scipy.special import gamma
+from astropy_healpix import HEALPix
 from scipy.optimize import curve_fit
 from scripts.gigagalaxy.util import plot_helper
 from parse_particledata import parse_particledata
@@ -917,6 +920,153 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
         hb = axis00.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log', cmap='gist_earth_r')
         plot_tools.create_colorbar(axis01, hb, label=r'$\mathrm{Counts\;per\;hexbin}$')
 
+        # Save and close the figure #
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
+    return None
+
+
+def decomposition_IT20(pdf, data, redshift, read):
+    """
+    Plot the angular momentum maps and calculate D/T_IT20 for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    print("Invoking decomposition_IT20_combination")
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'di/' + str(redshift) + '/'
+
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [4]
+        attributes = ['age', 'mass', 'pos', 'vel']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+
+        # Loop over all available haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then create it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Analysing halo:", str(s.haloname))
+
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind)#, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+
+            stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
+
+            # Calculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the galactic angular momentum
+            # vector #
+            prc_angular_momentum = s.data['mass'][stellar_mask, np.newaxis] * np.cross(s.data['pos'][stellar_mask] * 1e3,
+                                                                                       s.data['vel'][stellar_mask])  # In Msun kpc km s^-1.
+
+            # Check for particles with zero angular momentum magnitude #
+            vector_mask, = np.where(np.linalg.norm(prc_angular_momentum, axis=1) > 0)
+            sp_am_unit_vector = prc_angular_momentum[vector_mask] / np.linalg.norm(prc_angular_momentum[vector_mask], axis=1)[:, np.newaxis]
+            sp_mass = s.data['mass'][stellar_mask]
+
+            # Step (ii) in Section 2.2 Decomposition of IT20 #
+            # Calculate the azimuth (alpha) and elevation (delta) angle of the angular momentum of all stellar particles #
+            alpha = np.degrees(np.arctan2(sp_am_unit_vector[:, 1], sp_am_unit_vector[:, 2]))  # In degrees.
+            delta = np.degrees(np.arcsin(sp_am_unit_vector[:, 0]))  # In degrees.
+
+            # Step (ii) in Section 2.2 Decomposition of IT20 #
+            # Generate the pixelisation of the angular momentum map #
+            nside = 2 ** 6  # Define the resolution of the grid (number of divisions along the side of a base-resolution grid cell).
+            hp = HEALPix(nside=nside)  # Initialise the HEALPix pixelisation class.
+            indices = hp.lonlat_to_healpix(alpha * u.deg, delta * u.deg)  # Create a list of HEALPix indices from particles's alpha and delta.
+            densities = np.bincount(indices, minlength=hp.npix)  # Count number of data points in each HEALPix grid cell.
+
+            # Step (iii) in Section 2.2 Decomposition of IT20 #
+            # Smooth the angular momentum map with a top-hat filter of angular radius 30 degrees #
+            smoothed_densities = np.zeros(hp.npix)
+            # Loop over all grid cells #
+            for i in range(hp.npix):
+                mask = hlp.query_disc(nside, hlp.pix2vec(nside, i), np.pi / 6.0)  # Do a 30 degree cone search around each grid cell.
+                smoothed_densities[i] = np.mean(densities[mask])  # Average the densities of the ones inside and assign this value to the grid cell.
+
+            # Step (iii) in Section 2.2 Decomposition of IT20 #
+            # Find the location of the density maximum #
+            index_densest = np.argmax(smoothed_densities)
+            alpha_densest = (hp.healpix_to_lonlat([index_densest])[0].value + np.pi) % (2 * np.pi) - np.pi  # In radians.
+            delta_densest = (hp.healpix_to_lonlat([index_densest])[1].value + np.pi / 2) % (2 * np.pi) - np.pi / 2  # In radians.
+
+            # Step (iv) in Section 2.2 Decomposition of IT20 #
+            # Calculate the angular separation of each stellar particle from the centre of the densest grid cell #
+            Delta_theta = np.arccos(np.sin(delta_densest) * np.sin(np.radians(delta)) + np.cos(delta_densest) * np.cos(np.radians(delta)) * np.cos(
+                alpha_densest - np.radians(alpha)))  # In radians.
+
+            # Step (v) in Section 2.2 Decomposition of IT20 #
+            # Calculate the disc mass fraction as the mass within 30 degrees from the densest grid cell #
+            disc_mask_IT20, = np.where(Delta_theta < (np.pi / 6.0))
+            spheroid_mask_IT20, = np.where(Delta_theta >= (np.pi / 6.0))
+            disc_fraction_IT20 = np.sum(sp_mass[disc_mask_IT20]) / np.sum(sp_mass)
+
+            # Step (vi) in Section 2.2 Decomposition of IT20 #
+            # Normalise the disc fractions #
+            chi = 0.5 * (1 - np.cos(np.pi / 6))
+            disc_fraction_IT20 = np.divide(1, 1 - chi) * (disc_fraction_IT20 - chi)
+
+            # Sample a 360x180 grid in sample_alpha and sample_delta #
+            sample_alpha = np.linspace(-180.0, 180.0, num=360) * u.deg
+            sample_delta = np.linspace(-90.0, 90.0, num=180) * u.deg
+            alpha_grid, delta_grid = np.meshgrid(sample_alpha, sample_delta)
+
+            # Find density at each coordinate position #
+            coordinate_index = hp.lonlat_to_healpix(alpha_grid, delta_grid)
+            density_map = densities[coordinate_index]
+
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'density_map_' + str(s.haloname), density_map)
+            np.save(path + 'disc_mask_IT20_' + str(s.haloname), disc_mask_IT20)
+            np.save(path + 'spheroid_mask_IT20_' + str(s.haloname), spheroid_mask_IT20)
+            np.save(path + 'disc_fraction_IT20_' + str(s.haloname), disc_fraction_IT20)
+
+    # Load and plot the data #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and set its parameters #
+        figure = plt.figure(figsize=(10, 7.5))
+        gs = gridspec.GridSpec(1, 2, wspace=0.2, width_ratios=[1, 0.05])
+        axis00, axis01 = plt.subplot(gs[0, 0], projection='mollweide'), plt.subplot(gs[0, 1])
+
+        plot_tools.set_axis(axis00, xlabel=r'$\mathrm{\alpha/\degree}$', ylabel=r'$\mathrm{\delta/\degree}$', aspect=None, which='major')
+        axis00.set_yticklabels(['', '-60', '', '-30', '', '0', '', '30', '', '60', ''], size=20)
+        axis00.set_xticklabels(['', '-120', '', '-60', '', '0', '', '60', '', '120', ''], size=20)
+        figure.text(0.02, 1, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis00.transAxes)
+
+        # Load the data #
+        density_map = np.load(path + 'density_map_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        disc_fraction_IT20 = np.load(path + 'disc_fraction_IT20_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+        # Plot the angular momentum maps and calculate D/T_IT20 #
+        # Sample a 360x180 grid in sample_alpha and sample_delta #
+        sample_alpha = np.linspace(-180.0, 180.0, num=360) * u.deg
+        sample_delta = np.linspace(-90.0, 90.0, num=180) * u.deg
+
+        # Display data on a 2D regular raster and create a pseudo-color plot #
+        pcm = axis00.pcolormesh(np.radians(sample_alpha), np.radians(sample_delta), density_map, cmap='nipy_spectral_r')
+        plot_tools.create_colorbar(axis01, pcm, label=r'$\mathrm{Particles\; per\; grid\; cell}$')
+
+        figure.text(0.5, 1.2, r'$\mathrm{D/T=%.2f }$' % disc_fraction_IT20, fontsize=16, transform=axis00.transAxes)
+
+        # Add save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
