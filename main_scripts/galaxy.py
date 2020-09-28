@@ -65,7 +65,7 @@ def circularity_distribution(pdf, data, redshift, read):
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-            # Mask the data: select all and stellar particles inside 0.1*R200c #
+            # Mask the data: select all stellar particles inside 0.1*R200c #
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
             all_mask, = np.where((s.r() < 0.1 * s.subfind.data['frc2'][0]))
@@ -359,7 +359,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=False)
 
-            # Mask the data: select all and stellar particles inside 0.1*R200c #
+            # Mask the data: select all stellar particles inside 0.1*R200c #
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
             stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))
@@ -733,6 +733,17 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
     return None
 
 
+def find_nearest(array, value):
+    if len(value) == 1:
+        idx = (np.abs(array - value)).argmin()
+    else:
+        idx = np.zeros(len(value))
+        for i in range(len(value)):
+            idx[i] = (np.abs(array - value[i])).argmin()
+
+    return idx
+
+
 def circular_velocity_curves(pdf, data, redshift, read):
     """
     Plot the circular velocity curve for Auriga halo(es).
@@ -962,7 +973,7 @@ def decomposition_IT20(pdf, data, redshift, read):
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
-            s.select_halo(s.subfind)#, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            s.select_halo(s.subfind)  # , rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
             stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
 
@@ -1072,12 +1083,143 @@ def decomposition_IT20(pdf, data, redshift, read):
     return None
 
 
-def find_nearest(array, value):
-    if len(value) == 1:
-        idx = (np.abs(array - value)).argmin()
-    else:
-        idx = np.zeros(len(value))
-        for i in range(len(value)):
-            idx[i] = (np.abs(array - value[i])).argmin()
+def velocity_dispersion_profiles(pdf, data, redshift, read):
+    """
+    Plot the radial and vertical stellar and gas velocity dispersion profiles for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    print("Invoking velocity_dispersion_profiles")
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'gvdp/' + str(redshift) + '/'
 
-    return idx
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [0, 4]
+        attributes = ['age', 'mass', 'pos', 'vel']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+
+        # Loop over all available haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then create it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Analysing halo:", str(s.haloname))
+
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+
+            # Calculate the z-direction and the distance on the xy plane #
+            z = np.abs(s.data['pos'][:, 0]) * 1e3  # In kpc.
+            rxy = np.sqrt((s.data['pos'][:, 1:] ** 2).sum(axis=1)) * 1e3  # In kpc.
+
+            # Calculate the normalised (wrt CoM) radial velocities #
+            # radial_mask, = np.where(s.r() < 0.1 * s.subfind.data['frc2'][0])
+            # CoM_velocity = (s.data['vel'][radial_mask, :] * s.data['mass'][radial_mask][:, None]).sum(axis=0) / s.data['mass'][radial_mask].sum()
+            # radial_velocities = np.divide(((s.data['vel'][:, 1:] - CoM_velocity[1:]) * s.data['pos'][:, 1:] * 1e3).sum(axis=1), rxy)
+            radial_velocities = np.divide((s.data['pos'][:, 1] * s.data['vel'][:, 1] * 1e3 + s.data['pos'][:, 2] * s.data['vel'][:, 2]* 1e3), rxy)
+
+            # Mask the data and calculate the mass distribution of stellar particles #
+            age = np.zeros(s.npartall)
+            age[s.data['type'] == 4] = s.data['age']
+            stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.) & (rxy < 30.0) & (
+                z < 5))  # Mask the data: select all stellar particles inside a 30x30x1kpc region #
+            stellar_mass, edges = np.histogram(rxy[stellar_mask], bins=50, range=(0, 30), weights=s.data['mass'][stellar_mask])
+            stellar_centre = 0.5 * (edges[1:] + edges[:-1])
+
+            # Calculate the distribution of the z and r components of the velocity #
+            velocities_z, edges = np.histogram(rxy[stellar_mask], bins=50, range=[0, 30],
+                                               weights=s.data['mass'][stellar_mask] * s.data['vel'][stellar_mask, 0])
+            velocities_r, edges = np.histogram(rxy[stellar_mask], bins=50, range=[0, 30],
+                                               weights=s.data['mass'][stellar_mask] * radial_velocities[stellar_mask])
+            velocities_z /= stellar_mass
+            velocities_r /= stellar_mass
+
+            # Calculate the distribution of the z and r components of the velocity dispersion #
+            bin_id = np.digitize(rxy[stellar_mask], edges) - 1
+            sigma_z, edges = np.histogram(rxy[stellar_mask], bins=50, range=[0, 30],
+                                          weights=s.data['mass'][stellar_mask] * (s.data['vel'][stellar_mask, 0] - velocities_z[bin_id]) ** 2)
+            sigma_r, edges = np.histogram(rxy[stellar_mask], bins=50, range=[0, 30],
+                                          weights=s.data['mass'][stellar_mask] * (radial_velocities[stellar_mask] - velocities_r[bin_id]) ** 2)
+            stellar_sigma_z = np.sqrt(sigma_z / stellar_mass)
+            stellar_sigma_r = np.sqrt(sigma_r / stellar_mass)
+
+            # Calculate the normalised (wrt CoM) radial velocities #
+            radial_mask, = np.where(s.r() < 0.1 * s.subfind.data['frc2'][0])
+            CoM_velocity = (s.data['vel'][radial_mask, :] * s.data['mass'][radial_mask][:, None]).sum(axis=0) / s.data['mass'][radial_mask].sum()
+            radial_velocities = np.divide(((s.data['vel'][:, 1:] - CoM_velocity[1:]) * s.data['pos'][:, 1:] * 1e3).sum(axis=1), rxy)
+
+            # Mask the data and calculate the mass distribution of gas cells #
+            gas_mask, = np.where((s.data['type'] == 0) & (rxy < 30.0) & (z < 5))  # Mask the data: select all gas cells inside a 30x30x1kpc region #
+            gas_mass, edges = np.histogram(rxy[gas_mask], bins=50, range=[0, 30], weights=s.data['mass'][gas_mask])
+            gas_centre = 0.5 * (edges[1:] + edges[:-1])
+
+            # Calculate the distribution of the z and r components of the velocity #
+            velocities_z, edges = np.histogram(rxy[gas_mask], bins=50, range=[0, 30], weights=s.data['mass'][gas_mask] * s.data['vel'][gas_mask, 0])
+            velocities_r, edges = np.histogram(rxy[gas_mask], bins=50, range=[0, 30], weights=s.data['mass'][gas_mask] * radial_velocities[gas_mask])
+            velocities_z /= gas_mass
+            velocities_r /= gas_mass
+
+            # Calculate the distribution of the z and r components of the velocity dispersion #
+            bin_id = np.digitize(rxy[gas_mask], edges) - 1
+            sigma_z, edges = np.histogram(rxy[gas_mask], bins=50, range=[0, 30],
+                                          weights=s.data['mass'][gas_mask] * (s.data['vel'][gas_mask, 0] - velocities_z[bin_id]) ** 2)
+            sigma_r, edges = np.histogram(rxy[gas_mask], bins=50, range=[0, 30],
+                                          weights=s.data['mass'][gas_mask] * (radial_velocities[gas_mask] - velocities_r[bin_id]) ** 2)
+            gas_sigma_z = np.sqrt(sigma_z / gas_mass)
+            gas_sigma_r = np.sqrt(sigma_r / gas_mass)
+
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'gas_centre_' + str(s.haloname), gas_centre)
+            np.save(path + 'gas_sigma_r_' + str(s.haloname), gas_sigma_r)
+            np.save(path + 'gas_sigma_z_' + str(s.haloname), gas_sigma_z)
+            np.save(path + 'stellar_centre_' + str(s.haloname), stellar_centre)
+            np.save(path + 'stellar_sigma_r_' + str(s.haloname), stellar_sigma_r)
+            np.save(path + 'stellar_sigma_z_' + str(s.haloname), stellar_sigma_z)
+
+    # Load and plot the data #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and set its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+
+        plot_tools.set_axis(axis, xlim=[0, 30], ylim=[0, 160], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{\sigma/(km\;s^{-1})}$', aspect=None,
+                            which='major')
+        figure.text(0.02, 1, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis.transAxes)
+
+        # Load the data #
+        gas_centre = np.load(path + 'gas_centre_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        gas_sigma_r = np.load(path + 'gas_sigma_r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        gas_sigma_z = np.load(path + 'gas_sigma_z_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        stellar_centre = np.load(path + 'stellar_centre_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        stellar_sigma_z = np.load(path + 'stellar_sigma_z_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        stellar_sigma_r = np.load(path + 'stellar_sigma_r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+        # Plot the radial and vertical stellar and gas velocity dispersion profiles #
+        plt.plot(gas_centre, gas_sigma_r, 'r', label=r'$\mathrm{\sigma_{gas,r}}$')
+        plt.plot(gas_centre, gas_sigma_z, 'k', label=r'$\mathrm{\sigma_{gas,z}}$')
+        plt.plot(stellar_centre, stellar_sigma_r, 'g', label=r'$\mathrm{\sigma_{\bigstar,r}}$')
+        plt.plot(stellar_centre, stellar_sigma_z, 'b', label=r'$\mathrm{\sigma_{\bigstar,z}}$')
+
+        # Create the legend, save and close the figure #
+        axis.legend(loc='upper right', fontsize=16, frameon=False)
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
+    return None
