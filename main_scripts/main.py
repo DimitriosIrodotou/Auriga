@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
 
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_" % self.directory)
+        haloes = glob.glob("%shalo_18" % self.directory)
         self.nhalos = len(haloes)
 
         print("Found %d halo(es)" % self.nhalos)
@@ -283,7 +283,7 @@ class AurigaPdf:
 
         # Projections #
         # Stellar #
-        # projections.stellar_light(pdf, self, redshift, read=False)
+        projections.stellar_light(pdf, self, redshift, read=True)
         # projections.stellar_density(pdf, self, redshift, read=False)
         # projections.stellar_light_fit(self, redshift, read=False)
         # projections.r_band_magnitude(self, redshift, read=False)
@@ -307,8 +307,8 @@ class AurigaPdf:
         # galaxy.stellar_surface_density_profiles(pdf, self, redshift, read=False)
         # galaxy.circular_velocity_curves(pdf, self, redshift, read=False)
         # galaxy.gas_temperature_vs_distance(pdf, self, redshift, read=False)
-        # galaxy.decomposition_IT20(pdf, self, redshift, read=True)
-        galaxy.velocity_dispersion_profiles(pdf, self, redshift, read=False)
+        galaxy.decomposition_IT20(date, self, redshift, read=True)
+        # galaxy.velocity_dispersion_profiles(pdf, self, redshift, read=False)
 
         # Evolution #
         # Galaxy #
@@ -344,7 +344,7 @@ class AurigaPdf:
         # combinations.stellar_surface_density_profiles_combination(pdf)
         # combinations.circular_velocity_curves_combination(pdf)
         # combinations.gas_temperature_vs_distance_combination(pdf)
-        # combinations.decomposition_IT20_combination(pdf, self, redshift)
+        # combinations.decomposition_IT20_combination(date, redshift)
         # Evolution #
         # combinations.bar_strength_combination(pdf)
         # combinations.gas_temperature_regimes_combination(pdf)
@@ -353,7 +353,7 @@ class AurigaPdf:
         pdf.close()
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
-        # file_name = 'AGNmdc-' + date + '.png'
+        # file_name = 'dic-' + date + '.png'
         file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
