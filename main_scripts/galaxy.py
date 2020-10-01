@@ -16,6 +16,7 @@ from matplotlib import gridspec
 from scipy.special import gamma
 from astropy_healpix import HEALPix
 from scipy.optimize import curve_fit
+from plot_tools import RotateCoordinates
 from scripts.gigagalaxy.util import plot_helper
 from parse_particledata import parse_particledata
 
@@ -945,7 +946,7 @@ def decomposition_IT20(date, data, redshift, read):
     :param read: boolean to read new data.
     :return: None
     """
-    print("Invoking decomposition_IT20_combination")
+    print("Invoking decomposition_IT20")
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'di/' + str(redshift) + '/'
 
@@ -972,19 +973,21 @@ def decomposition_IT20(date, data, redshift, read):
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
-            s.select_halo(s.subfind)  # , rotate_disk=True, do_rotation=True, use_principal_axis=True)
+            s.select_halo(s.subfind)
 
             stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
 
             # Calculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the galactic angular momentum
             # vector #
+            sp_mass = s.data['mass'][stellar_mask]
             prc_angular_momentum = s.data['mass'][stellar_mask, np.newaxis] * np.cross(s.data['pos'][stellar_mask] * 1e3,
                                                                                        s.data['vel'][stellar_mask])  # In Msun kpc km s^-1.
 
-            # Check for particles with zero angular momentum magnitude #
-            vector_mask, = np.where(np.linalg.norm(prc_angular_momentum, axis=1) > 0)
-            sp_am_unit_vector = prc_angular_momentum[vector_mask] / np.linalg.norm(prc_angular_momentum[vector_mask], axis=1)[:, np.newaxis]
-            sp_mass = s.data['mass'][stellar_mask]
+            glx_stellar_angular_momentum = np.sum(prc_angular_momentum, axis=0)
+            glx_unit_vector = glx_stellar_angular_momentum / np.linalg.norm(glx_stellar_angular_momentum)
+
+            # Rotate coordinates and velocities of stellar particles wrt galactic angular momentum #
+            sp_am_unit_vector = RotateCoordinates.rotate_X(s.data, glx_unit_vector, stellar_mask)
 
             # Step (ii) in Section 2.2 Decomposition of IT20 #
             # Calculate the azimuth (alpha) and elevation (delta) angle of the angular momentum of all stellar particles #
@@ -993,7 +996,7 @@ def decomposition_IT20(date, data, redshift, read):
 
             # Step (ii) in Section 2.2 Decomposition of IT20 #
             # Generate the pixelisation of the angular momentum map #
-            nside = 2 ** 6  # Define the resolution of the grid (number of divisions along the side of a base-resolution grid cell).
+            nside = 2 ** 4  # Define the resolution of the grid (number of divisions along the side of a base-resolution grid cell).
             hp = HEALPix(nside=nside)  # Initialise the HEALPix pixelisation class.
             indices = hp.lonlat_to_healpix(alpha * u.deg, delta * u.deg)  # Create a list of HEALPix indices from particles's alpha and delta.
             densities = np.bincount(indices, minlength=hp.npix)  # Count number of data points in each HEALPix grid cell.
@@ -1045,7 +1048,7 @@ def decomposition_IT20(date, data, redshift, read):
             np.save(path + 'disc_fraction_IT20_' + str(s.haloname), disc_fraction_IT20)
 
     # Load and plot the data #
-    names = glob.glob(path + '/name_17NoRN*')
+    names = glob.glob(path + '/name_06.*')
     names.sort()
 
     # Loop over all available haloes #
@@ -1072,7 +1075,7 @@ def decomposition_IT20(date, data, redshift, read):
         sample_delta = np.linspace(-90.0, 90.0, num=180) * u.deg
 
         # Display data on a 2D regular raster and create a pseudo-color plot #
-        pcm = axis00.pcolormesh(np.radians(sample_alpha), np.radians(sample_delta), density_map, cmap='magma_r')
+        pcm = axis00.pcolormesh(np.radians(sample_alpha), np.radians(sample_delta), density_map, cmap='nipy_spectral_r')
         plot_tools.create_colorbar(axis01, pcm, label=r'$\mathrm{Particles\; per\; grid\; cell}$')
 
         figure.text(0.42, 1.1, r'$\mathrm{D/T=%.2f }$' % disc_fraction_IT20, fontsize=16, transform=axis00.transAxes)

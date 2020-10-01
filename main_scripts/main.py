@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
 
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_18" % self.directory)
+        haloes = glob.glob("%shalo_" % self.directory)
         self.nhalos = len(haloes)
 
         print("Found %d halo(es)" % self.nhalos)
@@ -283,7 +283,8 @@ class AurigaPdf:
 
         # Projections #
         # Stellar #
-        projections.stellar_light(pdf, self, redshift, read=True)
+        # projections.stellar_light(pdf, self, redshift, read=False)
+        # projections.stellar_light_components(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
         # projections.stellar_light_fit(self, redshift, read=False)
         # projections.r_band_magnitude(self, redshift, read=False)
@@ -307,7 +308,7 @@ class AurigaPdf:
         # galaxy.stellar_surface_density_profiles(pdf, self, redshift, read=False)
         # galaxy.circular_velocity_curves(pdf, self, redshift, read=False)
         # galaxy.gas_temperature_vs_distance(pdf, self, redshift, read=False)
-        galaxy.decomposition_IT20(date, self, redshift, read=True)
+        # galaxy.decomposition_IT20(date, self, redshift, read=False)
         # galaxy.velocity_dispersion_profiles(pdf, self, redshift, read=False)
 
         # Evolution #
@@ -353,8 +354,8 @@ class AurigaPdf:
         pdf.close()
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
-        # file_name = 'dic-' + date + '.png'
-        file_name = 'Auriga-' + date + '.pdf'
+        file_name = 'dic-' + date + '.png'
+        # file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 

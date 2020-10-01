@@ -412,7 +412,7 @@ def rotate_bar(z, y, x):
 
 
 def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
-                            multiple3=False):
+                            multiple3=False, multiple4=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -486,6 +486,14 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
 
         return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area
 
+    if multiple4 is True:
+        gs = gridspec.GridSpec(2, 3, hspace=0, wspace=0)
+        axis00, axis01 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1])
+        axis10, axis11 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1])
+
+        return axis00, axis01, axis10, axis11, x, y, y2, area
+
+
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05)
         axis00 = plt.subplot(gs[0, 0])
@@ -501,12 +509,13 @@ class RotateCoordinates:
 
 
     @staticmethod
-    def rotate_X(data, glx_unit_vector):
+    def rotate_X(data, glx_unit_vector, stellar_mask):
         """
         Rotate first about z-axis to set y=0 and then about the y-axis to set z=0
         :param data: halo data.
         :param glx_unit_vector: halo unit vector of stellar angular momentum.
-        :return: data['pos'], data['vel'], prc_unit_vector, glx_unit_vector
+        :param stellar_mask: stellar particles mask.
+        :return: prc_unit_vector
         """
         # Calculate the rotation matrices and combine them #
         ra = np.arctan2(glx_unit_vector[1], glx_unit_vector[2])
@@ -516,14 +525,17 @@ class RotateCoordinates:
         Ry = np.array([[np.cos(el), 0, np.sin(el)], [0, 1, 0], [-np.sin(el), 0, np.cos(el)]])
         Ryz = np.matmul(Ry, Rz)
 
-        # Rotate the coordinates and velocities of stellar particles #
-        coordinates = np.matmul(Ryz, data['pos'][..., None]).squeeze()
-        velocities = np.matmul(Ryz, data['vel'][..., None]).squeeze()
+        # Flip, rotate and flip back the coordinates and velocities of stellar particles #
+        pos = np.fliplr(data['pos'][stellar_mask])
+        vel = np.fliplr(data['vel'][stellar_mask])
+        pos = np.matmul(Ryz, pos[..., None]).squeeze()
+        vel = np.matmul(Ryz, vel[..., None]).squeeze()
+        pos = np.fliplr(pos)
+        vel = np.fliplr(vel)
 
         # Recalculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the galactic angular momentum vector #
-        prc_angular_momentum = data['mass'][:, np.newaxis] * np.cross(coordinates, velocities)  # In Msun kpc km s^-1.
-        glx_angular_momentum = np.sum(prc_angular_momentum, axis=0)  # In Msun kpc km s^-1.
-        glx_unit_vector = glx_angular_momentum / np.linalg.norm(glx_angular_momentum)
-        prc_unit_vector = prc_angular_momentum / np.linalg.norm(prc_angular_momentum, axis=1)[:, np.newaxis]
+        prc_angular_momentum = data['mass'][stellar_mask, np.newaxis] * np.cross(pos * 1e3, vel)  # In Msun kpc km s^-1.
+        vector_mask, = np.where(np.linalg.norm(prc_angular_momentum, axis=1) > 0)
+        prc_unit_vector = prc_angular_momentum[vector_mask] / np.linalg.norm(prc_angular_momentum[vector_mask], axis=1)[:, np.newaxis]
 
-        return coordinates, velocities, prc_unit_vector, glx_unit_vector
+        return prc_unit_vector

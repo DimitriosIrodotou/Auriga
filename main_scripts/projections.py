@@ -131,10 +131,10 @@ def stellar_light(pdf, data, redshift, read):
             # Check if any of the haloes' data already exists, if not then create it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
-            else:
-                print("Analysing halo:", str(s.haloname))
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Analysing halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -157,7 +157,7 @@ def stellar_light(pdf, data, redshift, read):
             np.save(path + 'edge_on_' + str(s.haloname), edge_on)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_18.*')
     names.sort()
 
     # Loop over all available haloes #
@@ -177,6 +177,105 @@ def stellar_light(pdf, data, redshift, read):
         # Plot the stellar light projections #
         axis00.imshow(face_on, interpolation='nearest', aspect='equal')
         axis10.imshow(edge_on, interpolation='nearest', aspect='equal')
+
+        # Save and close the figure #
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
+    return None
+
+
+def stellar_light_components(pdf, data, redshift, read):
+    """
+    Plot the stellar light projection of the disc and spheroid component for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    print("Invoking stellar_light")
+    path = '/u/di43/Auriga/plots/data/' + 'slc/' + str(redshift) + '/'
+
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not create one #
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        particle_type = [4]
+        attributes = ['age', 'gsph', 'mass', 'pos']
+        data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+
+        # Loop over all available haloes #
+        for s in data:
+            # Check if any of the haloes' data already exists, if not then create it #
+            names = glob.glob(path + '/name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Analysing halo:", str(s.haloname))
+
+            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            s.calc_sf_indizes(s.subfind)
+            s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
+
+            # Load the disc and spheroid masks fro stellar particles #
+            disc = np.load('/u/di43/Auriga/plots/data/di/0.0/disc_mask_IT20_' + str(s.haloname) + '.npy')
+            spheroid = np.load('/u/di43/Auriga/plots/data/di/0.0/spheroid_mask_IT20_' + str(s.haloname) + '.npy')
+
+            for mask_IT20, label in zip([disc, spheroid], ['disc', 'spheroid']):
+                # Rotate the data and plot the projections #
+                stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
+                stellar_mask = stellar_mask[mask_IT20]
+
+                # Rotate the data and plot the projections #
+                z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3, s.data['pos'][stellar_mask, 1] * 1e3,
+                                                                        s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
+                pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
+
+                face_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'), s.data['gsph'][stellar_mask].astype('f8'), 0,
+                                         res, boxsize, 'light', maxHsml=True)
+                edge_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'), s.data['gsph'][stellar_mask].astype('f8'), 1,
+                                         res, boxsize, 'light', maxHsml=True)
+
+                # Save data for each halo in numpy arrays #
+                np.save(path + 'name_' + str(s.haloname), s.haloname)
+                np.save(path + label + '_face_on_' + str(s.haloname), face_on)
+                np.save(path + label + '_edge_on_' + str(s.haloname), edge_on)
+
+    # Get the names and sort them #
+    names = glob.glob(path + '/name_*')
+    names.sort()
+
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        # Generate the figure and set its parameters #
+        figure = plt.figure(figsize=(16, 9))
+        axis00, axis01, axis10, axis11, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
+                                                                                            multiple4=True)  # Generate the axes.
+        for axis in [axis00, axis01, axis10, axis11]:
+            plot_tools.set_axis(axis)
+        figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
+                    transform=axis00.transAxes)
+
+        # Load the data #
+        disc_face_on = np.load(path + 'disc_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        disc_edge_on = np.load(path + 'disc_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        spheroid_face_on = np.load(path + 'spheroid_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        spheroid_edge_on = np.load(path + 'spheroid_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+        # Plot the stellar light projections #
+        axis00.imshow(disc_face_on, interpolation='nearest', aspect='equal')
+        axis10.imshow(disc_edge_on, interpolation='nearest', aspect='equal')
+        axis01.imshow(spheroid_face_on, interpolation='nearest', aspect='equal')
+        axis11.imshow(spheroid_edge_on, interpolation='nearest', aspect='equal')
+
+        for axis, label in zip([axis00, axis01, axis10, axis11],
+                               [r'$\mathrm{Disc\;face-on}$', r'$\mathrm{Spheroid\;face-on}$', r'$\mathrm{Disc\;edge-on}$',
+                                r'$\mathrm{Spheroid\;edge-on}$']):
+            figure.text(0.01, 0.92, label, fontsize=16, color='w', transform=axis.transAxes)
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
