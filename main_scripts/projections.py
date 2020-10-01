@@ -266,7 +266,7 @@ def stellar_light_components(pdf, data, redshift, read):
         spheroid_face_on = np.load(path + 'spheroid_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         spheroid_edge_on = np.load(path + 'spheroid_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-        # Plot the stellar light projections #
+        # Plot the stellar light projections of the disc and spheroid component #
         axis00.imshow(disc_face_on, interpolation='nearest', aspect='equal')
         axis10.imshow(disc_edge_on, interpolation='nearest', aspect='equal')
         axis01.imshow(spheroid_face_on, interpolation='nearest', aspect='equal')

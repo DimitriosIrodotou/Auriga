@@ -330,6 +330,7 @@ class AurigaPdf:
         # Combinations #
         # Projections #
         # combinations.stellar_light_combination(pdf, redshift)
+        # combinations.stellar_light_components_combination(pdf, redshift)
         # combinations.stellar_density_combination(pdf, redshift)
         # combinations.gas_density_combination(pdf, redshift)
         # combinations.gas_temperature_combination(pdf, redshift)
@@ -354,8 +355,8 @@ class AurigaPdf:
         pdf.close()
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
-        file_name = 'dic-' + date + '.png'
-        # file_name = 'Auriga-' + date + '.pdf'
+        # file_name = 'dic-' + date + '.png'
+        file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None
 

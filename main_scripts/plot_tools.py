@@ -227,7 +227,7 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 
 
 def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
-                             multiple3=False, multiple4=False, multiple5=False, multiple6=False, multiple7=False, mollweide=False):
+                             multiple3=False, multiple4=False, multiple5=False, multiple6=False, multiple7=False, mollweide=False, multiple8=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -353,6 +353,18 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
                                                                                                                                            projection='mollweide')
         axiscbar = plt.subplot(gs[:, 3])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar
+
+    elif multiple8 is True:
+        gs = gridspec.GridSpec(18, 3, hspace=0, wspace=0)
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
+        axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
+        axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
+
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+               axis51, axis52
 
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])

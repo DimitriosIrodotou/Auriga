@@ -68,6 +68,70 @@ def stellar_light_combination(pdf, redshift):
     return None
 
 
+def stellar_light_components_combination(pdf, redshift):
+    """
+    Plot a combination of the stellar light projections of the disc and spheroid component for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
+    :return: None
+    """
+    print("Invoking stellar_light_components_combination")
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/''sl/' + str(redshift) + '/'
+    path_components = '/u/di43/Auriga/plots/data/' + 'slc/' + str(redshift) + '/'
+    names = glob.glob(path + '/name_18*')
+    names.sort()
+
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(10, 40))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, \
+    axis52 = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple8=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
+                 axis51, axis52]:
+        axis.set_yticklabels([])
+        axis.set_xticklabels([])
+    plt.rcParams['savefig.facecolor'] = 'black'
+
+    # Loop over all available haloes #
+    axes_face_on = [axis00, axis20, axis40]
+    axes_edge_on = [axis10, axis30, axis50]
+    axes_disc_face_on = [axis01, axis21, axis41]
+    axes_disc_edge_on = [axis11, axis31, axis51]
+    axes_spheroid_face_on = [axis02, axis22, axis42]
+    axes_spheroid_edge_on = [axis12, axis32, axis52]
+    for i, axis_face_on, axis_edge_on, axis_disc_face_on, axis_disc_edge_on, axis_spheroid_face_on, axis_spheroid_edge_on in zip(range(len(names)),
+                                                                                                                                 axes_face_on,
+                                                                                                                                 axes_edge_on,
+                                                                                                                                 axes_disc_face_on,
+                                                                                                                                 axes_disc_edge_on,
+                                                                                                                                 axes_spheroid_face_on,
+                                                                                                                                 axes_spheroid_edge_on):
+        # Load the data #
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        disc_face_on = np.load(path_components + 'disc_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        disc_edge_on = np.load(path_components + 'disc_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        spheroid_face_on = np.load(path_components + 'spheroid_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        spheroid_edge_on = np.load(path_components + 'spheroid_edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+        # Plot the stellar light projections of the disc and spheroid component #
+        axis_face_on.imshow(face_on, interpolation='nearest', aspect='equal')
+        axis_edge_on.imshow(edge_on, interpolation='nearest', aspect='equal')
+        axis_disc_face_on.imshow(disc_face_on, interpolation='nearest', aspect='equal')
+        axis_disc_edge_on.imshow(disc_edge_on, interpolation='nearest', aspect='equal')
+        axis_spheroid_face_on.imshow(spheroid_face_on, interpolation='nearest', aspect='equal')
+        axis_spheroid_edge_on.imshow(spheroid_edge_on, interpolation='nearest', aspect='equal')
+
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=16, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Disc}$', fontsize=16, color='w', transform=axis_disc_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Spheroid}$', fontsize=16, color='w', transform=axis_spheroid_face_on.transAxes)
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
+    return None
+
+
 def stellar_density_combination(pdf, redshift):
     """
     Plot a combination of the stellar density projections for Auriga halo(es).
