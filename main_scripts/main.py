@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
 
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_" % self.directory)
+        haloes = glob.glob("%shalo_*" % self.directory)
         self.nhalos = len(haloes)
 
         print("Found %d halo(es)" % self.nhalos)
@@ -286,6 +286,7 @@ class AurigaPdf:
         # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_light_components(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
+        projections.stellar_density_components(pdf, self, redshift, read=True)
         # projections.stellar_light_fit(self, redshift, read=False)
         # projections.r_band_magnitude(self, redshift, read=False)
         # Gas #
@@ -345,7 +346,8 @@ class AurigaPdf:
         # combinations.bar_strength_profile_combination(pdf)
         # combinations.stellar_surface_density_profiles_combination(pdf)
         # combinations.circular_velocity_curves_combination(pdf)
-        # combinations.gas_temperature_vs_distance_combination(pdf)
+        # combinations.ssdp_cvc_combination(pdf)
+        # combinations.gas_temperature_vs_distance_combination(date)
         # combinations.decomposition_IT20_combination(date, redshift)
         # Evolution #
         # combinations.bar_strength_combination(pdf)
@@ -355,7 +357,7 @@ class AurigaPdf:
         pdf.close()
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
-        # file_name = 'dic-' + date + '.png'
+        # file_name = 'gtd-' + date + '.png'
         file_name = 'Auriga-' + date + '.pdf'
         os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
         return None

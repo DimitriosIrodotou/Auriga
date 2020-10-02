@@ -865,7 +865,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking gas_temperature_vs_distance")
-    path = '/u/di43/Auriga/plots/data/' + 'gdt/'
+    path = '/u/di43/Auriga/plots/data/' + 'gtd/'
 
     # Read the data #
     if read is True:

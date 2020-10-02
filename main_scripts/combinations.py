@@ -79,11 +79,11 @@ def stellar_light_components_combination(pdf, redshift):
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/''sl/' + str(redshift) + '/'
     path_components = '/u/di43/Auriga/plots/data/' + 'slc/' + str(redshift) + '/'
-    names = glob.glob(path + '/name_18*')
+    names = glob.glob(path + '/name_06*')
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 40))
+    figure = plt.figure(figsize=(10, 20))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, \
     axis52 = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple8=True)
@@ -712,7 +712,7 @@ def stellar_surface_density_profiles_combination(pdf):
         popt3 = np.load(path + 'popt3_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         popt4 = np.load(path + 'popt4_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-        # Plot the bar strength radial profile and get an estimate for the bar length from the maximum strength #
+        # Plot the stellar surface density profiles #
         p = plot_helper.plot_helper()  # Load the helper.
         axis.axvline(rfit, color='gray', linestyle='--')
         axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors[0], linewidth=0.0)
@@ -775,15 +775,95 @@ def circular_velocity_curves_combination(pdf):
     return None
 
 
-def gas_temperature_vs_distance_combination(pdf):
+def ssdp_cvc_combination(pdf):
+    """
+    Plot a combination of the circular velocity curve and the stellar surface density profiles for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :return: None
+    """
+    print("Invoking ssdp_cvc_combination")
+    # Get the names and sort them #
+    path_cvc = '/u/di43/Auriga/plots/data/' + 'cvc/'
+    path_ssdp = '/u/di43/Auriga/plots/data/' + 'ssdp/'
+    names = glob.glob(path_cvc + '/name_*')
+    names.sort()
+
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(20, 20))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, axis51, \
+    axis52 = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple9=True)
+
+    for axis in [axis00, axis20, axis40]:
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
+                            ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None, which='major', size=20)
+    for axis in [axis01, axis02, axis21, axis22, axis41, axis42]:
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None, which='major', size=20)
+        axis.set_yticklabels([])
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis30, axis31, axis32, axis40, axis41, axis42]:
+        axis.set_xticklabels([])
+
+    for axis in [axis10, axis30, axis50]:
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$',
+                            aspect=None, size=20)
+    for axis in [axis11, axis12, axis31, axis32, axis51, axis52]:
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[0, 2e3], xlabel=r'$\mathrm{R/kpc}$', aspect=None, size=20)
+        axis.set_yticklabels([])
+
+    # Loop over all available haloes #
+    axes = [axis00, axis01, axis02, axis12, axis20, axis21, axis22, axis40, axis41, axis42]
+    axes_cvc = [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]
+
+    for i, axis, axis_cvc in zip(range(len(names)), axes, axes_cvc):
+        # Load the data #
+        r = np.load(path_ssdp + 'r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        rfit = np.load(path_ssdp + 'rfit_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        sdfit = np.load(path_ssdp + 'sdfit_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt0 = np.load(path_ssdp + 'popt0_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt1 = np.load(path_ssdp + 'popt1_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt2 = np.load(path_ssdp + 'popt2_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt3 = np.load(path_ssdp + 'popt3_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        popt4 = np.load(path_ssdp + 'popt4_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        radius = np.load(path_cvc + 'radius_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        total_mass = np.load(path_cvc + 'total_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        shell_velocity = np.load(path_cvc + 'shell_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+        # Plot the circular velocity curve #
+        vtot = np.sqrt(G * total_mass * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
+        axis_cvc.plot(radius * 1e3, vtot, color=colors[0], linewidth=4, label=r'$\mathrm{Total}$')
+        axis_cvc.plot(radius * 1e3, shell_velocity[:, 0], color=colors[3], linestyle='--', linewidth=3, label=r'$\mathrm{Gas}$')
+        axis_cvc.plot(radius * 1e3, shell_velocity[:, 4], color=colors[2], linestyle='--', linewidth=3, label=r'$\mathrm{Stars}$')
+        axis_cvc.plot(radius * 1e3, shell_velocity[:, 1], color=colors[1], linestyle='--', linewidth=3, label=r'$\mathrm{Dark\;matter}$')
+
+        # Plot the stellar surface density profiles #
+        p = plot_helper.plot_helper()  # Load the helper.
+        axis.axvline(rfit, color='gray', linestyle='--')
+        axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors[0], linewidth=0.0)
+        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors[3])
+        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1])
+        axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0])
+
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.8, 0.82, r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
+            1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16, transform=axis.transAxes)
+        axis.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1)
+        axis_cvc.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1)
+
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
+    return None
+
+
+def gas_temperature_vs_distance_combination(date):
     """
     Plot a combination of the temperature as a function of distance of gas cells for Auriga halo(es).
-    :param pdf: path to save the pdf from main.make_pdf
+    :param date: date
     :return: None
     """
     print("Invoking gas_temperature_vs_distance_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'gdt/'
+    path = '/u/di43/Auriga/plots/data/' + 'gtd/'
     names = glob.glob(path + '/name_*')
     names.sort()
 
@@ -817,7 +897,7 @@ def gas_temperature_vs_distance_combination(pdf):
 
     # Add a colorbar, save and close the figure #
     plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$', size=20)
-    pdf.savefig(figure, bbox_inches='tight')
+    plt.savefig('/u/di43/Auriga/plots/' + 'gtd-' + date + '.png', bbox_inches='tight')
     plt.close()
     return None
 
