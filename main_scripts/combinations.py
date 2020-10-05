@@ -795,24 +795,26 @@ def ssdp_cvc_combination(pdf):
         res=res, boxsize=boxsize * 1e3, multiple9=True)
 
     for axis in [axis00, axis20, axis40]:
-        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
-                            ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None, which='major', size=20)
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$',
+                            aspect=None, which='major', size=20)
     for axis in [axis01, axis02, axis21, axis22, axis41, axis42]:
-        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None, which='major', size=20)
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', aspect=None, which='major', size=20)
         axis.set_yticklabels([])
-    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis30, axis31, axis32, axis40, axis41, axis42]:
-        axis.set_xticklabels([])
 
     for axis in [axis10, axis30, axis50]:
-        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$',
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1, 800], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$',
                             aspect=None, size=20)
+        axis.set_yticklabels(['', '', '', '300', '', '', '600', '', ''])
     for axis in [axis11, axis12, axis31, axis32, axis51, axis52]:
-        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[0, 2e3], xlabel=r'$\mathrm{R/kpc}$', aspect=None, size=20)
+        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1, 800], xlabel=r'$\mathrm{R/kpc}$', aspect=None, size=20)
         axis.set_yticklabels([])
 
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42]:
+        axis.set_xticklabels([])
+
     # Loop over all available haloes #
-    axes = [axis00, axis01, axis02, axis12, axis20, axis21, axis22, axis40, axis41, axis42]
-    axes_cvc = [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]
+    axes = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
+    axes_cvc = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
 
     for i, axis, axis_cvc in zip(range(len(names)), axes, axes_cvc):
         # Load the data #
@@ -839,15 +841,15 @@ def ssdp_cvc_combination(pdf):
         p = plot_helper.plot_helper()  # Load the helper.
         axis.axvline(rfit, color='gray', linestyle='--')
         axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors[0], linewidth=0.0)
-        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors[3])
-        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1])
-        axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0])
+        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors[3], label=r'$\mathrm{Total}$')
+        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1], label=r'$\mathrm{Sersic}$')
+        axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0], label=r'$\mathrm{Exponential}$')
 
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
-        figure.text(0.8, 0.82, r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
-            1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16, transform=axis.transAxes)
-        axis.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1)
-        axis_cvc.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1)
+        # figure.text(0.8, 0.75, r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
+        #     1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16, transform=axis.transAxes)
+        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+        axis_cvc.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1, ncol=2)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')

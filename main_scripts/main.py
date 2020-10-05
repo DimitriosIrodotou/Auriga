@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
 
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_*" % self.directory)
+        haloes = glob.glob("%shalo_" % self.directory)
         self.nhalos = len(haloes)
 
         print("Found %d halo(es)" % self.nhalos)
@@ -286,7 +286,7 @@ class AurigaPdf:
         # projections.stellar_light(pdf, self, redshift, read=False)
         # projections.stellar_light_components(pdf, self, redshift, read=False)
         # projections.stellar_density(pdf, self, redshift, read=False)
-        projections.stellar_density_components(pdf, self, redshift, read=True)
+        # projections.stellar_density_components(pdf, self, redshift, read=False)
         # projections.stellar_light_fit(self, redshift, read=False)
         # projections.r_band_magnitude(self, redshift, read=False)
         # Gas #
@@ -346,7 +346,7 @@ class AurigaPdf:
         # combinations.bar_strength_profile_combination(pdf)
         # combinations.stellar_surface_density_profiles_combination(pdf)
         # combinations.circular_velocity_curves_combination(pdf)
-        # combinations.ssdp_cvc_combination(pdf)
+        combinations.ssdp_cvc_combination(pdf)
         # combinations.gas_temperature_vs_distance_combination(date)
         # combinations.decomposition_IT20_combination(date, redshift)
         # Evolution #
