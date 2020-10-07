@@ -287,14 +287,12 @@ def combine_images(name, ellipticity):
 
     # Plot the original data with some of the isophotes, the elliptical model image, and the residual image #
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 10))
-    gs = gridspec.GridSpec(2, 2, hspace=0.3, wspace=0.3)
-    axis00 = plt.subplot(gs[0, 0])
-    axis01 = plt.subplot(gs[0, 1])
-    axis10 = plt.subplot(gs[1, 0])
-    axis11 = plt.subplot(gs[1, 1])
+    figure = plt.figure(figsize=(20, 10))
+    gs = gridspec.GridSpec(2, 4, hspace=0.3, wspace=0.3)
+    axis00, axis01, axis02, axis03 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(gs[0, 3])
+    axis10, axis11, axis12, axis13 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2]), plt.subplot(gs[1, 3])
 
-    axes = [axis00, axis01, axis10, axis11]
+    axes = [axis00, axis01, axis02, axis03]
     images = [image_fits, image_fits, model, residual]
     for axis, image in zip(axes, images):
         plot_tools.set_axis(axis, xlim=[0, 512], ylim=[0, 512], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$', which='major', aspect=None)
@@ -311,6 +309,17 @@ def combine_images(name, ellipticity):
     figure.text(0.01, 0.92, r'$\mathrm{Sample\;of\;isophotes}$', color='w', fontsize=16, transform=axis01.transAxes)
     figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='w', fontsize=16, transform=axis10.transAxes)
     figure.text(0.01, 0.92, r'$\mathrm{Residual}$', color='w', fontsize=16, transform=axis11.transAxes)
+
+    axes = [axis10, axis11, axis12, axis13]
+    y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA/\deg}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$', r'$\mathrm{Mean\,intensity}$']
+    y_values = [isolist.eps, isolist.pa / np.pi * 180., isolist.tflux_e, isolist.intens]
+    y_lims = [(0, 1), (-20, 200), (0.9 * min(isolist.tflux_e), 1.1 * max(isolist.tflux_e)), (0.9 * min(isolist.intens), 1.1 * max(isolist.intens))]
+    y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.int_err]
+    for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
+        axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', color='k', markersize=10)
+        plot_tools.set_axis(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{(Semi-major\;axis\;length)/pix}$',
+                            ylabel=y_label, which='major', aspect=None)
+    axis12.set_yscale('log')
     plt.savefig(name + '_model_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
     return None
 
