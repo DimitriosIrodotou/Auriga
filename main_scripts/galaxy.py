@@ -940,7 +940,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
 def decomposition_IT20(date, data, redshift, read):
     """
     Plot the angular momentum maps and calculate D/T_IT20 for Auriga halo(es).
-    :param date: date
+    :param date: date.
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.

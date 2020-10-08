@@ -860,7 +860,7 @@ def ssdp_cvc_combination(pdf):
 def gas_temperature_vs_distance_combination(date):
     """
     Plot a combination of the temperature as a function of distance of gas cells for Auriga halo(es).
-    :param date: date
+    :param date: date.
     :return: None
     """
     print("Invoking gas_temperature_vs_distance_combination")
@@ -1055,7 +1055,7 @@ def gas_temperature_regimes_combination(pdf):
 def AGN_modes_distribution_combination(date):
     """
     Plot a combination of the energy of different black hole feedback modes from log files and plot its evolution for Auriga halo(es).
-    :param date: date
+    :param date: date.
     :return: None
     """
     print("Invoking AGN_modes_distribution_combination")
@@ -1149,6 +1149,74 @@ def AGN_modes_distribution_combination(date):
     axis12.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
     plt.savefig('/u/di43/Auriga/plots/' + 'AGNmdc-' + date + '.png', bbox_inches='tight')
 
+    return None
+
+
+def AGN_feedback_kernel_combination(pdf):
+    """
+    Plot a combination of the evolution of black hole radius and the volume of gas cells within that for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :return: None
+    """
+    print("Invoking AGN_feedback_kernel_combination")
+    # Get the names and sort them #
+    path = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
+    names = glob.glob(path + '/name_*')
+    names.sort()
+
+    # Remove the NoRNoQ flavours #
+    names.remove('/u/di43/Auriga/plots/data/AGNfk/name_06NoRNoQ.npy')
+    names.remove('/u/di43/Auriga/plots/data/AGNfk/name_17NoRNoQ.npy')
+    names.remove('/u/di43/Auriga/plots/data/AGNfk/name_18NoRNoQ.npy')
+
+    # Generate the figure and set its parameters #
+    figure = plt.figure(figsize=(16, 9))
+    axis00, axis01, axis02, axis10, axis11, axis12 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple10=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
+        axis2 = axis.twiny()
+        axis3 = axis.twinx()
+        axis3.yaxis.label.set_color('red')
+        axis3.spines['right'].set_color('red')
+        plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
+        axis3.tick_params(axis='y', direction='out', left='off', colors='red')
+        if axis in [axis10, axis11, axis12]:
+            axis2.set_xlabel('')
+            axis2.set_xticklabels([])
+        if axis in [axis00, axis01, axis10, axis11]:
+            axis3.set_ylabel('')
+            axis3.set_yticklabels([])
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
+        axis.set_xlabel('')
+        axis.set_xticklabels([])
+    for axis in [axis01, axis02, axis11, axis12]:
+        axis.set_ylabel('')
+        axis.set_yticklabels([])
+
+    # Loop over all available haloes #
+    for i, axis in zip(range(len(names)), [axis00, axis10, axis01, axis11, axis02, axis12]):
+        # Load the data #
+        gas_volumes = np.load(path + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+        # Plot median and 1-sigma lines #
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
+                                                                       n_bins=len(lookback_times) / 5, log=False)
+        axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[0], linewidth=3)
+        axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[0], alpha='0.3')
+
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_type='equal_number',
+                                                                       n_bins=len(lookback_times) / 5, log=False)
+        axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[1], linewidth=3)
+        axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[1], alpha='0.3')
+
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
     return None
 
 

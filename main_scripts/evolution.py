@@ -691,7 +691,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 def AGN_modes_distribution(date, data, read):
     """
     Get the energy of different black hole feedback modes from log files and plot its evolution for Auriga halo(es).
-    :param date: .
+    :param date: date.
     :param data: data from main.make_pdf
     :param read: boolean to read new data.
     :return: None
@@ -950,18 +950,17 @@ def AGN_feedback_kernel(pdf, data, ds, read):
 
         # Plot median and 1-sigma lines #
         x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
-                                                                       n_bins=len(lookback_times) / 2, log=False)
-        axis.plot(x_value, median, color=colors[0], linewidth=3)
-        axis.fill_between(x_value, shigh, slow, color=colors[0], alpha='0.3')
+                                                                       n_bins=len(lookback_times) / 5, log=False)
+        axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[0], linewidth=3)
+        axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[0], alpha='0.3')
 
-        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_type='equal_width', n_bins=10,
-                                                                       log=False)
-        axis3.plot(x_value, median, color=colors[1], linewidth=3)
-        axis3.fill_between(x_value, shigh, slow, color=colors[1], alpha='0.3')
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_type='equal_number',
+                                                                       n_bins=len(lookback_times) / 5, log=False)
+        axis3.plot(x_value[x_value > 0], median[x_value > 0], color=colors[1], linewidth=3)
+        axis3.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[1], alpha='0.3')
 
         # Save and close the figure #
-        plt.savefig('/u/di43/Auriga/plots/' + 'Auriga-' + pdf + '.png', bbox_inches='tight')
-        # pdf.savefig(figure, bbox_inches='tight')
+        pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
 
@@ -1041,10 +1040,10 @@ def get_bm_data(snapshot_ids, halo, blackhole_id):
     blackhole_mask, = np.where(s.data['id'] == blackhole_id)
     if len(blackhole_mask) > 0:
         black_hole_mass = s.data['bhma'][blackhole_mask[0]]
-        black_hole_dmass = s.data['bhmd'][blackhole_mask[0]]
         black_hole_cmass_radio = s.data['bcmr'][blackhole_mask[0]]
-        black_hole_dmass_radio = s.data['bhmr'][blackhole_mask[0]]
         black_hole_cmass_quasar = s.data['bcmq'][blackhole_mask[0]]
+        black_hole_dmass = s.data['bhmd'][blackhole_mask[0]]
+        black_hole_dmass_radio = s.data['bhmr'][blackhole_mask[0]]
         black_hole_dmass_quasar = s.data['bhmq'][blackhole_mask[0]]
     else:
         black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, black_hole_dmass_radio, black_hole_dmass_quasar, = 0, \
@@ -1085,7 +1084,7 @@ def blackhole_masses(pdf, data, read):
             if name in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Analysing halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -1126,16 +1125,16 @@ def blackhole_masses(pdf, data, read):
         axis002, axis012 = axis00.twiny(), axis01.twiny()
         axis102, axis112 = axis10.twiny(), axis11.twiny()
 
-        figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis00.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis00.transAxes)
 
         for axis in [axis01, axis11]:
             axis.yaxis.set_label_position("right")
             axis.yaxis.tick_right()
 
-        plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH}/M_\odot}$')
-        plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH,mode}/M_\odot}$')
-        plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\;Gyr^{-1})}$')
-        plot_tools.set_axes_evolution(axis11, axis112, yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$')
+        plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH}/M_\odot}$', which='major')
+        plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{mode,c}/M_\odot}$', which='major')
+        plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\;Gyr^{-1})}$', which='major')
+        plot_tools.set_axes_evolution(axis11, axis112, yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$', which='major')
 
         # Load the data #
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1155,8 +1154,10 @@ def blackhole_masses(pdf, data, read):
 
         # Plot black hole mass and accretion rates #
         axis00.plot(lookback_times, black_hole_masses * 1e10, color=colors[0])
-        axis01.plot(lookback_times, black_hole_imasses_radio * 1e10, color=colors[1])
-        axis01.plot(lookback_times, black_hole_imasses_quasar * 1e10, color=colors[2])
+        axis00.plot(lookback_times, black_hole_imasses_radio * 1e10, color=colors[1])
+        axis00.plot(lookback_times, black_hole_imasses_quasar * 1e10, color=colors[2])
+        axis01.plot(lookback_times, black_hole_cmasses_radio * 1e10, color=colors[1])
+        axis01.plot(lookback_times, black_hole_cmasses_quasar * 1e10, color=colors[2])
         plt10, = axis10.plot(lookback_times, black_hole_dmasses, color=colors[0])
         plt101, = axis10.plot(lookback_times, black_hole_dmasses_radio, color=colors[1])
         plt102, = axis10.plot(lookback_times, black_hole_dmasses_quasar, color=colors[2])
