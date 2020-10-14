@@ -42,7 +42,7 @@ def circularity_distribution(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -53,7 +53,7 @@ def circularity_distribution(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -210,7 +210,7 @@ def tully_fisher(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -220,7 +220,7 @@ def tully_fisher(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -337,7 +337,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -347,7 +347,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -436,7 +436,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -447,7 +447,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -515,7 +515,7 @@ def bar_strength_profile(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -526,7 +526,7 @@ def bar_strength_profile(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -616,7 +616,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -627,7 +627,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -758,7 +758,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -769,7 +769,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -869,7 +869,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -880,7 +880,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
@@ -952,7 +952,7 @@ def decomposition_IT20(date, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -963,7 +963,7 @@ def decomposition_IT20(date, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             # if str(s.haloname) in names:
@@ -1101,7 +1101,7 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
 
     # Read the data #
     if read is True:
-        # Check if a folder to save the data exists, if not create one #
+        # Check if a folder to save the data exists, if not then create one #
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -1112,7 +1112,7 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             # if str(s.haloname) in names:

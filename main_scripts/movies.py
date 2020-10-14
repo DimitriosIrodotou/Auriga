@@ -27,7 +27,7 @@ def gas_movie(data, read):
     """
     print("Invoking gas_movie")
 
-    # Check if a folder to save the data exists, if not create one #
+    # Check if a folder to save the data exists, if not then create one #
     path = '/u/di43/Auriga/plots/data/' + 'gm/' + '/'
     if not os.path.exists(path):
         os.makedirs(path)
@@ -54,7 +54,7 @@ def gas_movie(data, read):
             
             # Loop over all available haloes #
             for s in data:
-                # Check if any of the haloes' data already exists, if not then create it #
+                # Check if halo's data already exists, if not then read it #
                 names = glob.glob(path + '/name_3000*')
                 names = [re.split('_|.npy', name)[2] for name in names]
                 if str(redshift) in names:
@@ -110,7 +110,7 @@ def gas_movie(data, read):
                     np.sum(s.gmet[s.data['type'] == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[s.data['type'] == 0, 0])
                 Tfac = 1. / meanweight * (1.0 / (5. / 3. - 1.)) * KB / PROTONMASS * 1e10 * msol / 1.989e53
                 
-                # Un megabars (10**12dyne/cm**2)
+                # In megabars (10**12dyne/cm**2)
                 s.data['T'] = s.u / Tfac
                 s.data['dens'] = s.rho / (1e6 * parsec) ** 3. * msol * 1e10
                 s.data['Ptherm'] = s.data['dens'] * s.data['T'] / (meanweight * PROTONMASS)

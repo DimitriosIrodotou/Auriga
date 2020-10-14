@@ -1232,7 +1232,7 @@ def central_combination(pdf, data, redshift, read):
     print("Invoking central_combination")
     boxsize = 0.004  # Decrease the boxsize.
 
-    # Check if a folder to save the data exists, if not create one #
+    # Check if a folder to save the data exists, if not then create one #
     path = '/u/di43/Auriga/plots/data/' + 'm/' + str(redshift) + '/'
     if not os.path.exists(path):
         os.makedirs(path)
@@ -1246,7 +1246,7 @@ def central_combination(pdf, data, redshift, read):
 
         # Loop over all available haloes #
         for s in data:
-            # Check if any of the haloes' data already exists, if not then create it #
+            # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:

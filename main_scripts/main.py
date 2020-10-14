@@ -152,7 +152,7 @@ class AurigaOutput:
         self.directory = directory
 
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_18" % self.directory)
+        haloes = glob.glob("%shalo_" % self.directory)
         self.nhalos = len(haloes)
 
         print("Found %d halo(es)" % self.nhalos)
@@ -319,7 +319,7 @@ class AurigaPdf:
         # evolution.gas_temperature_regimes(pdf, self, read=False)
         # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
         # evolution.sfr_stars_gas_regimes(pdf, self, region='outer', read=False)
-        evolution.gas_flow(pdf, self, read=True)
+        evolution.gas_flow(pdf, self, read=False)
         # AGN #
         # evolution.AGN_modes_distribution(date, self, read=False)
         # evolution.AGN_feedback_kernel(pdf, self, ds=False, read=False)
