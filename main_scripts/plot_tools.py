@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib import gridspec
-import satellite_utilities
+# import satellite_utilities
 
 res = 512
 boxsize = 0.06
