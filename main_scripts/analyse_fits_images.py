@@ -16,7 +16,6 @@ from matplotlib.patches import Circle
 from photutils.isophote import Ellipse
 from photutils.isophote import EllipseGeometry
 from scipy.ndimage.filters import gaussian_filter
-from photutils.isophote import build_ellipse_model
 
 style.use("classic")
 date = time.strftime("%d_%m_%y_%H%M")
@@ -33,27 +32,18 @@ def convert_for_fit(name, min_intensity):
     image_png = Image.open(name + '.png').convert("L")
     image_png = image_png.resize((512, 512), PIL.Image.NEAREST)
 
-    # Create and save a fits version of the gray scaled image #
+    # Create and save a fits version of the rescaled image #
     hdu = fits.PrimaryHDU(image_png)
     hdu.writeto(name + '_ctf.fits', overwrite=True)
 
     # Add flat background noise #
     image_fits = fits.getdata(name + '_ctf.fits', ext=0)
     image_fits = image_fits + min_intensity
-    array = np.asarray(image_fits)
 
     # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
     plt.axis('off')
     axis.set_aspect('equal')
-
-    # Create and save a gray scaled version of the image #
-    plt.imsave(name + '_ctf.png', array, cmap='gray')
-    plt.close()
-
-    # Create and save a fits version of the image #
-    hdu = fits.PrimaryHDU(array)
-    hdu.writeto(name + '_ctf.fits', overwrite=True)
 
     # Add Gaussian blur #
     FWHM = 3
@@ -66,7 +56,7 @@ def convert_for_fit(name, min_intensity):
     plt.axis('off')
     axis.set_aspect('equal')
 
-    # Create and save a gray scaled version of the image #
+    # Create and save the image #
     plt.imsave(name + '_ctf.png', array, cmap='gray')
     plt.close()
 
@@ -306,18 +296,21 @@ names.sort()
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    os.chdir(plots_path + name)  # Change to each halo's plots directory
+    # os.chdir(plots_path + name)  # Change to each halo's plots directory
     ellipticity = 0.42  # {'Au-06NoRNoQ':0.6, 'Au-18':0.42}
-    min_intensity = 36.45  # {'Au-06':85.57, 'Au-06NoRNoQ':47.86, 'Au-18':36.45}
-    convert_for_fit(name, min_intensity)
-    fit_isophotal_ellipses(name, ellipticity)
+    # min_intensity = 36.45  # {'Au-06':85.57, 'Au-06NoRNoQ':47.86, 'Au-18':36.45}
+    # convert_for_fit(name, min_intensity)
+    # fit_isophotal_ellipses(name, ellipticity)
 
     # Use Imfit to analyse the image #  # --bootstrap 15
     os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
+    # os.system('../../makeimage -o Au-18_psf.fits Au-18_config_Gaussian_psf.dat')  # Create the PSF image
     os.system(
-        '../../imfit -c %s_config.dat --nm --model-errors --cashstat ../../../plots/projections/Imfit/%s/%s_ctf.fits --save-model=%s_model.fits '
+        '../../imfit -c %s_config.dat --psf Au-18_psf.fits --nm --model-errors --cashstat ../../../plots/projections/Imfit/%s/%s_ctf.fits '
+        '--save-model=%s_model.fits '
         '--save-residual=%s_residual.fits --save-params=%s_bestfit.dat' % (name, name, name, name, name, name))
 
     # Plot the image model and residual #
     os.chdir(plots_path + name)  # Change to each halo's plots directory
-    combine_images(name, ellipticity)  # plot_fits_image(name + '_model')
+    combine_images(name, ellipticity)
+    # plot_fits_image(name + '_psf')
