@@ -4,6 +4,7 @@ import glob
 import plot_tools
 
 import numpy as np
+import astropy.units as u
 import matplotlib.pyplot as plt
 
 from const import *
@@ -691,10 +692,10 @@ def get_gf_data(snapshot_ids, halo):
     :param halo: data for the halo.
     :return: lookback time, SFR, sfg_ratio, wg_ratio, hg_ratio, np.sum(gas_mass), stellar_mass.
     """
-    print("Invoking get_ssgr_data")
+    print("Invoking get_gf_data")
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [0, 4]
-    attributes = ['mass', 'pos', 'sfr', 'vel']
+    attributes = ['mass', 'pos', 'id', 'sfr', 'vel']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
     # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
@@ -716,7 +717,7 @@ def get_gf_data(snapshot_ids, halo):
     CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0) / np.sum(s.data['mass'][gas_mask])
     radial_velocity = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask], axis=1) / spherical_radius
     return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), s.subfind.data['frc2'][0], s.data[
-        'sfr'][gas_mask], s.data['mass'][gas_mask], temperature, spherical_radius, radial_velocity
+        'sfr'][gas_mask], s.data['mass'][gas_mask], s.data['id'][gas_mask], temperature, spherical_radius, radial_velocity
 
 
 def gas_flow(pdf, data, read):
@@ -728,7 +729,8 @@ def gas_flow(pdf, data, read):
     :return: None
     """
     print("Invoking gas_flow")
-    redshift_cut = 0.2
+    redshift_cut = 0.1
+    dT = 250  # In Myr.
     path = '/u/di43/Auriga/plots/data/' + 'gf/'
 
     # Read the data #
@@ -758,12 +760,13 @@ def gas_flow(pdf, data, read):
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(name), name)
             np.save(path + 'lookback_times_' + str(name), gf_data[:, 0])
-            np.save(path + 'Rvir_' + str(name), gf_data[:, 1])
-            np.save(path + 'sfr_' + str(name), gf_data[:, 2])
-            np.save(path + 'mass_' + str(name), gf_data[:, 3])
-            np.save(path + 'temperature_' + str(name), gf_data[:, 4])
-            np.save(path + 'spherical_radius_' + str(name), gf_data[:, 5])
-            np.save(path + 'radial_velocity_' + str(name), gf_data[:, 6])
+            np.save(path + 'Rvirs_' + str(name), gf_data[:, 1])
+            np.save(path + 'sfrs_' + str(name), gf_data[:, 2])
+            np.save(path + 'masses_' + str(name), gf_data[:, 3])
+            np.save(path + 'ids_' + str(name), gf_data[:, 4])
+            np.save(path + 'temperatures_' + str(name), gf_data[:, 5])
+            np.save(path + 'spherical_radii_' + str(name), gf_data[:, 6])
+            np.save(path + 'radial_velocities_' + str(name), gf_data[:, 7])
 
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
@@ -773,26 +776,57 @@ def gas_flow(pdf, data, read):
     for i in range(len(names)):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None)
-        figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        # axis2 = axis.twiny()
+        # plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None)
+        # figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
 
         # Load and plot the data #
-        sfr = np.load(path + 'sfr_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        mass = np.load(path + 'mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        Rvir = np.load(path + 'Rvir_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        sfrs = np.load(path + 'sfrs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        masses = np.load(path + 'masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        Rvirs = np.load(path + 'Rvirs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        ids = np.load(path + 'ids_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        radial_velocity = np.load(path + 'radial_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        spherical_radius = np.load(path + 'spherical_radius_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        spherical_radii = np.load(path + 'spherical_radii_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        radial_velocities = np.load(path + 'radial_velocities_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
 
-        print(np.flip(lookback_times*1e3))
-        print(np.insert(np.diff(np.flip(lookback_times*1e3)), 0, 0))
-        # Loop over all radial limits #
-        # radial_cuts = (0.1, 0.5, 1)
-        # for radial_cut in radial_cuts:
-        #     mass_outflow = np.sum(mass[np.where(spherical_radius + radial_velocity * dT > radial_cut * Rvir)])
-        #
+        # common_ids = set(ids[0])
+        # # Loop over all redshifts and compare ids #
+        # for ids_in_snap in ids[1:]:
+        #     common_ids.intersection_update(ids_in_snap)
+        # print(len(common_ids))
+        # x = [8796187878443, 8796221432877, 5466789209133, 8796221432879, 8796240307248, 5475303646257, 8796181586994, 8796221432881, 8796238210097,
+        #      8796236112953, 5463649772607, 8796238210112, 8796231918660, 8796240307271, 8796240307272, 8796223530058, 8796240307277, 8796231918670,
+        #      8796240307278, 8796225627216, 8796236112974, 8796206752852, 5475303646293, 8796208850006, 5463574275157, 8796206752854, 8796240307285,
+        #      8796240307286, 8796236112987, 8796240307287, 8796236112989, 8796150129757, 8796236112991, 8796240307294, 5463549109346, 8796240307302,
+        #      8796240307307, 8796236113004, 8796240307309, 8796240307310, 5471491023984, 5475911820403, 5463435863160, 8796221432963, 8796217238666,
+        #      8796240307339, 8796240307349, 8796240307350, 5463540720794, 87962403073]
+        # print(np.where(ids[0] == x))
+        # print(ids[0] in x)
+        # for i in range(len(lookback_times)):
+        #     plt.scatter(spherical_radii[i][np.where(ids[i] == x),2],spherical_radii[i][np.where(ids[i] == x),1])
+
+        # # print(np.flip(lookback_times*1e3))
+        # # print(np.insert(np.diff(np.flip(lookback_times*1e3)), 0, 0))
+        # # Loop over all radial limits #
+        # print(mass[0])
+        # print(len(lookback_times))
+        mass_outflows = np.zeros(len(lookback_times))
+        mass_inflows = np.zeros(len(lookback_times))
+        # for radial_cut in [0.1, 0.5, 1]:
+        radial_cut = 0.1
+        for i in range(len(lookback_times)):
+            outflow_mask, = np.where((spherical_radii[i] < radial_cut * Rvirs[i]) & (
+                    spherical_radii[i] + (radial_velocities[i] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[i]))
+            inflow_mask, = np.where((spherical_radii[i] > radial_cut * Rvirs[i]) & (
+                spherical_radii[i] + (radial_velocities[i] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[i]))
+            mass_outflows[i] = np.divide(np.sum(masses[i][outflow_mask]) * 1e10, dT * 1e6)
+            mass_inflows[i] = np.divide(np.sum(masses[i][inflow_mask]) * 1e10, dT * 1e6)
+        print(mass_inflows)
+        print(mass_outflows)
+        print(mass_inflows - mass_outflows)
+
+
         #     hg_ratio = np.sum(gas_mass[np.where(temperature >= 5e5)]) / np.sum(gas_mass)
         #     sfg_ratio = np.sum(gas_mass[np.where(temperature < 2e4)]) / np.sum(gas_mass)
         #     wg_ratio = np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass)
@@ -800,8 +834,8 @@ def gas_flow(pdf, data, read):
         #     Create the legends, save and close the figure #
         #     axis10.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, ncol=2)
         #     axis20.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
-        #     pdf.savefig(figure, bbox_inches='tight')
-        #     plt.close()
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
     return None
 
 
