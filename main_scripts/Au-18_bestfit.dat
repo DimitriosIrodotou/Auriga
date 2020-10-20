@@ -1,32 +1,32 @@
 # Best-fit model results for imfit 1.7.1 (OpenMP-enabled)
-# Generated on Mon Oct  5 17:48:52 2020 by the following command:
-#    ../../imfit -c Au-18_config.dat --nm --model-errors --cashstat ../../../plots/projections/Imfit/Au-18/Au-18_ctf.fits --save-model=Au-18_model.fits --save-residual=Au-18_residual.fits --save-params=Au-18_bestfit.dat
+# Generated on Tue Oct 20 17:55:03 2020 by the following command:
+#    ../../imfit -c Au-18_config.dat --psf Au-18_psf.fits --nm --model-errors --cashstat ../../../plots/projections/Imfit/Au-18/Au-18_ctf.fits --save-model=Au-18_model.fits --save-residual=Au-18_residual.fits --save-params=Au-18_bestfit.dat
 
 # Results of fit:
 #   Algorithm: Nelder-Mead Simplex: status = 3 -- SUCCESS: ftol_rel or ftol_abs reached
 #   Fit statistic: Cash statistic
-#   Best-fit value: -259256950.248084
+#   Best-fit value: -259264799.509305
 #   Reduced value: none
-#   AIC: -259256920.246253
-#   BIC: -259256763.098345
+#   AIC: -259264769.507474
+#   BIC: -259264612.359566
 
-X0		256.5013
-Y0		257.9696
+X0		256.5069
+Y0		257.9931
 FUNCTION Sersic
 PA		     90
-ell		0.0182513
-n		0.238686
-I_e		62.4768
-r_e		127.043
+ell		0.000109373
+n		0.271594
+I_e		77.1153
+r_e		125.669
 FUNCTION FerrersBar2D
 PA		     90
-ell		0.557774
-c0		0.0311625
-n		1.98879
-I_0		61.8123
-a_bar		29.9424
+ell		0.626037
+c0		 2.9656
+n		1.41995
+I_0		54.5873
+a_bar		49.9553
 FUNCTION Exponential
-PA		179.904
-ell		0.0278571
-I_0		 156.84
-h		199.926
+PA		178.651
+ell		7.21187e-07
+I_0		 114.86
+h		249.976
