@@ -1040,9 +1040,9 @@ def gas_temperature_regimes_combination(pdf):
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the evolution of gas fraction in different temperature regimes #
-        axis.plot(lookback_times, hg_ratios, color='red', label=r'$\mathrm{Hot\;gas}$')
-        axis.plot(lookback_times, sfg_ratios, color='blue', label=r'$\mathrm{Cold\;gas}$')
-        axis.plot(lookback_times, wg_ratios, color='green', label=r'$\mathrm{Warm\;gas}$')
+        axis.plot(lookback_times, hg_ratios, color=colors[1], label=r'$\mathrm{Hot\;gas}$')
+        axis.plot(lookback_times, sfg_ratios, color=colors[2], label=r'$\mathrm{Cold\;gas}$')
+        axis.plot(lookback_times, wg_ratios, color=colors[3], label=r'$\mathrm{Warm\;gas}$')
 
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
@@ -1175,11 +1175,11 @@ def AGN_feedback_kernel_combination(pdf):
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis2 = axis.twiny()
         axis3 = axis.twinx()
-        axis3.yaxis.label.set_color('red')
-        axis3.spines['right'].set_color('red')
+        axis3.yaxis.label.set_color('tab:red')
+        axis3.spines['right'].set_color('tab:red')
         plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
-        axis3.tick_params(axis='y', direction='out', left='off', colors='red')
+        axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
         if axis in [axis10, axis11, axis12]:
             axis2.set_xlabel('')
             axis2.set_xticklabels([])

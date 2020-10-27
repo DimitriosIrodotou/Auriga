@@ -305,10 +305,10 @@ for name in names:
     # Use Imfit to analyse the image #  # --bootstrap 15
     os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
     # os.system('../../makeimage -o Au-18_psf.fits Au-18_config_Gaussian_psf.dat')  # Create the PSF image
-    # os.system('../../imfit -c %s_config.dat --psf %s_psf.fits --nm --model-errors --cashstat ../../../plots/projections/Imfit/%s/%s_ctf.fits '
-    #           '--save-model=%s_model.fits '
-    #           '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (name, name, name, name, name, name, name, date))
-    # os.system('../../makeimage %s_config.dat --psf %s_psf.fits --nosave --print-fluxes' % (name, name))  # Print the flux ratios.
+    os.system('../../imfit -c %s_config.dat --psf %s_psf.fits --nm --model-errors --cashstat ../../../plots/projections/Imfit/%s/%s_ctf.fits '
+              '--save-model=%s_model.fits '
+              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (name, name, name, name, name, name, name, date))
+    os.system('../../makeimage %s_bestfit_%s.dat --psf %s_psf.fits --nosave --print-fluxes' % (name, date, name))  # Print the flux ratios.
 
     # Plot the image, model and residual #
     # plot_fits_image(name + '_psf')

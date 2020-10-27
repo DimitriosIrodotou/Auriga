@@ -309,9 +309,9 @@ def gas_temperature_regimes(pdf, data, read):
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the evolution of gas fraction in different temperature regimes #
-        plt.plot(lookback_times, hg_ratios, color='red', label=r'$\mathrm{Hot\;gas}$')
-        plt.plot(lookback_times, sfg_ratios, color='blue', label=r'$\mathrm{Cold\;gas}$')
-        plt.plot(lookback_times, wg_ratios, color='green', label=r'$\mathrm{Warm\;gas}$')
+        plt.plot(lookback_times, hg_ratios, color=colors[1], label=r'$\mathrm{Hot\;gas}$')
+        plt.plot(lookback_times, sfg_ratios, color=colors[2], label=r'$\mathrm{Cold\;gas}$')
+        plt.plot(lookback_times, wg_ratios, color=colors[3], label=r'$\mathrm{Warm\;gas}$')
 
         # Create the legend, save and close the figure #
         plt.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
@@ -702,7 +702,7 @@ def get_gf_data(snapshot_ids, halo):
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-    gas_mask, = np.where(s.data['type'] == 0)  # Mask the data: select gas cells inside 0.1*R200c.
+    gas_mask, = np.where(s.data['type'] == 0)  # Mask the data: select gas cells.
 
     # Calculate the temperature of the gas cells #
     ne = s.data['ne'][gas_mask]
@@ -716,8 +716,8 @@ def get_gf_data(snapshot_ids, halo):
     spherical_radius = np.sqrt(np.sum(s.data['pos'][gas_mask, :] ** 2, axis=1))
     CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0) / np.sum(s.data['mass'][gas_mask])
     radial_velocity = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask], axis=1) / spherical_radius
-    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), s.subfind.data['frc2'][0], s.data[
-        'sfr'][gas_mask], s.data['mass'][gas_mask], s.data['id'][gas_mask], temperature, spherical_radius, radial_velocity
+    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), s.subfind.data['frc2'][0], s.data['sfr'][gas_mask], s.data['mass'][gas_mask], \
+           s.data['id'][gas_mask], temperature, spherical_radius, radial_velocity
 
 
 def gas_flow(pdf, data, read):
@@ -729,7 +729,7 @@ def gas_flow(pdf, data, read):
     :return: None
     """
     print("Invoking gas_flow")
-    redshift_cut = 0.1
+    redshift_cut = 7
     dT = 250  # In Myr.
     path = '/u/di43/Auriga/plots/data/' + 'gf/'
 
@@ -745,10 +745,10 @@ def gas_flow(pdf, data, read):
             # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if name in names:
-            #     continue
-            # else:
-            #     print("Analysing halo:", name)
+            if name in names:
+                continue
+            else:
+                print("Analysing halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -776,16 +776,22 @@ def gas_flow(pdf, data, read):
     for i in range(len(names)):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        # axis2 = axis.twiny()
-        # plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None)
-        # figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        axis2 = axis.twiny()
+        axis3 = axis.twinx()
+        axis3.yaxis.label.set_color('tab:red')
+        axis3.spines['right'].set_color('tab:red')
+        plot_tools.set_axis(axis3, ylim=[0, 300], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{R_{vir}/kpc}$', aspect=None)
+        axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[-100, 200], ylabel=r'$\mathrm{Net\;flow/(M_\odot/yr)}$', aspect=None)
+        axis.tick_params(axis='y', direction='out', colors='black')
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
 
         # Load and plot the data #
-        sfrs = np.load(path + 'sfrs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        # sfrs = np.load(path + 'sfrs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         masses = np.load(path + 'masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         Rvirs = np.load(path + 'Rvirs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        ids = np.load(path + 'ids_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        # ids = np.load(path + 'ids_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        # temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         spherical_radii = np.load(path + 'spherical_radii_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         radial_velocities = np.load(path + 'radial_velocities_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
@@ -808,32 +814,28 @@ def gas_flow(pdf, data, read):
 
         # # print(np.flip(lookback_times*1e3))
         # # print(np.insert(np.diff(np.flip(lookback_times*1e3)), 0, 0))
-        # # Loop over all radial limits #
-        # print(mass[0])
-        # print(len(lookback_times))
+
+        # Loop over all radial limits #
         mass_outflows = np.zeros(len(lookback_times))
         mass_inflows = np.zeros(len(lookback_times))
-        # for radial_cut in [0.1, 0.5, 1]:
-        radial_cut = 0.1
-        for i in range(len(lookback_times)):
-            outflow_mask, = np.where((spherical_radii[i] < radial_cut * Rvirs[i]) & (
-                    spherical_radii[i] + (radial_velocities[i] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[i]))
-            inflow_mask, = np.where((spherical_radii[i] > radial_cut * Rvirs[i]) & (
-                spherical_radii[i] + (radial_velocities[i] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[i]))
-            mass_outflows[i] = np.divide(np.sum(masses[i][outflow_mask]) * 1e10, dT * 1e6)
-            mass_inflows[i] = np.divide(np.sum(masses[i][inflow_mask]) * 1e10, dT * 1e6)
-        print(mass_inflows)
-        print(mass_outflows)
-        print(mass_inflows - mass_outflows)
-
+        for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
+            for j in range(len(lookback_times)):
+                outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
+                    spherical_radii[j] + (radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
+                inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
+                    spherical_radii[j] + (radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[j]))
+                mass_outflows[j] = np.divide(np.sum(masses[j][outflow_mask]) * 1e10, dT * 1e6)
+                mass_inflows[j] = np.divide(np.sum(masses[j][inflow_mask]) * 1e10, dT * 1e6)
+            net_flow = mass_inflows - mass_outflows
+            axis.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
+        axis3.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
 
         #     hg_ratio = np.sum(gas_mass[np.where(temperature >= 5e5)]) / np.sum(gas_mass)
         #     sfg_ratio = np.sum(gas_mass[np.where(temperature < 2e4)]) / np.sum(gas_mass)
         #     wg_ratio = np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass)
-        #
-        #     Create the legends, save and close the figure #
-        #     axis10.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, ncol=2)
-        #     axis20.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
+
+        # Create the legends, save and close the figure #
+        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
@@ -1080,11 +1082,11 @@ def AGN_feedback_kernel(pdf, data, ds, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
         axis3 = axis.twinx()
-        axis3.yaxis.label.set_color('red')
-        axis3.spines['right'].set_color('red')
+        axis3.yaxis.label.set_color('tab:red')
+        axis3.spines['right'].set_color('tab:red')
         plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
-        axis3.tick_params(axis='y', direction='out', left='off', colors='red')
+        axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
         figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
 
         # Load and plot the data #
