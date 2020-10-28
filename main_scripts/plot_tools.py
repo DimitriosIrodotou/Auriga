@@ -122,7 +122,7 @@ def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=
     return None
 
 
-def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, aspect='equal', which='both', size=16):
+def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, aspect='equal', which='both', size=30):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -171,7 +171,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     return None
 
 
-def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect='equal', which='both', size=16):
+def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect='equal', which='both', size=30):
     """
     Set axes parameters for evolution plots.
     :param axis: name of the axis.

@@ -1219,6 +1219,8 @@ def blackhole_masses(pdf, data, read):
     redshift_cut = 7
     path = '/u/di43/Auriga/plots/data/' + 'bm/'
     path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+    n_bins = 130
+    time_bin_width = (13 - 0) / n_bins  # In Gyr.
 
     # Read the data #
     if read is True:
@@ -1241,6 +1243,7 @@ def blackhole_masses(pdf, data, read):
             redshifts = halo.get_redshifts()
             redshift_mask, = np.where(redshifts <= redshift_cut)
             snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
+            print(snapshot_ids)
 
             # Find the black hole's id and use it to get black hole data #
             s = halo.snaps[snapshot_ids.argmax()].loadsnap(loadonlyhalo=0, loadonlytype=[5])
@@ -1257,33 +1260,34 @@ def blackhole_masses(pdf, data, read):
             np.save(path + 'name_' + str(name), name)
             np.save(path + 'lookback_times_' + str(name), lookback_times)
             np.save(path + 'black_hole_masses_' + str(name), black_hole_masses)
-            np.save(path + 'black_hole_dmasses_' + str(name), black_hole_dmasses)
             np.save(path + 'black_hole_cmasses_radio_' + str(name), black_hole_cmasses_radio)
-            np.save(path + 'black_hole_dmasses_radio_' + str(name), black_hole_dmasses_radio)
             np.save(path + 'black_hole_cmasses_quasar_' + str(name), black_hole_cmasses_quasar)
+            np.save(path + 'black_hole_dmasses_' + str(name), black_hole_dmasses)
+            np.save(path + 'black_hole_dmasses_radio_' + str(name), black_hole_dmasses_radio)
+            np.save(path + 'black_hole_dmasses_quasar_' + str(name), black_hole_dmasses_quasar)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_.*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and set its parameters #
-        figure = plt.figure(figsize=(10, 7.5))
+        figure = plt.figure(figsize=(20, 15))
         gs = gridspec.GridSpec(2, 2, hspace=0.4, wspace=0.2)
         axis00, axis01 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1])
         axis10, axis11 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1])
         axis002, axis012 = axis00.twiny(), axis01.twiny()
         axis102, axis112 = axis10.twiny(), axis11.twiny()
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis00.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis00.transAxes)
 
         for axis in [axis01, axis11]:
             axis.yaxis.set_label_position("right")
             axis.yaxis.tick_right()
 
-        plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH}/M_\odot}$', which='major')
-        plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{mode,c}/M_\odot}$', which='major')
+        plot_tools.set_axes_evolution(axis00, axis012, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH,cumu}/M_\odot}$', which='major')
+        plot_tools.set_axes_evolution(axis01, axis002, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH,growth}/M_\odot}$', which='major')
         plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\;Gyr^{-1})}$', which='major')
         plot_tools.set_axes_evolution(axis11, axis112, yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$', which='major')
 
@@ -1291,24 +1295,26 @@ def blackhole_masses(pdf, data, read):
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         mechanicals = np.load(path_modes + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_masses = np.load(path + 'black_hole_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_dmasses = np.load(path + 'black_hole_dmasses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_masses = np.load(path + 'black_hole_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         black_hole_cmasses_radio = np.load(path + 'black_hole_cmasses_radio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_dmasses_radio = np.load(path + 'black_hole_dmasses_radio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         black_hole_cmasses_quasar = np.load(path + 'black_hole_cmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_dmasses_quasar = np.load(path + 'black_hole_cmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_dmasses = np.load(path + 'black_hole_dmasses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_dmasses_radio = np.load(path + 'black_hole_dmasses_radio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_dmasses_quasar = np.load(path + 'black_hole_dmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Convert cumulative masses to instantaneous measurements #
+        black_hole_imasses = np.insert(np.diff(black_hole_masses), 0, 0)
         black_hole_imasses_radio = np.insert(np.diff(black_hole_cmasses_radio), 0, 0)
         black_hole_imasses_quasar = np.insert(np.diff(black_hole_cmasses_quasar), 0, 0)
 
         # Plot black hole mass and accretion rates #
         axis00.plot(lookback_times, black_hole_masses * 1e10, color=colors[0])
-        axis00.plot(lookback_times, black_hole_imasses_radio * 1e10, color=colors[1])
-        axis00.plot(lookback_times, black_hole_imasses_quasar * 1e10, color=colors[2])
-        axis01.plot(lookback_times, black_hole_cmasses_radio * 1e10, color=colors[1])
-        axis01.plot(lookback_times, black_hole_cmasses_quasar * 1e10, color=colors[2])
+        axis00.plot(lookback_times, black_hole_cmasses_radio * 1e10, color=colors[1])
+        axis00.plot(lookback_times, black_hole_cmasses_quasar * 1e10, color=colors[2])
+        axis01.plot(lookback_times, black_hole_imasses * 1e10, color=colors[0])
+        axis01.plot(lookback_times, black_hole_imasses_radio * 1e10, color=colors[1])
+        axis01.plot(lookback_times, black_hole_imasses_quasar * 1e10, color=colors[2])
         plt10, = axis10.plot(lookback_times, black_hole_dmasses, color=colors[0])
         plt101, = axis10.plot(lookback_times, black_hole_dmasses_radio, color=colors[1])
         plt102, = axis10.plot(lookback_times, black_hole_dmasses_quasar, color=colors[2])
@@ -1322,19 +1328,10 @@ def blackhole_masses(pdf, data, read):
         # Calculate and plot the thermals energy sum #
         modes = [mechanicals, thermals]
         for i, mode in enumerate(modes):
-            n_bins = int((max(lookback_times_modes[np.where(mode > 0)]) - min(lookback_times_modes[np.where(mode > 0)])) / 0.02)
-            sum = np.zeros(n_bins)
-            x_value = np.zeros(n_bins)
-            x_low = min(lookback_times_modes[np.where(mode > 0)])
-            for j in range(n_bins):
-                index = np.where((lookback_times_modes[np.where(mode > 0)] >= x_low) & (lookback_times_modes[np.where(mode > 0)] < x_low + 0.02))[0]
-                x_value[j] = np.mean(np.absolute(lookback_times_modes[np.where(mode > 0)])[index])
-                if len(index) > 0:
-                    sum[j] = np.sum(mode[np.where(mode > 0)][index])
-                x_low += 0.02
-            axis11.plot(x_value, sum, color=colors[1 + i])
+            x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
+            axis.plot(x_value, sum / time_bin_width, color=colors[1 + i], label=r'$\mathrm{Sum}$')
 
-        axis10.legend([plt10, plt102, plt101], [r'$\mathrm{BH}$', r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='lower right', fontsize=16,
+        axis01.legend([plt10, plt102, plt101], [r'$\mathrm{BH}$', r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper left', fontsize=20,
                       frameon=False, numpoints=1)
 
         # Save and close the figure #
