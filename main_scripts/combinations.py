@@ -60,7 +60,7 @@ def stellar_light_combination(pdf, redshift):
         axis_face_on.imshow(face_on, interpolation='nearest', aspect='equal')
         axis_edge_on.imshow(edge_on, interpolation='nearest', aspect='equal')
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=16, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=20, transform=axis_face_on.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -123,9 +123,9 @@ def stellar_light_components_combination(pdf, redshift):
         axis_spheroid_face_on.imshow(spheroid_face_on, interpolation='nearest', aspect='equal')
         axis_spheroid_edge_on.imshow(spheroid_edge_on, interpolation='nearest', aspect='equal')
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=16, transform=axis_face_on.transAxes)
-        figure.text(0.01, 0.92, r'$\mathrm{Disc}$', fontsize=16, color='w', transform=axis_disc_face_on.transAxes)
-        figure.text(0.01, 0.92, r'$\mathrm{Spheroid}$', fontsize=16, color='w', transform=axis_spheroid_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), color='w', fontsize=20, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Disc}$', fontsize=20, color='w', transform=axis_disc_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Spheroid}$', fontsize=20, color='w', transform=axis_spheroid_face_on.transAxes)
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -186,7 +186,7 @@ def stellar_density_combination(pdf, redshift):
         axis_edge_on.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap=cmap)
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis_face_on.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -244,7 +244,7 @@ def gas_density_combination(pdf, redshift):
         axis_edge_on.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True, cmap='magma')
         plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{gas}/(M_\odot\;kpc^{-2})}$')
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis_face_on.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -306,7 +306,7 @@ def gas_temperature_combination(pdf, redshift):
                                 cmap='viridis')
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis_face_on.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -364,7 +364,7 @@ def gas_metallicity_combination(pdf, redshift):
         axis_edge_on.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), rasterized=True, cmap='viridis')
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{Z/Z_\odot}$')
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis_face_on.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -422,7 +422,7 @@ def magnetic_field_combination(pdf, redshift):
         axis_edge_on.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=1e2), rasterized=True, cmap='CMRmap')
         plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{B/\mu G}$')
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis_face_on.transAxes)
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis_face_on.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -468,7 +468,7 @@ def circularity_distribution_combination(pdf):
             axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[j],
                       label=r'$\mathrm{Au-%s:D/T=%.2f}$' % (str(re.split('_|.npy', names_flavours[j])[1]), disc_fraction))
 
-            axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            axis.legend(loc='upper left', fontsize=20, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -523,7 +523,7 @@ def tully_fisher_combination(pdf):
     # Create the legend #
     legend = plt.legend([Pizagno, Verheijen, Courteau, Dutton],
                         [r'$\mathrm{Pizagno+\;07}$', r'$\mathrm{Verheijen\;01}$', r'$\mathrm{Courteau+\;07}$', r'$\mathrm{Dutton+\;11}$'],
-                        loc='upper left', fontsize=12, frameon=False, numpoints=1)
+                        loc='upper left', fontsize=20, frameon=False, numpoints=1)
     plt.gca().add_artist(legend)
 
     # Loop over all available haloes #
@@ -537,7 +537,7 @@ def tully_fisher_combination(pdf):
         plt.scatter(stellar_mass * 1e10, np.log10(sigma), color=colors2[i], s=100, zorder=5, marker=next(marker_array),
                     label=r'$\mathrm{Au-%s:v_{circ}/\sigma=%.2f}$' % (str(re.split('_|.npy', names[i])[1]), total_circular_velocity / sigma))
 
-        plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
+        plt.legend(loc='lower center', fontsize=20, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -574,7 +574,7 @@ def stellar_vs_halo_mass_combination(pdf):
     Guo, = plt.plot(1e10 * masses, 1e10 * galaxy.guo_abundance_matching(masses), color='k', ls=':')
 
     # Create the legend #
-    legend = plt.legend([omega, Guo], [r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$', r'$\mathrm{Guo+\;10}$'], loc='upper left', fontsize=12,
+    legend = plt.legend([omega, Guo], [r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$', r'$\mathrm{Guo+\;10}$'], loc='upper left', fontsize=20,
                         frameon=False, numpoints=1)
     plt.gca().add_artist(legend)
 
@@ -588,7 +588,7 @@ def stellar_vs_halo_mass_combination(pdf):
         plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=colors2[i], s=100, zorder=5, marker=next(marker_array),
                     label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-        plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
+        plt.legend(loc='lower center', fontsize=20, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -622,7 +622,7 @@ def gas_fraction_vs_magnitude_combination(pdf):
         plt.scatter(M_R, gas_fraction, color=colors2[i], s=100, zorder=5, marker=next(marker_array),
                     label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-        plt.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
+        plt.legend(loc='upper center', fontsize=20, frameon=False, numpoints=1, scatterpoints=1, ncol=3)  # Create the legend.
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -668,7 +668,7 @@ def bar_strength_profile_combination(pdf):
             axis.plot([r_m[np.where(ratio == A2)], r_m[np.where(ratio == A2)]], [-0.0, A2], color=colors[j], linestyle='dashed',
                       label=r'$\mathrm{r_{A_{2}}=%.2fkpc}$' % r_m[np.where(ratio == A2)])
 
-            axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            axis.legend(loc='upper left', fontsize=20, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -847,9 +847,9 @@ def ssdp_cvc_combination(pdf):
 
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
         # figure.text(0.8, 0.75, r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
-        #     1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16, transform=axis.transAxes)
-        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-        axis_cvc.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1, ncol=2)
+        #     1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=20, transform=axis.transAxes)
+        axis.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+        axis_cvc.legend(loc='upper center', fontsize=20, frameon=False, numpoints=1, ncol=2)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -995,7 +995,7 @@ def bar_strength_combination(pdf):
             # Plot the evolution of bar strength #
             axis.plot(lookback_times, max_A2s, color=colors[j], label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
 
-            axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            axis.legend(loc='upper left', fontsize=20, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -1045,7 +1045,7 @@ def gas_temperature_regimes_combination(pdf):
         axis.plot(lookback_times, wg_ratios, color=colors[3], label=r'$\mathrm{Warm\;gas}$')
 
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
-        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+        axis.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -1138,15 +1138,15 @@ def AGN_modes_distribution_combination(date):
                 plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$', orientation='horizontal', size=20)
                 x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
                 axis.plot(x_value, sum / time_bin_width, color=colors[0], label=r'$\mathrm{Sum}$')
-                figure.text(0.01, 0.92, 'Au-' + str(re.split('_|.npy', names_flavours[j])[1]), fontsize=16, transform=axis.transAxes)
+                figure.text(0.01, 0.92, 'Au-' + str(re.split('_|.npy', names_flavours[j])[1]), fontsize=20, transform=axis.transAxes)
 
             for axis in [axis11, axis12, axis31, axis32, axis51, axis52]:
                 axis.set_yticklabels([])
 
     # Create the legends, save and close the figure #
-    axis10.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-    axis11.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-    axis12.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+    axis10.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+    axis11.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+    axis12.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
     plt.savefig('/u/di43/Auriga/plots/' + 'AGNmdc-' + date + '.png', bbox_inches='tight')
 
     return None
@@ -1416,7 +1416,7 @@ def central_combination(pdf, data, redshift, read):
                 label.set_size(12)
             axis.tick_params(direction='out', which='both', top='on', right='on')
 
-        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), fontsize=12, transform=axis00.transAxes)
+        figure.text(0.0, 1.01, 'Au-' + str(re.split('_|.npy', names[i])[1]) + ' redshift = ' + str(redshift), fontsize=20, transform=axis00.transAxes)
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')

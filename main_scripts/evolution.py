@@ -1169,38 +1169,47 @@ def AGN_feedback_smoothed(pdf):
 
 
 @vectorize_parallel(method='processes', num_procs=8)
-def get_bm_data(snapshot_ids, halo, blackhole_id):
+def get_bm_data(snapshot_ids, halo):
     """
     Parallelised method to get black hole properties.
     :param snapshot_ids: ids of the snapshots.
     :param halo: data for the halo.
-    :param blackhole_id: id of the black hole particle.
     :return: black hole properties.
     """
     print("Invoking get_bm_data")
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
-    particle_type = [5]
-    attributes = ['bhma', 'bcmr', 'bcmq', 'bhmd', 'bhmr', 'bhmq', 'id']
+    particle_type = [4, 5]
+    attributes = ['bhma', 'bcmr', 'bcmq', 'bhmd', 'bhmr', 'bhmq', 'id','pos']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Check if there is a black hole particle, if not return only lookback times #
-    if 'id' not in s.data:
-        return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), 0, 0, 0, 0, 0, 0
+    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    s.calc_sf_indizes(s.subfind)
+    s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-    # Return lookback times, black hole masses and growth rates #
-    blackhole_mask, = np.where(s.data['id'] == blackhole_id)
-    if len(blackhole_mask) > 0:
-        black_hole_mass = s.data['bhma'][blackhole_mask[0]]
-        black_hole_cmass_radio = s.data['bcmr'][blackhole_mask[0]]
-        black_hole_cmass_quasar = s.data['bcmq'][blackhole_mask[0]]
-        black_hole_dmass = s.data['bhmd'][blackhole_mask[0]]
-        black_hole_dmass_radio = s.data['bhmr'][blackhole_mask[0]]
-        black_hole_dmass_quasar = s.data['bhmq'][blackhole_mask[0]]
+    # Check that only one (the closest) black hole is selected #
+    blackhole_mask, = np.where(s.data['type'] == 5)
+    if len(blackhole_mask) == 1:
+        black_hole_mass = s.data['bhma'][0]
+        black_hole_cmass_radio = s.data['bcmr'][0]
+        black_hole_cmass_quasar = s.data['bcmq'][0]
+        black_hole_dmass = s.data['bhmd'][0]
+        black_hole_dmass_radio = s.data['bhmr'][0]
+        black_hole_dmass_quasar = s.data['bhmq'][0]
+
+    # In mergers select the most massive black hole #
+    elif len(blackhole_mask) > 1:
+        blackhole_id = s.data['id'][s.data['type'] == 5]
+        id_mask, = np.where(blackhole_id == s.data['id'][s.data['mass'].argmax()])
+        black_hole_mass = s.data['bhma'][id_mask[0]]
+        black_hole_cmass_radio = s.data['bcmr'][id_mask[0]]
+        black_hole_cmass_quasar = s.data['bcmq'][id_mask[0]]
+        black_hole_dmass = s.data['bhmd'][id_mask[0]]
+        black_hole_dmass_radio = s.data['bhmr'][id_mask[0]]
+        black_hole_dmass_quasar = s.data['bhmq'][id_mask[0]]
     else:
-        black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, black_hole_dmass_radio, black_hole_dmass_quasar, = 0, \
-                                                                                                                                               0, \
-                                                                                                                                               0, \
-                                                                                                                                               0, 0, 0
+        black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, black_hole_dmass_radio, black_hole_dmass_quasar = 0, 0,\
+                                                                                                                                              0, 0,\
+                                                                                                                                              0, 0
     return s.cosmology_get_lookback_time_from_a(s.time,
                                                 is_flat=True), black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, \
            black_hole_dmass_radio, black_hole_dmass_quasar
@@ -1243,14 +1252,12 @@ def blackhole_masses(pdf, data, read):
             redshifts = halo.get_redshifts()
             redshift_mask, = np.where(redshifts <= redshift_cut)
             snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
-            print(snapshot_ids)
 
             # Find the black hole's id and use it to get black hole data #
             s = halo.snaps[snapshot_ids.argmax()].loadsnap(loadonlyhalo=0, loadonlytype=[5])
-            blackhole_id = s.data['id'][s.data['mass'].argmax()]
 
             # Get blackhole data #
-            bm_data = np.array(get_bm_data(snapshot_ids, halo, blackhole_id))  # Get blackhole masses data.
+            bm_data = np.array(get_bm_data(snapshot_ids, halo))  # Get blackhole masses data.
             lookback_times = bm_data[:, 0]
             black_hole_masses = bm_data[:, 1]
             black_hole_cmasses_radio, black_hole_cmasses_quasar = bm_data[:, 2], bm_data[:, 3]
@@ -1267,7 +1274,7 @@ def blackhole_masses(pdf, data, read):
             np.save(path + 'black_hole_dmasses_quasar_' + str(name), black_hole_dmasses_quasar)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_.*')
+    names = glob.glob(path + '/name_*')
     names.sort()
 
     # Loop over all available haloes #
