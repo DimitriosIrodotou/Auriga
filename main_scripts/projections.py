@@ -275,7 +275,7 @@ def stellar_light_components(pdf, data, redshift, read):
         for axis, label in zip([axis00, axis01, axis10, axis11],
                                [r'$\mathrm{Disc\;face-on}$', r'$\mathrm{Spheroid\;face-on}$', r'$\mathrm{Disc\;edge-on}$',
                                 r'$\mathrm{Spheroid\;edge-on}$']):
-            figure.text(0.01, 0.92, label, fontsize=16, color='w', transform=axis.transAxes)
+            figure.text(0.01, 0.95, label, fontsize=16, color='w', transform=axis.transAxes)
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')

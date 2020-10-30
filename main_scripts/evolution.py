@@ -81,7 +81,7 @@ def sfr(pdf, data, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 45], ylabel='$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
-        figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load the data #
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -197,7 +197,7 @@ def bar_strength(pdf, data, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{A_{2}}$', aspect=None)
-        figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load the data #
         max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -300,7 +300,7 @@ def gas_temperature_regimes(pdf, data, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None)
-        figure.text(0.0, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load the data #
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -314,7 +314,7 @@ def gas_temperature_regimes(pdf, data, read):
         plt.plot(lookback_times, wg_ratios, color=colors[3], label=r'$\mathrm{Warm\;gas}$')
 
         # Create the legend, save and close the figure #
-        plt.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+        plt.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
@@ -455,10 +455,10 @@ def delta_sfr_regimes(pdf, data, region, read):
                                  label="Au-" + (str(re.split('_|.npy', names[i])[1])))
 
         # Add the text and create the legend #
-        figure.text(0.01, 0.92, r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)), fontsize=16,
+        figure.text(0.01, 0.95, r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)), fontsize=20,
                     transform=top_axis.transAxes)
-        top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-        bottom_axis.legend(loc='upper center', fontsize=12, frameon=False, numpoints=1, ncol=2)
+        top_axis.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+        bottom_axis.legend(loc='upper center', fontsize=20, frameon=False, numpoints=1, ncol=2)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -635,7 +635,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1), ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{look}/Gyr}$',
             #                     aspect=None)
             figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % (
-                str(re.split('_|.npy', names[i])[1]), (np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)), fontsize=16,
+                str(re.split('_|.npy', names[i])[1]), (np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)), fontsize=20,
                         transform=axis00.transAxes)
 
             # Load and plot the data #
@@ -665,7 +665,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             for mode, label, color in zip([mechanicals, thermals], [r'$\mathrm{Mechanical}$', r'$\mathrm{Thermal}$'], [colors[4], colors[5]]):
                 x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
                 axis003.plot(x_value, sum / time_bin_width, color=color, label=label)
-                axis003.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1, ncol=2)
+                axis003.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1, ncol=2)
 
             # Plot the stellar and gaseous masses #
             axis10.plot(lookback_times, gas_masses * 1e10, color=colors[3], label=r'$\mathrm{Gas}$')
@@ -677,8 +677,8 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             axis20.plot(lookback_times, hg_ratios, color=colors[1], label=r'$\mathrm{Hot\;gas}$')
 
             # Create the legends, save and close the figure #
-            axis10.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, ncol=2)
-            axis20.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)
+            axis10.legend(loc='lower center', fontsize=20, frameon=False, numpoints=1, ncol=2)
+            axis20.legend(loc='upper left', fontsize=20, frameon=False, numpoints=1)
             pdf.savefig(figure, bbox_inches='tight')
             plt.close()
     return None
@@ -784,7 +784,7 @@ def gas_flow(pdf, data, read):
         axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-100, 200], ylabel=r'$\mathrm{Net\;flow/(M_\odot/yr)}$', aspect=None)
         axis.tick_params(axis='y', direction='out', colors='black')
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load and plot the data #
         # sfrs = np.load(path + 'sfrs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
@@ -835,7 +835,7 @@ def gas_flow(pdf, data, read):
         #     wg_ratio = np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass)
 
         # Create the legends, save and close the figure #
-        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+        axis.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
@@ -956,7 +956,7 @@ def AGN_modes_distribution(date, data, read):
             plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$', orientation='horizontal')
             x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
             axis.plot(x_value, sum / time_bin_width, color=colors[0], label=r'$\mathrm{Sum}$')
-            figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+            figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
             # Set colour-bar parameters #
             axiscbar.xaxis.tick_top()
@@ -964,9 +964,9 @@ def AGN_modes_distribution(date, data, read):
             axiscbar.tick_params(direction='out', which='both', top='on', right='on')
 
     # Create the legends, save and close the figure #
-    axis10.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-    axis11.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-    axis12.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+    axis10.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+    axis11.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+    axis12.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
     plt.savefig('/u/di43/Auriga/plots/' + 'AGNmd-' + date + '.png', bbox_inches='tight')
     plt.close()
     return None
@@ -1087,7 +1087,7 @@ def AGN_feedback_kernel(pdf, data, ds, read):
         plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
         axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
-        figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load and plot the data #
         gas_volumes = np.load(path + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1116,9 +1116,9 @@ def AGN_feedback_kernel(pdf, data, ds, read):
     return None
 
 
-def AGN_feedback_smoothed(pdf):
+def AGN_feedback_active(pdf):
     """
-    Calculate the energy deposition on gas cells from the AGN feedback for Auriga halo(es).
+    Calculate the energy deposition on active gas cells from the AGN feedback for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :return: None
     """
@@ -1131,7 +1131,7 @@ def AGN_feedback_smoothed(pdf):
         os.makedirs(path)
 
     # Get the names and sort them #
-    names = glob.glob(path_kernel + '/name_*')
+    names = glob.glob(path_kernel + '/name_06.*')
     names.sort()
 
     # Loop over all available haloes #
@@ -1139,8 +1139,8 @@ def AGN_feedback_smoothed(pdf):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e52, 1e62], yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$')
-        figure.text(0.0, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=16, transform=axis.transAxes)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e56, 1e62], yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$', aspect=None)
+        figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load and plot the data #
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1154,13 +1154,16 @@ def AGN_feedback_smoothed(pdf):
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
 
         # Calculate and plot the thermals energy sum #
-        y_data, edges = np.histogram(lookback_times_modes[np.where(thermals > 0)], weights=thermals[np.where(thermals > 0)],
-                                     bins=np.quantile(np.sort(lookback_times), np.linspace(0, 1, len(lookback_times) + 1)))
-        y_data /= edges[1:] - edges[:-1]  # Normalise the values wrt the bin width.
-        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[1])
-        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data * np.flip(nsf_gas_volumes / gas_volumes), color=colors[4])
-        # axis2.hist(lookback_times_modes[np.where(thermals > 0)], weights=thermals[np.where(thermals > 0)], histtype='step',
-        #            bins=lookback_times.sort())
+        n_bins = len(lookback_times)
+        time_bin_width = (13 - 0) / n_bins  # In Gyr.
+        x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(thermals > 0)], thermals[np.where(thermals > 0)], n_bins=int(len(lookback_times))+1)
+        axis.plot(x_value, sum / time_bin_width, color=colors[1], label=r'$\mathrm{Sum}$')
+
+        x, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
+                                                                       n_bins=len(lookback_times), log=False)
+        axis.plot(x_value, sum / time_bin_width * median, color=colors[0], label=r'$\mathrm{Sum}$')
+
+        # axis.plot(lookback_times, sum / time_bin_width * (nsf_gas_volumes / gas_volumes), color=colors[0])
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -1179,7 +1182,7 @@ def get_bm_data(snapshot_ids, halo):
     print("Invoking get_bm_data")
     # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
     particle_type = [4, 5]
-    attributes = ['bhma', 'bcmr', 'bcmq', 'bhmd', 'bhmr', 'bhmq', 'id','pos']
+    attributes = ['bhma', 'bcmr', 'bcmq', 'bhmd', 'bhmr', 'bhmq', 'id', 'pos']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
     # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
@@ -1226,10 +1229,10 @@ def blackhole_masses(pdf, data, read):
     """
     print("Invoking blackhole_masses")
     redshift_cut = 7
-    path = '/u/di43/Auriga/plots/data/' + 'bm/'
-    path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
     n_bins = 130
     time_bin_width = (13 - 0) / n_bins  # In Gyr.
+    path = '/u/di43/Auriga/plots/data/' + 'bm/'
+    path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
 
     # Read the data #
     if read is True:
@@ -1287,7 +1290,7 @@ def blackhole_masses(pdf, data, read):
         axis002, axis012 = axis00.twiny(), axis01.twiny()
         axis102, axis112 = axis10.twiny(), axis11.twiny()
 
-        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis00.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis00.transAxes)
 
         for axis in [axis01, axis11]:
             axis.yaxis.set_label_position("right")

@@ -137,10 +137,10 @@ def combine_images(name, ellipticity):
         x, y, = iso.sampled_coordinates()
         axis01.plot(x, y, color='tab:red')
 
-    figure.text(0.01, 0.92, r'$\mathrm{%s}$' % str(name), color='w', fontsize=16, transform=axis00.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Sample\;of\;isophotes}$', color='w', fontsize=16, transform=axis01.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='w', fontsize=16, transform=axis02.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Residual}$', color='w', fontsize=16, transform=axis03.transAxes)
+    figure.text(0.01, 0.95, r'$\mathrm{%s}$' % str(name), color='w', fontsize=16, transform=axis00.transAxes)
+    figure.text(0.01, 0.95, r'$\mathrm{Sample\;of\;isophotes}$', color='w', fontsize=16, transform=axis01.transAxes)
+    figure.text(0.01, 0.95, r'$\mathrm{Model}$', color='w', fontsize=16, transform=axis02.transAxes)
+    figure.text(0.01, 0.95, r'$\mathrm{Residual}$', color='w', fontsize=16, transform=axis03.transAxes)
 
     axes = [axis10, axis11, axis12, axis13]
     y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA/\deg}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$', r'$\mathrm{Mean\,intensity}$']
