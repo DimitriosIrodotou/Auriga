@@ -6,6 +6,7 @@ import plot_tools
 import numpy as np
 import astropy.units as u
 import matplotlib.pyplot as plt
+import matplotlib.style as style
 
 from const import *
 from sfigure import *
@@ -13,6 +14,9 @@ from loadmodules import *
 from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
 from scripts.gigagalaxy.util import satellite_utilities
+
+style.use("classic")
+plt.rcParams.update({'font.family':'serif'})
 
 res = 512
 boxsize = 0.06
@@ -41,10 +45,12 @@ def sfr(pdf, data, read):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        # Read desired galactic property(ies) for specific particle type(s)
+        # for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gima', 'mass', 'pos']
-        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type,
+            loadonly=attributes)
 
         # Loop over all available haloes #
         for s in data:
@@ -56,15 +62,18 @@ def sfr(pdf, data, read):
             else:
                 print("Analysing halo:", str(s.haloname))
 
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            # Select the halo and rotate it based on its principal axes so
+            # galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
             # Get the lookback times and calculate the initial masses #
-            stellar_mask, = np.where(
-                (s.data['age'] > 0.) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select stellar particles inside 0.1*R200c.
+            stellar_mask, = np.where((s.data['age'] > 0.) & (
+                s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select stellar particles inside
+            # 0.1*R200c.
             lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True)  # In Gyr.
-            weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr^-1.
+            weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In
+            # Msun yr^-1.
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -80,14 +89,17 @@ def sfr(pdf, data, read):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 45], ylabel='$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 45], ylabel='$\mathrm{Sfr/(M_\odot\;yr^{'
+                                                                        '-1})}$', aspect=None)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+            transform=axis.transAxes)
 
         # Load the data #
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-        axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins, range=[0, 13], color=colors[0])  # Plot the evolution of SFR.
+        axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins, range=[0, 13],
+            color=colors[0])  # Plot the evolution of SFR.
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -98,27 +110,34 @@ def sfr(pdf, data, read):
 @vectorize_parallel(method='processes', num_procs=8)
 def get_bs_data(snapshot_ids, halo):
     """
-    Parallelised method to get bar strength from Fourier modes of surface density.
+    Parallelised method to get bar strength from Fourier modes of surface
+    density.
     :param snapshot_ids: ids of the snapshots.
     :param halo: data for the halo.
     :return: lookback time, max_A2s.
     """
     print("Invoking get_bs_data")
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
     particle_type = [4]
     attributes = ['age', 'mass', 'pos']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
     # Rotate the particle positions so the bar is along the x-axis #
-    stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select stellar particles.
-    z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3, s.data['pos'][stellar_mask, 1] * 1e3,
-                                                            s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in Mpc.
-    s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
-    x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
+    stellar_mask, = np.where(
+        (s.data['age'] > 0.0) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select stellar particles.
+    z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
+        s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  #
+    # Distances are in Mpc.
+    s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos']
+    # attribute in kpc.
+    x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert
+    # from Mpc to Kpc.
 
     # Declare arrays to store the data #
     n_bins = 40  # Number of radial bins.
@@ -148,7 +167,8 @@ def get_bs_data(snapshot_ids, halo):
 
 def bar_strength(pdf, data, read):
     """
-    Plot the evolution of bar strength from Fourier modes of surface density for Auriga halo(es).
+    Plot the evolution of bar strength from Fourier modes of surface density
+    for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param read: boolean to read new data.
@@ -197,7 +217,8 @@ def bar_strength(pdf, data, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{A_{2}}$', aspect=None)
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+            transform=axis.transAxes)
 
         # Load the data #
         max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -220,18 +241,21 @@ def get_gtr_data(snapshot_ids, halo):
     :return: lookback time, sfg_ratio, wg_ratio, hg_ratio.
     """
     print("Invoking get_gtr_data")
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
     # Calculate the temperature of the gas cells #
-    gas_mask, = np.where(
-        (s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius R200c.
+    gas_mask, = np.where((s.data['type'] == 0) & (
+        s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius
+    # R200c.
     ne = s.data['ne'][gas_mask]
     metallicity = s.data['gz'][gas_mask]
     XH = s.data['gmet'][gas_mask, element['H']]
@@ -249,7 +273,8 @@ def get_gtr_data(snapshot_ids, halo):
 
 def gas_temperature_regimes(pdf, data, read):
     """
-    Plot the evolution of gas fractions in different temperature regimes for Auriga halo(es).
+    Plot the evolution of gas fractions in different temperature regimes for
+    Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param read: boolean to read new data.
@@ -281,7 +306,8 @@ def gas_temperature_regimes(pdf, data, read):
             redshift_mask, = np.where(redshifts <= redshift_cut)
             snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
 
-            gtr_data = np.array(get_gtr_data(snapshot_ids, halo))  # Get gas temperature regimes data.
+            gtr_data = np.array(get_gtr_data(snapshot_ids, halo))  # Get gas temperature
+            # regimes data.
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(name), name)
@@ -300,7 +326,8 @@ def gas_temperature_regimes(pdf, data, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None)
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+            transform=axis.transAxes)
 
         # Load the data #
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -323,7 +350,8 @@ def gas_temperature_regimes(pdf, data, read):
 @vectorize_parallel(method='processes', num_procs=8)
 def get_dsr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max):
     """
-    Parallelised method to get star formation rate for different spatial regimes.
+    Parallelised method to get star formation rate for different spatial
+    regimes.
     :param snapshot_ids: ids of the snapshots.
     :param halo: data for the halo.
     :param radial_cut_min: inner radial limit.
@@ -331,32 +359,41 @@ def get_dsr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max):
     :return: lookback time, SFR.
     """
     print("Invoking get_dsr_data")
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['age', 'gima', 'mass', 'pos', 'sfr']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
     # Calculate the age and sfr #
-    # stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() > radial_cut_min) & (s.r() < radial_cut_max) & (
-    #     s.data['pos'][:, 2] < 0.003))  # Mask the data: select stellar particles inside different (physical) spatial regimes
-    # time_mask, = np.where(((s.data['age'][stellar_mask] - s.time) < time_bin_width) & (s.data['age'][stellar_mask] > s.time))
-    # SFR = s.data['gima'][stellar_mask][time_mask] / time_bin_width * 10  # In Msun yr^-1.
+    # stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() >
+    # radial_cut_min) & (s.r() < radial_cut_max) & (
+    #     s.data['pos'][:, 2] < 0.003))  # Mask the data: select stellar
+    #     particles inside different (physical) spatial regimes
+    # time_mask, = np.where(((s.data['age'][stellar_mask] - s.time) <
+    # time_bin_width) & (s.data['age'][stellar_mask] > s.time))
+    # SFR = s.data['gima'][stellar_mask][time_mask] / time_bin_width * 10  #
+    # In Msun yr^-1.
 
-    # Convert radial limits to physical units i.e., keep them constant in co-moving space. #
+    # Convert radial limits to physical units i.e., keep them constant in
+    # co-moving space. #
     a = 1 / (1 + s.redshift)
     gas_mask, = np.where((s.data['sfr'] > 0.0) & (s.r()[s.data['type'] == 0] > radial_cut_min) & (
-        s.r()[s.data['type'] == 0] <= radial_cut_max))  # Mask the data: select gas cells inside different physical spatial regimes.
+        s.r()[s.data['type'] == 0] <= radial_cut_max))  # Mask the data: select gas cells inside
+    # different physical spatial regimes.
     SFR = np.sum(s.data['sfr'][gas_mask])
     return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), SFR
 
 
 def delta_sfr_regimes(pdf, data, region, read):
     """
-    Plot the evolution of star formation rate for different spatial regimes and the difference between Auriga haloes.
+    Plot the evolution of star formation rate for different spatial regimes
+    and the difference between Auriga haloes.
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param region: inner or outer.
@@ -375,20 +412,24 @@ def delta_sfr_regimes(pdf, data, region, read):
 
     # Read the data #
     if read is True:
-        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        # Read desired galactic property(ies) for specific particle type(s)
+        # for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gima', 'mass', 'pos']
-        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type,
+            loadonly=attributes)
 
         # Loop over all available haloes #
         for s in data:
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            # Select the halo and rotate it based on its principal axes so
+            # galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
             # Loop over all spatial regimes #
             for radial_cut_min, radial_cut_max in zip(radial_cuts_min, radial_cuts_max):
-                # Check if a folder to save the data exists, if not then create one #
+                # Check if a folder to save the data exists, if not then
+                # create one #
                 path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_cut_max) + '/'
                 if not os.path.exists(path):
                     os.makedirs(path)
@@ -403,9 +444,14 @@ def delta_sfr_regimes(pdf, data, region, read):
 
                 # Get the lookback times and calculate the initial masses #
                 stellar_mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_cut_min) & (
-                    s.r() <= radial_cut_max))  # Mask the data: select stellar particles inside radial limits.
-                lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True)  # In Gyr.
-                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr^-1.
+                    s.r() <= radial_cut_max))  # Mask the data: select
+                # stellar particles inside radial limits.
+                lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask],
+                    is_flat=True)  # In Gyr.
+                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  #
+                In
+                Msun
+                yr ^ -1.
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -433,7 +479,8 @@ def delta_sfr_regimes(pdf, data, region, read):
 
     # Loop over all radial limits #
     top_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12]
-    for radial_cut_min, radial_cut_max, top_axis, bottom_axis in zip(radial_cuts_min, radial_cuts_max, top_axes, bottom_axes):
+    for radial_cut_min, radial_cut_max, top_axis, bottom_axis in zip(radial_cuts_min, radial_cuts_max, top_axes,
+        bottom_axes):
         # Get the names and sort them #
         path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_cut_max) + '/'
         names = glob.glob(path + '/name_06*')
@@ -446,17 +493,18 @@ def delta_sfr_regimes(pdf, data, region, read):
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
             # Plot the evolution of SFR and the normalised delta SFR #
-            counts, bins, bars = top_axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins, range=[0, 13], color=colors[i],
-                                               label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+            counts, bins, bars = top_axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins,
+                range=[0, 13], color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
             if i == 0:
                 original_bins, original_counts = bins, counts
             else:
-                bottom_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)), color=colors[i],
-                                 label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+                bottom_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)),
+                    color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
 
         # Add the text and create the legend #
-        figure.text(0.01, 0.95, r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)), fontsize=20,
-                    transform=top_axis.transAxes)
+        figure.text(0.01, 0.95,
+            r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)),
+            fontsize=20, transform=top_axis.transAxes)
         top_axis.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         bottom_axis.legend(loc='upper center', fontsize=20, frameon=False, numpoints=1, ncol=2)
 
@@ -469,31 +517,38 @@ def delta_sfr_regimes(pdf, data, region, read):
 @vectorize_parallel(method='processes', num_procs=8)
 def get_ssgr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max):
     """
-    Parallelised method to get star formation rate, stellar mass and gas mass for different spatial regimes.
+    Parallelised method to get star formation rate, stellar mass and gas
+    mass for different spatial regimes.
     :param snapshot_ids: ids of the snapshots.
     :param halo: data for the halo.
     :param radial_cut_min: inner radial limit.
     :param radial_cut_max: outer radial limit.
-    :return: lookback time, SFR, sfg_ratio, wg_ratio, hg_ratio, np.sum(gas_mass), stellar_mass.
+    :return: lookback time, SFR, sfg_ratio, wg_ratio, hg_ratio, np.sum(
+    gas_mass), stellar_mass.
     """
     print("Invoking get_ssgr_data")
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['age', 'gima', 'mass', 'pos', 'sfr']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-    # Convert radial limits to physical units i.e., keep them constant in co-moving space. #
+    # Convert radial limits to physical units i.e., keep them constant in
+    # co-moving space. #
     a = 1 / (1 + s.redshift)
     age = np.zeros(s.npartall)
     age[s.data['type'] == 4] = s.data['age']
     gas_mask, = np.where((s.data['type'] == 0) & (s.r() > radial_cut_min) & (
-        s.r() <= radial_cut_max))  # Mask the data: select gas cells inside different physical spatial regimes.
+        s.r() <= radial_cut_max))  # Mask the data: select gas cells inside
+    # different physical spatial regimes.
     stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.0) & (s.r() > radial_cut_min) & (
-        s.r() <= radial_cut_max))  # Mask the data: select stellar particles inside different physical spatial regimes.
+        s.r() <= radial_cut_max))  # Mask the data: select stellar
+    # particles inside different physical spatial regimes.
 
     # Calculate the temperature of the gas cells #
     ne = s.data['ne'][gas_mask]
@@ -512,12 +567,14 @@ def get_ssgr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max):
     # Calculate star formation rate and stellar mass #
     SFR = np.sum(s.data['sfr'][gas_mask])
     stellar_mass = np.sum(s.data['mass'][stellar_mask])
-    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), SFR, sfg_ratio, wg_ratio, hg_ratio, np.sum(gas_mass), stellar_mass
+    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), SFR, sfg_ratio, wg_ratio, hg_ratio, np.sum(
+        gas_mass), stellar_mass
 
 
 def sfr_stars_gas_regimes(pdf, data, region, read):
     """
-    Plot the evolution of star formation rate, stellar mass and gas mass for different spatial regimes for Auriga halo(es).
+    Plot the evolution of star formation rate, stellar mass and gas mass for
+    different spatial regimes for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param region: inner or outer.
@@ -537,20 +594,24 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 
     # Read the data #
     if read is True:
-        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        # Read desired galactic property(ies) for specific particle type(s)
+        # for Auriga halo(es) #
         particle_type = [4]
         attributes = ['age', 'gima', 'mass', 'pos']
-        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+        data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=particle_type,
+            loadonly=attributes)
 
         # Loop over all available haloes #
         for s in data:
-            # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+            # Select the halo and rotate it based on its principal axes so
+            # galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
             # Loop over all spatial regimes #
             for radial_cut_min, radial_cut_max in zip(radial_cuts_min, radial_cuts_max):
-                # Check if a folder to save the data exists, if not then create one #
+                # Check if a folder to save the data exists, if not then
+                # create one #
                 path = '/u/di43/Auriga/plots/data/' + 'ssgr/' + str(radial_cut_max) + '/'
                 if not os.path.exists(path):
                     os.makedirs(path)
@@ -565,9 +626,14 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 
                 # Get the lookback times and calculate the initial masses #
                 stellar_mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_cut_min) & (
-                    s.r() <= radial_cut_max))  # Mask the data: select stellar particles inside radial limits.
-                lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True)  # In Gyr.
-                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr^-1.
+                    s.r() <= radial_cut_max))  # Mask the data: select
+                # stellar particles inside radial limits.
+                lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask],
+                    is_flat=True)  # In Gyr.
+                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  #
+                In
+                Msun
+                yr ^ -1.
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -586,7 +652,9 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
                 redshift_mask, = np.where(redshifts <= redshift_cut)
                 snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
 
-                ssgr_data = np.array(get_ssgr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max))  # Get SFR stars gas regimes data.
+                ssgr_data = np.array(
+                    get_ssgr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max))  # Get SFR stars gas
+                # regimes data.
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'lookback_times_' + str(name), ssgr_data[:, 0])
@@ -616,7 +684,8 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 
             for axis in [axis00, axis10, axis20]:
                 axis2 = axis.twiny()
-                plot_tools.set_axes_evolution(axis, axis2, ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None, size=20)
+                plot_tools.set_axes_evolution(axis, axis2, ylabel=r'$\mathrm{'
+                                                                  r'Gas\;fraction}$', aspect=None, size=20)
                 if axis in [axis10, axis20]:
                     axis2.set_xlabel('')
                     axis2.set_xticklabels([])
@@ -625,18 +694,24 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
                 axis.set_xticklabels([])
 
             # axis002 = axis00.twiny()
-            # plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8), ylabel=r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
+            # plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8),
+            # ylabel=r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
             # axis00.set_xticklabels([])
             axis003 = axis00.twinx()
-            plot_tools.set_axis(axis003, ylim=(1e55, 1e61), yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$', aspect=None, which='major')
-            # plot_tools.set_axis(axis10, xlim=(13, 0), ylim=(1e6, 1e11), yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None,
+            plot_tools.set_axis(axis003, ylim=(1e55, 1e61), yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$',
+                aspect=None, which='major')
+            # plot_tools.set_axis(axis10, xlim=(13, 0), ylim=(1e6, 1e11),
+            # yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None,
             # which='major')
             # axis10.set_xticklabels([])
-            # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1), ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{look}/Gyr}$',
+            # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1),
+            # ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{
+            # look}/Gyr}$',
             #                     aspect=None)
-            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % (
-                str(re.split('_|.npy', names[i])[1]), (np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)), fontsize=20,
-                        transform=axis00.transAxes)
+            figure.text(0.01, 0.85, r'$\mathrm{Au-%s}$' '\n' r'$\mathrm{'
+                                    r'%.0f<r/kpc\leq%.0f}$' % (
+                                        str(re.split('_|.npy', names[i])[1]), (np.float(radial_cut_min) * 1e3),
+                                        (np.float(radial_cut_max) * 1e3)), fontsize=20, transform=axis00.transAxes)
 
             # Load and plot the data #
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -649,21 +724,25 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             stellar_masses = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             lookback_times_SFR = np.load(path + 'lookback_times_SFR_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            lookback_times_modes = np.load(
+                path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-            # Transform the arrays to comma separated strings and convert each element to float #
+            # Transform the arrays to comma separated strings and convert
+            # each element to float #
             thermals = ','.join(thermals)
             mechanicals = ','.join(mechanicals)
             thermals = np.fromstring(thermals, dtype=np.float, sep=',')
             mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
 
             # Plot the evolution of SFR #
-            axis00.hist(lookback_times_SFR, weights=weights, histtype='step', bins=n_bins, range=[0, 13], color=colors[i],
-                        label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+            axis00.hist(lookback_times_SFR, weights=weights, histtype='step', bins=n_bins, range=[0, 13],
+                color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
 
             # Plot the feedback modes binned sum line #
-            for mode, label, color in zip([mechanicals, thermals], [r'$\mathrm{Mechanical}$', r'$\mathrm{Thermal}$'], [colors[4], colors[5]]):
-                x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
+            for mode, label, color in zip([mechanicals, thermals], [r'$\mathrm{Mechanical}$', r'$\mathrm{Thermal}$'],
+                [colors[4], colors[5]]):
+                x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(mode > 0)], mode[np.where(mode > 0)],
+                    n_bins=n_bins)
                 axis003.plot(x_value, sum / time_bin_width, color=color, label=label)
                 axis003.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1, ncol=2)
 
@@ -693,15 +772,21 @@ def get_gf_data(snapshot_ids, halo):
     :return: lookback time, SFR, sfg_ratio, wg_ratio, hg_ratio, np.sum(gas_mass), stellar_mass.
     """
     print("Invoking get_gf_data")
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
     particle_type = [0, 4]
     attributes = ['mass', 'pos', 'id', 'sfr', 'vel']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
+    age = np.zeros(s.npartall)
+    age[s.data['type'] == 4] = s.data['age']
+    stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.0))  # Mask the data: select stellar particles.
+    wind_mask, = np.where((s.data['type'] == 4) & (age < 0.0))  # Mask the data: select wind particles.
     gas_mask, = np.where(s.data['type'] == 0)  # Mask the data: select gas cells.
 
     # Calculate the temperature of the gas cells #
@@ -714,10 +799,13 @@ def get_gf_data(snapshot_ids, halo):
 
     # Calculate the radial velocity #
     spherical_radius = np.sqrt(np.sum(s.data['pos'][gas_mask, :] ** 2, axis=1))
-    CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0) / np.sum(s.data['mass'][gas_mask])
-    radial_velocity = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask], axis=1) / spherical_radius
-    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), s.subfind.data['frc2'][0], s.data['sfr'][gas_mask], s.data['mass'][gas_mask], \
-           s.data['id'][gas_mask], temperature, spherical_radius, radial_velocity
+    CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0) / np.sum(
+        s.data['mass'][gas_mask])
+    radial_velocity = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask],
+        axis=1) / spherical_radius
+    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), s.subfind.data['frc2'][0], s.data['sfr'][
+        gas_mask], s.data['mass'][gas_mask], s.data['id'][gas_mask], temperature, spherical_radius, radial_velocity, \
+        s.data['mass'][stellar_mask], s.data['mass'][wind_mask]
 
 
 def gas_flow(pdf, data, read):
@@ -745,10 +833,10 @@ def gas_flow(pdf, data, read):
             # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if name in names:
-                continue
-            else:
-                print("Analysing halo:", name)
+            # if name in names:
+            #     continue
+            # else:
+            #     print("Analysing halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -762,80 +850,112 @@ def gas_flow(pdf, data, read):
             np.save(path + 'lookback_times_' + str(name), gf_data[:, 0])
             np.save(path + 'Rvirs_' + str(name), gf_data[:, 1])
             np.save(path + 'sfrs_' + str(name), gf_data[:, 2])
-            np.save(path + 'masses_' + str(name), gf_data[:, 3])
+            np.save(path + 'gas_masses_' + str(name), gf_data[:, 3])
             np.save(path + 'ids_' + str(name), gf_data[:, 4])
             np.save(path + 'temperatures_' + str(name), gf_data[:, 5])
             np.save(path + 'spherical_radii_' + str(name), gf_data[:, 6])
             np.save(path + 'radial_velocities_' + str(name), gf_data[:, 7])
+            np.save(path + 'stellar_masses_' + str(name), gf_data[:, 8])
+            np.save(path + 'wind_masses_' + str(name), gf_data[:, 9])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + '/name_06.*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
         # Generate the figure and set its parameters #
-        figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        axis2 = axis.twiny()
-        axis3 = axis.twinx()
-        axis3.yaxis.label.set_color('tab:red')
-        axis3.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis3, ylim=[0, 300], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{R_{vir}/kpc}$', aspect=None)
-        axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[-100, 200], ylabel=r'$\mathrm{Net\;flow/(M_\odot/yr)}$', aspect=None)
-        axis.tick_params(axis='y', direction='out', colors='black')
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
+        figure = plt.figure(figsize=(20, 7.5))
+        gs = gridspec.GridSpec(1, 2, wspace=0.3)
+        axis00, axis01 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1])
+        axis002 = axis00.twiny()
+        axis012 = axis01.twiny()
+        axis003 = axis00.twinx()
+        axis003.yaxis.label.set_color('tab:red')
+        axis003.spines['right'].set_color('tab:red')
+        plot_tools.set_axis(axis003, ylim=[0, 300], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{R_{vir}/kpc}$',
+            aspect=None)
+        axis003.tick_params(axis='y', direction='out', left='off', colors='tab:red')
+        plot_tools.set_axes_evolution(axis00, axis002, ylim=[-100, 200], ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$',
+            aspect=None)
+        plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e-2, 1e1], yscale='log',
+            ylabel=r'$\mathrm{Mass\;loading}$', aspect=None)
+        axis00.tick_params(axis='y', direction='out', colors='black')
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+            transform=axis00.transAxes)
 
         # Load and plot the data #
-        # sfrs = np.load(path + 'sfrs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        masses = np.load(path + 'masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        sfrs = np.load(path + 'sfrs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        gas_masses = np.load(path + 'gas_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        stellar_masses = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
+            allow_pickle=True)
+        wind_masses = np.load(path + 'wind_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         Rvirs = np.load(path + 'Rvirs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         # ids = np.load(path + 'ids_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        # temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        spherical_radii = np.load(path + 'spherical_radii_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        radial_velocities = np.load(path + 'radial_velocities_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        # temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
+        # allow_pickle=True)
+        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
+            allow_pickle=True)
+        spherical_radii = np.load(path + 'spherical_radii_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
+            allow_pickle=True)
+        radial_velocities = np.load(path + 'radial_velocities_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
+            allow_pickle=True)
 
         # common_ids = set(ids[0])
         # # Loop over all redshifts and compare ids #
         # for ids_in_snap in ids[1:]:
         #     common_ids.intersection_update(ids_in_snap)
         # print(len(common_ids))
-        # x = [8796187878443, 8796221432877, 5466789209133, 8796221432879, 8796240307248, 5475303646257, 8796181586994, 8796221432881, 8796238210097,
-        #      8796236112953, 5463649772607, 8796238210112, 8796231918660, 8796240307271, 8796240307272, 8796223530058, 8796240307277, 8796231918670,
-        #      8796240307278, 8796225627216, 8796236112974, 8796206752852, 5475303646293, 8796208850006, 5463574275157, 8796206752854, 8796240307285,
-        #      8796240307286, 8796236112987, 8796240307287, 8796236112989, 8796150129757, 8796236112991, 8796240307294, 5463549109346, 8796240307302,
-        #      8796240307307, 8796236113004, 8796240307309, 8796240307310, 5471491023984, 5475911820403, 5463435863160, 8796221432963, 8796217238666,
-        #      8796240307339, 8796240307349, 8796240307350, 5463540720794, 87962403073]
+        # x = [8796187878443, 8796221432877, 5466789209133, 8796221432879,
+        # 8796240307248, 5475303646257, 8796181586994, 8796221432881,
+        # 8796238210097,
+        #      8796236112953, 5463649772607, 8796238210112, 8796231918660,
+        #      8796240307271, 8796240307272, 8796223530058, 8796240307277,
+        #      8796231918670,
+        #      8796240307278, 8796225627216, 8796236112974, 8796206752852,
+        #      5475303646293, 8796208850006, 5463574275157, 8796206752854,
+        #      8796240307285,
+        #      8796240307286, 8796236112987, 8796240307287, 8796236112989,
+        #      8796150129757, 8796236112991, 8796240307294, 5463549109346,
+        #      8796240307302,
+        #      8796240307307, 8796236113004, 8796240307309, 8796240307310,
+        #      5471491023984, 5475911820403, 5463435863160, 8796221432963,
+        #      8796217238666,
+        #      8796240307339, 8796240307349, 8796240307350, 5463540720794,
+        #      87962403073]
         # print(np.where(ids[0] == x))
         # print(ids[0] in x)
         # for i in range(len(lookback_times)):
-        #     plt.scatter(spherical_radii[i][np.where(ids[i] == x),2],spherical_radii[i][np.where(ids[i] == x),1])
-
-        # # print(np.flip(lookback_times*1e3))
-        # # print(np.insert(np.diff(np.flip(lookback_times*1e3)), 0, 0))
+        #     plt.scatter(spherical_radii[i][np.where(ids[i] == x),2],
+        #     spherical_radii[i][np.where(ids[i] == x),1])
 
         # Loop over all radial limits #
-        mass_outflows = np.zeros(len(lookback_times))
-        mass_inflows = np.zeros(len(lookback_times))
+        mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
+            len(lookback_times)), np.zeros(len(lookback_times))
         for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
             for j in range(len(lookback_times)):
-                outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
-                    spherical_radii[j] + (radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
-                inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
-                    spherical_radii[j] + (radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[j]))
-                mass_outflows[j] = np.divide(np.sum(masses[j][outflow_mask]) * 1e10, dT * 1e6)
-                mass_inflows[j] = np.divide(np.sum(masses[j][inflow_mask]) * 1e10, dT * 1e6)
+                outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (spherical_radii[j] + (
+                    radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
+                inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (spherical_radii[j] + (
+                    radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[j]))
+                mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask]) * 1e10, dT * 1e6)
+                mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask]) * 1e10, dT * 1e6)
+                mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
+                # mass_loading[j] = np.sum(wind_masses[j]) / np.sum(sfrs[j])
             net_flow = mass_inflows - mass_outflows
-            axis.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
-        axis3.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
+            axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
+        axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
+        axis01.plot(lookback_times, mass_loading, c=colors[0])
 
-        #     hg_ratio = np.sum(gas_mass[np.where(temperature >= 5e5)]) / np.sum(gas_mass)
-        #     sfg_ratio = np.sum(gas_mass[np.where(temperature < 2e4)]) / np.sum(gas_mass)
-        #     wg_ratio = np.sum(gas_mass[np.where((temperature >= 2e4) & (temperature < 5e5))]) / np.sum(gas_mass)
+        #     hg_ratio = np.sum(gas_mass[np.where(temperature >= 5e5)]) /
+        #     np.sum(gas_mass)
+        #     sfg_ratio = np.sum(gas_mass[np.where(temperature < 2e4)]) /
+        #     np.sum(gas_mass)
+        #     wg_ratio = np.sum(gas_mass[np.where((temperature >= 2e4) & (
+        #     temperature < 5e5))]) / np.sum(gas_mass)
 
         # Create the legends, save and close the figure #
-        axis.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+        axis00.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
@@ -843,7 +963,8 @@ def gas_flow(pdf, data, read):
 
 def AGN_modes_distribution(date, data, read):
     """
-    Get the energy of different black hole feedback modes from log files and plot its evolution for Auriga halo(es).
+    Get the energy of different black hole feedback modes from log files and
+    plot its evolution for Auriga halo(es).
     :param date: date.
     :param data: data from main.make_pdf
     :param read: boolean to read new data.
@@ -860,7 +981,8 @@ def AGN_modes_distribution(date, data, read):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+        # Read desired galactic property(ies) for specific particle type(s)
+        # for Auriga halo(es) #
         data.select_haloes(default_level, default_redshift, loadonlyhalo=0, loadonlytype=None, loadonly=None)
 
         # Loop over all available haloes #
@@ -873,24 +995,30 @@ def AGN_modes_distribution(date, data, read):
             else:
                 print("Analysing halo:", str(s.haloname))
 
-            # Declare arrays to store the desired words and lines that contain these words #
+            # Declare arrays to store the desired words and lines that
+            # contain these words #
             redshift_lines, redshifts, feedback_lines, thermals, mechanicals = [], [], [], [], []
 
             with open('/u/di43/Auriga/output/halo_' + str(s.haloname) + '/Au-' + str(s.haloname) + '.txt') as file:
                 # Loop over all lines #
                 for line in file:
-                    # Convert the characters in the line to lowercase and split the line into words #
+                    # Convert the characters in the line to lowercase and
+                    # split the line into words #
                     line = line.lower()
                     line = line.strip()  # Remove '\n' at end of line.
                     words = line.split(" ")
 
-                    # Search for the word 'redshift:' and get the next word which is the redshift value #
+                    # Search for the word 'redshift:' and get the next word
+                    # which is the redshift value #
                     if 'redshift:' in words:
                         redshift_lines.append(line)
                         redshifts.append(words[words.index('redshift:') + 1])
 
-                    # Search for the words 'thermal' and 'mechanical' and get the words after next which are the energy values in ergs #
-                    if 'black_holes:' in words and '(step)' in words and 'is' in words and 'thermal' in words and 'mechanical' in words:
+                    # Search for the words 'thermal' and 'mechanical' and
+                    # get the words after next which are the energy values
+                    # in ergs #
+                    if 'black_holes:' in words and '(step)' in words and 'is' in words and 'thermal' in words and \
+                        'mechanical' in words:
                         feedback_lines.append(line)
                         thermals.append(words[words.index('thermal') + 2])
                         mechanicals.append(words[words.index('mechanical') + 2])
@@ -898,9 +1026,11 @@ def AGN_modes_distribution(date, data, read):
             file.close()  # Close the opened file.
 
             #  Convert redshifts to lookback times in Gyr #
-            redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each redshift string.
+            redshifts = [re.sub(',', '', i) for i in redshifts]  # Remove the commas at the end of each
+            # redshift string.
             redshifts = ','.join(redshifts)  # Transform the arrays to comma separated strings.
-            redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')  # Convert each element to float.
+            redshifts = np.fromstring(redshifts, dtype=np.float, sep=',')  # Convert each element to
+            # float.
             lookback_times = satellite_utilities.return_lookbacktime_from_a((redshifts + 1.0) ** (-1.0))  # In Gyr.
 
             # Save data for each halo in numpy arrays #
@@ -916,12 +1046,15 @@ def AGN_modes_distribution(date, data, read):
     axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
 
     axis102, axis112, axis122 = axis10.twiny(), axis11.twiny(), axis12.twiny()
-    plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylim=[1e51, 1e61], ylabel=r'$\mathrm{(Mechanical\;feedback\;energy)/ergs}$',
-                                  aspect=None, which='major')
-    plot_tools.set_axes_evolution(axis11, axis112, ylim=[1e51, 1e61], ylabel=r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', aspect=None,
-                                  which='major')
-    plot_tools.set_axes_evolution(axis12, axis122, ylim=[1e51, 1e61], ylabel=r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', aspect=None,
-                                  which='major')
+    plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylim=[1e51, 1e61], ylabel=r'$\mathrm{('
+                                                                                           r'Mechanical\;feedback\;energy)/ergs}$',
+        aspect=None, which='major')
+    plot_tools.set_axes_evolution(axis11, axis112, ylim=[1e51, 1e61], ylabel=r'$\mathrm{('
+                                                                             r'Thermal\;feedback\;energy)/ergs}$',
+        aspect=None, which='major')
+    plot_tools.set_axes_evolution(axis12, axis122, ylim=[1e51, 1e61], ylabel=r'$\mathrm{('
+                                                                             r'Thermal\;feedback\;energy)/ergs}$',
+        aspect=None, which='major')
 
     # Get the names and sort them #
     names = glob.glob(path + '/name_*')
@@ -932,12 +1065,14 @@ def AGN_modes_distribution(date, data, read):
         # Load the data #
         if i == 0:
             mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            # Transform the arrays to comma separated strings and convert each element to float #
+            # Transform the arrays to comma separated strings and convert
+            # each element to float #
             mechanicals = ','.join(mechanicals)
             mechanicals = np.fromstring(mechanicals, dtype=np.float, sep=',')
         thermals = np.load(path + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        # Transform the arrays to comma separated strings and convert each element to float #
+        # Transform the arrays to comma separated strings and convert each
+        # element to float #
         thermals = ','.join(thermals)
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
 
@@ -952,9 +1087,11 @@ def AGN_modes_distribution(date, data, read):
             axescbar = [axis02]
 
         for axis, axiscbar, mode in zip(axes, axescbar, modes):
-            hb = axis.hexbin(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], bins='log', yscale='log', cmap='hot_r')
+            hb = axis.hexbin(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], bins='log', yscale='log',
+                cmap='hot_r')
             plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$', orientation='horizontal')
-            x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
+            x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)],
+                n_bins=n_bins)
             axis.plot(x_value, sum / time_bin_width, color=colors[0], label=r'$\mathrm{Sum}$')
             figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
@@ -975,24 +1112,28 @@ def AGN_modes_distribution(date, data, read):
 @vectorize_parallel(method='processes', num_procs=8)
 def get_afk_data(snapshot_ids, halo):
     """
-    Parallelised method to get the black hole radius and the volume of gas cells within that.
+    Parallelised method to get the black hole radius and the volume of gas
+    cells within that.
     :param snapshot_ids: ids of the snapshots.
     :param halo: data for the halo.
-    :return: lookback time, , gas_volumes, sf_gas_volumes, nsf_gas_volumes, blackhole_hsml.
+    :return: lookback time, , gas_volumes, sf_gas_volumes, nsf_gas_volumes,
+    blackhole_hsml.
     """
     print("Invoking get_afk_data")
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
     particle_type = [0, 4, 5]
     attributes = ['age', 'bhhs', 'id', 'mass', 'pos', 'sfr', 'vol']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
     # Check that only one (the closest) black hole is selected #
-    blackhole_mask, = np.where(
-        (s.data['type'] == 5) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select the black hole inside 0.1*R200c.
+    blackhole_mask, = np.where((s.data['type'] == 5) & (
+        s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select the black hole inside 0.1*R200c.
     if len(blackhole_mask) == 1:
         blackhole_hsml = s.data['bhhs'][0]
 
@@ -1004,25 +1145,33 @@ def get_afk_data(snapshot_ids, halo):
     else:
         blackhole_hsml = 0
 
-    # Convert black hole hsml to physical h-free units i.e., keep it constant in co-moving space. #
+    # Convert black hole hsml to physical h-free units i.e., keep it
+    # constant in co-moving space. #
     a = 1 / (1 + s.redshift)
     blackhole_hsml = blackhole_hsml * a / 0.6777
 
-    # Mask the data: select star-forming and not gas cells inside the black hole's radius #
+    # Mask the data: select star-forming and not gas cells inside the black
+    # hole's radius #
     gas_mask, = np.where(s.r()[s.data['type'] == 0] < blackhole_hsml)
     sf_gas_mask, = np.where((s.data['sfr'] > 0.0) & (s.r()[s.data['type'] == 0] < blackhole_hsml))
     nsf_gas_mask, = np.where((s.data['sfr'] <= 0.0) & (s.r()[s.data['type'] == 0] < blackhole_hsml))
 
-    # Compute the total volume of cells with SFR == 0 and compare it to the total volume of all cells inside the black hole's radius #
-    gas_volumes = s.data['vol'][gas_mask].sum() * 1e9 * a ** 3 / 0.6777 ** 3  # In kpc^-3.
-    sf_gas_volumes = s.data['vol'][sf_gas_mask].sum() * 1e9 * a ** 3 / 0.6777 ** 3  # In kpc^-3.
-    nsf_gas_volumes = s.data['vol'][nsf_gas_mask].sum() * 1e9 * a ** 3 / 0.6777 ** 3  # In kpc^-3.
-    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), gas_volumes, sf_gas_volumes, nsf_gas_volumes, blackhole_hsml
+    # Compute the total volume of cells with SFR == 0 and compare it to the
+    # total volume of all cells inside the black hole's radius #
+    gas_volumes = s.data['vol'][gas_mask].sum() * 1e9 * a ** 3 / 0.6777 ** 3  # In
+    # kpc^-3.
+    sf_gas_volumes = s.data['vol'][sf_gas_mask].sum() * 1e9 * a ** 3 / 0.6777 ** 3  #
+    # In kpc^-3.
+    nsf_gas_volumes = s.data['vol'][nsf_gas_mask].sum() * 1e9 * a ** 3 / 0.6777 ** 3
+    # In kpc^-3.
+    return s.cosmology_get_lookback_time_from_a(s.time,
+        is_flat=True), gas_volumes, sf_gas_volumes, nsf_gas_volumes, blackhole_hsml
 
 
 def AGN_feedback_kernel(pdf, data, ds, read):
     """
-    Plot the evolution of black hole radius and the volume of gas cells within that for Auriga halo(es).
+    Plot the evolution of black hole radius and the volume of gas cells
+    within that for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param ds: boolean to downsample halo_18_3000 data.
@@ -1060,7 +1209,8 @@ def AGN_feedback_kernel(pdf, data, ds, read):
             redshift_mask, = np.where(redshifts <= redshift_cut)
             snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
 
-            ssgr_data = np.array(get_afk_data(snapshot_ids, halo))  # Get AGN feedback kernel data.
+            ssgr_data = np.array(get_afk_data(snapshot_ids, halo))  # Get AGN feedback
+            # kernel data.
 
             # Save data for each halo in numpy arrays #
             if ds is True:
@@ -1084,8 +1234,10 @@ def AGN_feedback_kernel(pdf, data, ds, read):
         axis3 = axis.twinx()
         axis3.yaxis.label.set_color('tab:red')
         axis3.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
+        plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$',
+            ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{'
+                                                                            r'sml})/V_{all}(r<BH_{sml})}$', aspect=None)
         axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
         figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
@@ -1095,18 +1247,19 @@ def AGN_feedback_kernel(pdf, data, ds, read):
         nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-        # Plot the evolution of black hole radius and the volume ratio of gas cells within that #
+        # Plot the evolution of black hole radius and the volume ratio of
+        # gas cells within that #
         axis3.scatter(lookback_times, blackhole_hsmls * 1e3, edgecolor='None', color=colors[1])
         axis.scatter(lookback_times, nsf_gas_volumes / gas_volumes, edgecolor='None', color=colors[0])
 
         # Plot median and 1-sigma lines #
-        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
-                                                                       n_bins=len(lookback_times) / 5, log=False)
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes,
+            bin_type='equal_number', n_bins=len(lookback_times) / 5, log=False)
         axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[0], linewidth=3)
         axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[0], alpha='0.3')
 
-        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3, bin_type='equal_number',
-                                                                       n_bins=len(lookback_times) / 5, log=False)
+        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3,
+            bin_type='equal_number', n_bins=len(lookback_times) / 5, log=False)
         axis3.plot(x_value[x_value > 0], median[x_value > 0], color=colors[1], linewidth=3)
         axis3.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[1], alpha='0.3')
 
@@ -1118,7 +1271,8 @@ def AGN_feedback_kernel(pdf, data, ds, read):
 
 def AGN_feedback_active(pdf):
     """
-    Calculate the energy deposition on active gas cells from the AGN feedback for Auriga halo(es).
+    Calculate the energy deposition on active gas cells from the AGN
+    feedback for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :return: None
     """
@@ -1139,7 +1293,9 @@ def AGN_feedback_active(pdf):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e56, 1e62], yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e56, 1e62], yscale='log', ylabel=r'$\mathrm{('
+                                                                                           r'AGN\;feedback\;energy)/ergs}$',
+            aspect=None)
         figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load and plot the data #
@@ -1149,21 +1305,24 @@ def AGN_feedback_active(pdf):
         nsf_gas_volumes = np.load(path_kernel + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-        # Transform the arrays to comma separated strings and convert each element to float #
+        # Transform the arrays to comma separated strings and convert each
+        # element to float #
         thermals = ','.join(thermals)
         thermals = np.fromstring(thermals, dtype=np.float, sep=',')
 
         # Calculate and plot the thermals energy sum #
         n_bins = len(lookback_times)
         time_bin_width = (13 - 0) / n_bins  # In Gyr.
-        x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(thermals > 0)], thermals[np.where(thermals > 0)], n_bins=int(len(lookback_times))+1)
+        x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(thermals > 0)],
+            thermals[np.where(thermals > 0)], n_bins=int(len(lookback_times)) + 1)
         axis.plot(x_value, sum / time_bin_width, color=colors[1], label=r'$\mathrm{Sum}$')
 
-        x, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes, bin_type='equal_number',
-                                                                       n_bins=len(lookback_times), log=False)
+        x, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes,
+            bin_type='equal_number', n_bins=len(lookback_times), log=False)
         axis.plot(x_value, sum / time_bin_width * median, color=colors[0], label=r'$\mathrm{Sum}$')
 
-        # axis.plot(lookback_times, sum / time_bin_width * (nsf_gas_volumes / gas_volumes), color=colors[0])
+        # axis.plot(lookback_times, sum / time_bin_width * (nsf_gas_volumes
+        # / gas_volumes), color=colors[0])
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -1180,12 +1339,14 @@ def get_bm_data(snapshot_ids, halo):
     :return: black hole properties.
     """
     print("Invoking get_bm_data")
-    # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
     particle_type = [4, 5]
     attributes = ['bhma', 'bcmr', 'bcmq', 'bhmd', 'bhmr', 'bhmq', 'id', 'pos']
     s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
-    # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
@@ -1210,17 +1371,17 @@ def get_bm_data(snapshot_ids, halo):
         black_hole_dmass_radio = s.data['bhmr'][id_mask[0]]
         black_hole_dmass_quasar = s.data['bhmq'][id_mask[0]]
     else:
-        black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, black_hole_dmass_radio, black_hole_dmass_quasar = 0, 0,\
-                                                                                                                                              0, 0,\
-                                                                                                                                              0, 0
+        black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, black_hole_dmass_radio, \
+            black_hole_dmass_quasar = 0, 0, 0, 0, 0, 0
     return s.cosmology_get_lookback_time_from_a(s.time,
-                                                is_flat=True), black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, \
-           black_hole_dmass_radio, black_hole_dmass_quasar
+        is_flat=True), black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, \
+        black_hole_dmass_radio, black_hole_dmass_quasar
 
 
 def blackhole_masses(pdf, data, read):
     """
-    Plot the evolution of black hole mass, accretion rate, cumulative mass accreted onto the BH in the low and high accretion-state for Auriga
+    Plot the evolution of black hole mass, accretion rate, cumulative mass
+    accreted onto the BH in the low and high accretion-state for Auriga
     halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
@@ -1264,7 +1425,8 @@ def blackhole_masses(pdf, data, read):
             lookback_times = bm_data[:, 0]
             black_hole_masses = bm_data[:, 1]
             black_hole_cmasses_radio, black_hole_cmasses_quasar = bm_data[:, 2], bm_data[:, 3]
-            black_hole_dmasses, black_hole_dmasses_radio, black_hole_dmasses_quasar = bm_data[:, 4], bm_data[:, 5], bm_data[:, 6]
+            black_hole_dmasses, black_hole_dmasses_radio, black_hole_dmasses_quasar = bm_data[:, 4], bm_data[:,
+            5], bm_data[:, 6]
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(name), name)
@@ -1290,16 +1452,21 @@ def blackhole_masses(pdf, data, read):
         axis002, axis012 = axis00.twiny(), axis01.twiny()
         axis102, axis112 = axis10.twiny(), axis11.twiny()
 
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis00.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+            transform=axis00.transAxes)
 
         for axis in [axis01, axis11]:
             axis.yaxis.set_label_position("right")
             axis.yaxis.tick_right()
 
-        plot_tools.set_axes_evolution(axis00, axis012, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH,cumu}/M_\odot}$', which='major')
-        plot_tools.set_axes_evolution(axis01, axis002, ylim=[1e2, 1e9], yscale='log', ylabel=r'$\mathrm{M_{BH,growth}/M_\odot}$', which='major')
-        plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\;Gyr^{-1})}$', which='major')
-        plot_tools.set_axes_evolution(axis11, axis112, yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$', which='major')
+        plot_tools.set_axes_evolution(axis00, axis012, ylim=[1e2, 1e9], yscale='log',
+            ylabel=r'$\mathrm{M_{BH,cumu}/M_\odot}$', which='major')
+        plot_tools.set_axes_evolution(axis01, axis002, ylim=[1e2, 1e9], yscale='log',
+            ylabel=r'$\mathrm{M_{BH,growth}/M_\odot}$', which='major')
+        plot_tools.set_axes_evolution(axis10, axis102, yscale='log',
+            ylabel=r'$\mathrm{\dot{M}_{BH}/(M_\odot\;Gyr^{-1})}$', which='major')
+        plot_tools.set_axes_evolution(axis11, axis112, yscale='log', ylabel=r'$\mathrm{(AGN\;feedback\;energy)/ergs}$',
+            which='major')
 
         # Load the data #
         thermals = np.load(path_modes + 'thermals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1307,11 +1474,15 @@ def blackhole_masses(pdf, data, read):
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times_modes = np.load(path_modes + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         black_hole_masses = np.load(path + 'black_hole_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_cmasses_radio = np.load(path + 'black_hole_cmasses_radio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_cmasses_quasar = np.load(path + 'black_hole_cmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_cmasses_radio = np.load(
+            path + 'black_hole_cmasses_radio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_cmasses_quasar = np.load(
+            path + 'black_hole_cmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         black_hole_dmasses = np.load(path + 'black_hole_dmasses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_dmasses_radio = np.load(path + 'black_hole_dmasses_radio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        black_hole_dmasses_quasar = np.load(path + 'black_hole_dmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_dmasses_radio = np.load(
+            path + 'black_hole_dmasses_radio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        black_hole_dmasses_quasar = np.load(
+            path + 'black_hole_dmasses_quasar_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Convert cumulative masses to instantaneous measurements #
         black_hole_imasses = np.insert(np.diff(black_hole_masses), 0, 0)
@@ -1338,11 +1509,12 @@ def blackhole_masses(pdf, data, read):
         # Calculate and plot the thermals energy sum #
         modes = [mechanicals, thermals]
         for i, mode in enumerate(modes):
-            x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(mode > 0)], mode[np.where(mode > 0)], n_bins=n_bins)
+            x_value, sum = plot_tools.binned_sum(lookback_times_modes[np.where(mode > 0)], mode[np.where(mode > 0)],
+                n_bins=n_bins)
             axis.plot(x_value, sum / time_bin_width, color=colors[1 + i], label=r'$\mathrm{Sum}$')
 
-        axis01.legend([plt10, plt102, plt101], [r'$\mathrm{BH}$', r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'], loc='upper left', fontsize=20,
-                      frameon=False, numpoints=1)
+        axis01.legend([plt10, plt102, plt101], [r'$\mathrm{BH}$', r'$\mathrm{Thermal}$', r'$\mathrm{Mechanical}$'],
+            loc='upper left', fontsize=20, frameon=False, numpoints=1)
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')

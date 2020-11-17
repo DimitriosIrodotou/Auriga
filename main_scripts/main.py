@@ -319,11 +319,11 @@ class AurigaPdf:
         # evolution.gas_temperature_regimes(pdf, self, read=False)
         # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
         # evolution.sfr_stars_gas_regimes(pdf, self, region='outer', read=False)
-        # evolution.gas_flow(pdf, self, read=False)
+        evolution.gas_flow(pdf, self, read=False)
         # AGN #
         # evolution.AGN_modes_distribution(date, self, read=False)
         # evolution.AGN_feedback_kernel(pdf, self, ds=False, read=False)
-        evolution.AGN_feedback_active(pdf)
+        # evolution.AGN_feedback_active(pdf)
         # evolution.blackhole_masses(pdf, self, read=False)
 
         # Movies #

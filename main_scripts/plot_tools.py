@@ -122,7 +122,8 @@ def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=
     return None
 
 
-def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, aspect='equal', which='both', size=30):
+def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, aspect='equal',
+             which='both', size=20):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -171,7 +172,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     return None
 
 
-def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect='equal', which='both', size=30):
+def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect='equal', which='both', size=20):
     """
     Set axes parameters for evolution plots.
     :param axis: name of the axis.
@@ -226,9 +227,10 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     return None
 
 
-def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
-                             multiple3=False, multiple4=False, multiple5=False, multiple6=False, multiple7=False, mollweide=False, multiple8=False,
-                             multiple9=False, multiple10=False):
+def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False,
+                             multiple=False, multiple2=False, multiple3=False, multiple4=False, multiple5=False,
+                             multiple6=False, multiple7=False, mollweide=False, multiple8=False, multiple9=False,
+                             multiple10=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -286,15 +288,15 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
 
     elif multiple is True:
         gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
-        axis00, axis01, axis02, axis03, axis04, axis05 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(
-            gs[0, 3]), plt.subplot(gs[0, 4]), plt.subplot(gs[0, 5])
-        axis10, axis11, axis12, axis13, axis14, axis15 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2]), plt.subplot(
-            gs[1, 3]), plt.subplot(gs[1, 4]), plt.subplot(gs[1, 5])
-        axis20, axis21, axis22, axis23, axis24, axis25 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2]), plt.subplot(
-            gs[2, 3]), plt.subplot(gs[2, 4]), plt.subplot(gs[2, 5])
+        axis00, axis01, axis02, axis03, axis04, axis05 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(
+            gs[0, 2]), plt.subplot(gs[0, 3]), plt.subplot(gs[0, 4]), plt.subplot(gs[0, 5])
+        axis10, axis11, axis12, axis13, axis14, axis15 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(
+            gs[1, 2]), plt.subplot(gs[1, 3]), plt.subplot(gs[1, 4]), plt.subplot(gs[1, 5])
+        axis20, axis21, axis22, axis23, axis24, axis25 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(
+            gs[2, 2]), plt.subplot(gs[2, 3]), plt.subplot(gs[2, 4]), plt.subplot(gs[2, 5])
 
-        return axis00, axis01, axis02, axis03, axis04, axis05, axis10, axis11, axis12, axis13, axis14, axis15, axis20, axis21, axis22, axis23, \
-               axis24, axis25, x, y, area
+        return axis00, axis01, axis02, axis03, axis04, axis05, axis10, axis11, axis12, axis13, axis14, axis15, \
+            axis20, axis21, axis22, axis23, axis24, axis25, x, y, area
 
     elif multiple2 is True:
         gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0)
@@ -304,11 +306,12 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
-        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
-               axis51, axis52
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
+            axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple3 is True:
-        gs = gridspec.GridSpec(6, 4, hspace=0.1, wspace=0.1, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
+        gs = gridspec.GridSpec(6, 4, hspace=0.1, wspace=0.1, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5],
+            width_ratios=[1, 1, 1, 0.1])
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
@@ -316,8 +319,8 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         axiscbar = plt.subplot(gs[:, 3])
-        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
-               axis51, axis52, axiscbar, x, y, y2, area
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
+            axis40, axis41, axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area
 
     elif multiple4 is True:
         gs = gridspec.GridSpec(1, 3, hspace=0, wspace=0)
@@ -347,16 +350,16 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
-        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
-               axis51, axis52
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
+            axis40, axis41, axis42, axis50, axis51, axis52
     elif mollweide is True:
         gs = gridspec.GridSpec(3, 4, hspace=0, wspace=0, width_ratios=[1, 1, 1, 0.1])
-        axis00, axis01, axis02 = plt.subplot(gs[0, 0], projection='mollweide'), plt.subplot(gs[0, 1], projection='mollweide'), plt.subplot(gs[0, 2],
-                                                                                                                                           projection='mollweide')
-        axis10, axis11, axis12 = plt.subplot(gs[1, 0], projection='mollweide'), plt.subplot(gs[1, 1], projection='mollweide'), plt.subplot(gs[1, 2],
-                                                                                                                                           projection='mollweide')
-        axis20, axis21, axis22 = plt.subplot(gs[2, 0], projection='mollweide'), plt.subplot(gs[2, 1], projection='mollweide'), plt.subplot(gs[2, 2],
-                                                                                                                                           projection='mollweide')
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0], projection='mollweide'), plt.subplot(gs[0, 1],
+            projection='mollweide'), plt.subplot(gs[0, 2], projection='mollweide')
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0], projection='mollweide'), plt.subplot(gs[1, 1],
+            projection='mollweide'), plt.subplot(gs[1, 2], projection='mollweide')
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0], projection='mollweide'), plt.subplot(gs[2, 1],
+            projection='mollweide'), plt.subplot(gs[2, 2], projection='mollweide')
         axiscbar = plt.subplot(gs[:, 3])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar
 
@@ -369,8 +372,8 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
 
-        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
-               axis51, axis52
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
+            axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple9 is True:
         gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5])
@@ -381,8 +384,8 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
 
-        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, axis42, axis50, \
-               axis51, axis52
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
+            axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple10 is True:
         gs = gridspec.GridSpec(2, 3, hspace=0, wspace=0)
@@ -448,8 +451,8 @@ def rotate_bar(z, y, x):
     return z_pos / 1e3, y_pos / 1e3, x_pos / 1e3  # In kpc.
 
 
-def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False, multiple=False, multiple2=False,
-                            multiple3=False, multiple4=False):
+def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False,
+                            multiple=False, multiple2=False, multiple3=False, multiple4=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -494,15 +497,15 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
 
     elif multiple is True:
         gs = gridspec.GridSpec(3, 6, hspace=0.0, wspace=0.05, height_ratios=[1, 0.05, 1])
-        axis00, axis01, axis02, axis03, axis04, axis05 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(
-            gs[0, 3]), plt.subplot(gs[0, 4]), plt.subplot(gs[0, 5])
-        axis10, axis11, axis12, axis13, axis14, axis15 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2]), plt.subplot(
-            gs[1, 3]), plt.subplot(gs[1, 4]), plt.subplot(gs[1, 5])
-        axis20, axis21, axis22, axis23, axis24, axis25 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2]), plt.subplot(
-            gs[2, 3]), plt.subplot(gs[2, 4]), plt.subplot(gs[2, 5])
+        axis00, axis01, axis02, axis03, axis04, axis05 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(
+            gs[0, 2]), plt.subplot(gs[0, 3]), plt.subplot(gs[0, 4]), plt.subplot(gs[0, 5])
+        axis10, axis11, axis12, axis13, axis14, axis15 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(
+            gs[1, 2]), plt.subplot(gs[1, 3]), plt.subplot(gs[1, 4]), plt.subplot(gs[1, 5])
+        axis20, axis21, axis22, axis23, axis24, axis25 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(
+            gs[2, 2]), plt.subplot(gs[2, 3]), plt.subplot(gs[2, 4]), plt.subplot(gs[2, 5])
 
-        return axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22, axis03, axis13, axis23, axis04, axis14, axis24, axis05, \
-               axis15, axis25, x, y, area
+        return axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22, axis03, axis13, axis23, \
+            axis04, axis14, axis24, axis05, axis15, axis25, x, y, area
 
     elif multiple2 is True:
         gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
@@ -511,7 +514,8 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
         axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
 
-        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, y2, area
+        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, \
+            y2, area
 
     elif multiple3 is True:
         gs = gridspec.GridSpec(4, 4, hspace=0.05, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
@@ -521,7 +525,8 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
         axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
         axiscbar = plt.subplot(gs[:, 3])
 
-        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, axiscbar, x, y, y2, area
+        return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, \
+            axiscbar, x, y, y2, area
 
     if multiple4 is True:
         gs = gridspec.GridSpec(2, 3, hspace=0, wspace=0)
@@ -570,9 +575,11 @@ class RotateCoordinates:
         pos = np.fliplr(pos)
         vel = np.fliplr(vel)
 
-        # Recalculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the galactic angular momentum vector #
+        # Recalculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the
+        # galactic angular momentum vector #
         prc_angular_momentum = data['mass'][stellar_mask, np.newaxis] * np.cross(pos * 1e3, vel)  # In Msun kpc km s^-1.
         vector_mask, = np.where(np.linalg.norm(prc_angular_momentum, axis=1) > 0)
-        prc_unit_vector = prc_angular_momentum[vector_mask] / np.linalg.norm(prc_angular_momentum[vector_mask], axis=1)[:, np.newaxis]
+        prc_unit_vector = prc_angular_momentum[vector_mask] / np.linalg.norm(prc_angular_momentum[vector_mask], axis=1)[
+        :, np.newaxis]
 
         return prc_unit_vector
