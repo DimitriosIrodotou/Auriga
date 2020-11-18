@@ -876,7 +876,7 @@ def gas_flow(pdf, data, read):
         plot_tools.set_axis(axis003, ylim=[0, 300], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{R_{vir}/kpc}$',
             aspect=None)
         axis003.tick_params(axis='y', direction='out', left='off', colors='tab:red')
-        plot_tools.set_axes_evolution(axis00, axis002, ylim=[-100, 200], ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$',
+        plot_tools.set_axes_evolution(axis00, axis002,yscale='log', ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$',
             aspect=None)
         plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e-2, 1e1], yscale='log',
             ylabel=r'$\mathrm{Mass\;loading}$', aspect=None)
@@ -929,31 +929,59 @@ def gas_flow(pdf, data, read):
         #     plt.scatter(spherical_radii[i][np.where(ids[i] == x),2],
         #     spherical_radii[i][np.where(ids[i] == x),1])
 
+        # # Loop over all radial limits #
+        # mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
+        #     len(lookback_times)), np.zeros(len(lookback_times))
+        # for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
+        #     for j in range(len(lookback_times)):
+        #         outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (spherical_radii[j] + (
+        #             radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
+        #         inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (spherical_radii[j] + (
+        #             radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[j]))
+        #         mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask]) * 1e10, dT * 1e6)
+        #         mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask]) * 1e10, dT * 1e6)
+        #         mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
+        #         # mass_loading[j] = np.sum(wind_masses[j]) / np.sum(sfrs[j])
+        #     net_flow = mass_inflows - mass_outflows
+        #     axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(
+        #     radial_cut))
+        # axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
+        # axis01.plot(lookback_times, mass_loading, c=colors[0])
+
+        # # Loop over all radial limits #
+        # mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
+        #     len(lookback_times)), np.zeros(len(lookback_times))
+        # for k, radial_cut in enumerate([0.1]):
+        #     for j in range(len(lookback_times)):
+        #         outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
+        #                 spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
+        #         inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
+        #                 spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
+        #         mass_outflows[j] = np.sum(gas_masses[j][outflow_mask])
+        #         mass_inflows[j] = np.sum(gas_masses[j][inflow_mask])
+        #         mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
+        #     net_flow = mass_inflows / mass_outflows
+        #     axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
+        # axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
+        # axis01.plot(lookback_times, mass_loading, c=colors[0])
+
         # Loop over all radial limits #
         mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
             len(lookback_times)), np.zeros(len(lookback_times))
-        for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
+        for k, radial_cut in enumerate([0.1]):
             for j in range(len(lookback_times)):
-                outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (spherical_radii[j] + (
-                    radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
-                inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (spherical_radii[j] + (
-                    radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[j]))
-                mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask]) * 1e10, dT * 1e6)
-                mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask]) * 1e10, dT * 1e6)
+                outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
+                        spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
+                inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
+                        spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
+                mass_outflows[j] = np.sum(gas_masses[j][outflow_mask])
+                mass_inflows[j] = np.sum(gas_masses[j][inflow_mask])
                 mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
-                # mass_loading[j] = np.sum(wind_masses[j]) / np.sum(sfrs[j])
-            net_flow = mass_inflows - mass_outflows
+            net_flow = mass_inflows / mass_outflows
             axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
         axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
         axis01.plot(lookback_times, mass_loading, c=colors[0])
-
-        #     hg_ratio = np.sum(gas_mass[np.where(temperature >= 5e5)]) /
-        #     np.sum(gas_mass)
-        #     sfg_ratio = np.sum(gas_mass[np.where(temperature < 2e4)]) /
-        #     np.sum(gas_mass)
-        #     wg_ratio = np.sum(gas_mass[np.where((temperature >= 2e4) & (
-        #     temperature < 5e5))]) / np.sum(gas_mass)
-
+        
         # Create the legends, save and close the figure #
         axis00.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
