@@ -179,7 +179,7 @@ def gas_movie(data, read):
         # Add colorbars in each panel #
         axes = [axis00, axis01, axis10, axis11]
         labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$', r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$',
-                  r'$\mathrm{P\;/(K\;cm^{-3})}$']
+                  r'$\mathrm{P/k_{B}\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
         ticks = [[5e3, 5e5, 5e7], [-1e4, 0, 1e4], [1e6, 1e8, 1e10], [1e4, 1e6, 1e8]]
         for axis, attribute, label, tick in zip(axes, attributes, labels, ticks):
@@ -221,7 +221,7 @@ def gas_movie(data, read):
         # Add colorbars in each panel #
         axes = [axis00, axis01, axis10, axis11]
         labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$', r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$',
-                  r'$\mathrm{P\;/(K\;cm^{-3})}$']
+                  r'$\mathrm{P/k_{B}\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
         ticks = [[5e3, 5e5, 5e7], [-3.5e4, 0, 3.5e4], [1e6, 1e8, 1e10], [1e4, 1e6, 1e8]]
         for axis, attribute, label, tick in zip(axes, attributes, labels, ticks):

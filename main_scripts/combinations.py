@@ -1404,7 +1404,7 @@ def central_combination(pdf, data, redshift, read):
         # Plot the gas total pressure projections #
         pcm = axis04.pcolormesh(x, y, pressure_face_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
         axis24.pcolormesh(x, y, pressure_edge_on.T, norm=matplotlib.colors.LogNorm(), cmap='cividis', rasterized=True)
-        plot_tools.create_colorbar(axis14, pcm, "$\mathrm{P/(K\;cm^{-3})}$", orientation='horizontal')
+        plot_tools.create_colorbar(axis14, pcm, "$\mathrm{P/k_{B}/(K\;cm^{-3})}$", orientation='horizontal')
 
         pcm = axis05.pcolormesh(x, y, vrad_face_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)
         axis25.pcolormesh(x, y, vrad_edge_on.T, cmap='coolwarm', vmin=-7000, vmax=7000, rasterized=True)

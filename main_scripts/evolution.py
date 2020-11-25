@@ -859,7 +859,7 @@ def gas_flow(pdf, data, read):
             np.save(path + 'wind_masses_' + str(name), gf_data[:, 9])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_06.*')
+    names = glob.glob(path + '/name_06*')
     names.sort()
 
     # Loop over all available haloes #
@@ -876,10 +876,8 @@ def gas_flow(pdf, data, read):
         plot_tools.set_axis(axis003, ylim=[0, 300], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{R_{vir}/kpc}$',
             aspect=None)
         axis003.tick_params(axis='y', direction='out', left='off', colors='tab:red')
-        plot_tools.set_axes_evolution(axis00, axis002,yscale='log', ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$',
-            aspect=None)
-        plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e-2, 1e1], yscale='log',
-            ylabel=r'$\mathrm{Mass\;loading}$', aspect=None)
+        plot_tools.set_axes_evolution(axis00, axis002, ylim=[-200,0], ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$', aspect=None)
+        plot_tools.set_axes_evolution(axis01, axis012, yscale='log', ylabel=r'$\mathrm{Mass\;loading}$', aspect=None)
         axis00.tick_params(axis='y', direction='out', colors='black')
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis00.transAxes)
@@ -961,27 +959,34 @@ def gas_flow(pdf, data, read):
         #         mass_inflows[j] = np.sum(gas_masses[j][inflow_mask])
         #         mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
         #     net_flow = mass_inflows / mass_outflows
-        #     axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
+        #     axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(
+        #     radial_cut))
         # axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
         # axis01.plot(lookback_times, mass_loading, c=colors[0])
 
         # Loop over all radial limits #
         mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
             len(lookback_times)), np.zeros(len(lookback_times))
-        for k, radial_cut in enumerate([0.1]):
+        for k, radial_cut in enumerate([0.5]):
+            # for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
             for j in range(len(lookback_times)):
                 outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
-                        spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
+                    spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
                 inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
-                        spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
-                mass_outflows[j] = np.sum(gas_masses[j][outflow_mask])
-                mass_inflows[j] = np.sum(gas_masses[j][inflow_mask])
-                mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
-            net_flow = mass_inflows / mass_outflows
-            axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
+                    spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
+                mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask] * (
+                    radial_velocities[j][outflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))),
+                    0.05 * radial_cut * Rvirs[j])
+                mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask] * (
+                    radial_velocities[j][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))),
+                    0.05 * radial_cut * Rvirs[j])
+                mass_loading[j] = mass_outflows[j] * 1e10 / np.sum(sfrs[j])
+            net_flow = mass_inflows - mass_outflows
+            axis00.plot(lookback_times, net_flow * 1e10, color=colors[k - 3],
+                label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
         axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
         axis01.plot(lookback_times, mass_loading, c=colors[0])
-        
+
         # Create the legends, save and close the figure #
         axis00.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')

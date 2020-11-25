@@ -179,7 +179,8 @@ class AurigaOutput:
             snap.haloname = name
             snaps += [snap]
 
-        print('Analysing snapdir_' + str(snap.__getattribute__('snapid')) + ' with redshift ' + str(snap.__getattribute__('redshift')))
+        print('Analysing snapdir_' + str(snap.__getattribute__('snapid')) + ' with redshift ' + str(
+            snap.__getattribute__('redshift')))
         return snaps
 
 
@@ -360,8 +361,9 @@ class AurigaPdf:
         # file_name = 'gm/'
         # file_name = '/rbm/Au-*'
         # file_name = 'gtd-' + date + '.png'
-        file_name = 'Auriga-' + date + '.pdf'
-        os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' % file_name)
+        # file_name = 'Auriga-' + date + '.pdf'
+        # os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' %
+        # file_name)
         return None
 
 
@@ -372,5 +374,6 @@ b.add_directory('/u/di43/Auriga/output/', default_level)
 b.make_pdf()  # Generate the pdf.
 
 # Print total time # funzax-wahrIc-miwwe4
+print('Auriga-' + date + '.pdf')
 print('–––––––––––––––––––––––––––––––––––––––––––––')
 print('Finished main.py in %.4s s' % (time.time() - start_time))
