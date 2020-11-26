@@ -808,12 +808,13 @@ def get_gf_data(snapshot_ids, halo):
         s.data['mass'][stellar_mask], s.data['mass'][wind_mask]
 
 
-def gas_flow(pdf, data, read):
+def gas_flow(pdf, data, read, method):
     """
-    Plot the evolution of gas inflow/outflow for Auriga halo(es).
+    Plot the evolution of gas flow and mass loading for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :param data: data from main.make_pdf
     :param read: boolean to read new data.
+    :param method: method to calculate flows.
     :return: None
     """
     print("Invoking gas_flow")
@@ -833,10 +834,10 @@ def gas_flow(pdf, data, read):
             # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if name in names:
-            #     continue
-            # else:
-            #     print("Analysing halo:", name)
+            if name in names:
+                continue
+            else:
+                print("Analysing halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -859,7 +860,7 @@ def gas_flow(pdf, data, read):
             np.save(path + 'wind_masses_' + str(name), gf_data[:, 9])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_06*')
+    names = glob.glob(path + '/name_06.*')
     names.sort()
 
     # Loop over all available haloes #
@@ -876,7 +877,7 @@ def gas_flow(pdf, data, read):
         plot_tools.set_axis(axis003, ylim=[0, 300], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{R_{vir}/kpc}$',
             aspect=None)
         axis003.tick_params(axis='y', direction='out', left='off', colors='tab:red')
-        plot_tools.set_axes_evolution(axis00, axis002, ylim=[-200,0], ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$', aspect=None)
+        plot_tools.set_axes_evolution(axis00, axis002, ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$', aspect=None)
         plot_tools.set_axes_evolution(axis01, axis012, yscale='log', ylabel=r'$\mathrm{Mass\;loading}$', aspect=None)
         axis00.tick_params(axis='y', direction='out', colors='black')
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
@@ -889,9 +890,10 @@ def gas_flow(pdf, data, read):
             allow_pickle=True)
         wind_masses = np.load(path + 'wind_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
         Rvirs = np.load(path + 'Rvirs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        # ids = np.load(path + 'ids_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-        # temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
-        # allow_pickle=True)
+        ids = np.load(path + 'ids_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
+        temperatures = np.load(path + 'temperatures_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
+            allow_pickle=True)
+
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
             allow_pickle=True)
         spherical_radii = np.load(path + 'spherical_radii_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
@@ -899,96 +901,81 @@ def gas_flow(pdf, data, read):
         radial_velocities = np.load(path + 'radial_velocities_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
             allow_pickle=True)
 
-        # common_ids = set(ids[0])
-        # # Loop over all redshifts and compare ids #
-        # for ids_in_snap in ids[1:]:
-        #     common_ids.intersection_update(ids_in_snap)
-        # print(len(common_ids))
-        # x = [8796187878443, 8796221432877, 5466789209133, 8796221432879,
-        # 8796240307248, 5475303646257, 8796181586994, 8796221432881,
-        # 8796238210097,
-        #      8796236112953, 5463649772607, 8796238210112, 8796231918660,
-        #      8796240307271, 8796240307272, 8796223530058, 8796240307277,
-        #      8796231918670,
-        #      8796240307278, 8796225627216, 8796236112974, 8796206752852,
-        #      5475303646293, 8796208850006, 5463574275157, 8796206752854,
-        #      8796240307285,
-        #      8796240307286, 8796236112987, 8796240307287, 8796236112989,
-        #      8796150129757, 8796236112991, 8796240307294, 5463549109346,
-        #      8796240307302,
-        #      8796240307307, 8796236113004, 8796240307309, 8796240307310,
-        #      5471491023984, 5475911820403, 5463435863160, 8796221432963,
-        #      8796217238666,
-        #      8796240307339, 8796240307349, 8796240307350, 5463540720794,
-        #      87962403073]
-        # print(np.where(ids[0] == x))
-        # print(ids[0] in x)
-        # for i in range(len(lookback_times)):
-        #     plt.scatter(spherical_radii[i][np.where(ids[i] == x),2],
-        #     spherical_radii[i][np.where(ids[i] == x),1])
+        # Declare arrays to store the data #
+        mass_outflows, mass_inflows, mass_loading, wind_loading = np.zeros(len(lookback_times)), np.zeros(
+            len(lookback_times)), np.zeros(len(lookback_times)), np.zeros(len(lookback_times))
 
-        # # Loop over all radial limits #
-        # mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
-        #     len(lookback_times)), np.zeros(len(lookback_times))
-        # for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
-        #     for j in range(len(lookback_times)):
-        #         outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (spherical_radii[j] + (
-        #             radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
-        #         inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (spherical_radii[j] + (
-        #             radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[j]))
-        #         mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask]) * 1e10, dT * 1e6)
-        #         mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask]) * 1e10, dT * 1e6)
-        #         mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
-        #         # mass_loading[j] = np.sum(wind_masses[j]) / np.sum(sfrs[j])
-        #     net_flow = mass_inflows - mass_outflows
-        #     axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(
-        #     radial_cut))
-        # axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
-        # axis01.plot(lookback_times, mass_loading, c=colors[0])
+        if method == 'ids':
+            common_ids = set(ids[0])
+            # Loop over all redshifts and compare ids #
+            for ids_in_snap in ids[1:]:
+                common_ids.intersection_update(ids_in_snap)
+            print(len(common_ids))
+            x = [8796187878443, 8796221432877, 5466789209133, 8796221432879, 8796240307248, 5475303646257,
+                8796181586994, 8796221432881, 8796238210097, 8796236112953, 5463649772607, 8796238210112, 8796231918660,
+                8796240307271, 8796240307272, 8796223530058, 8796240307277, 8796231918670, 8796240307278, 8796225627216,
+                8796236112974, 8796206752852, 5475303646293, 8796208850006, 5463574275157, 8796206752854, 8796240307285,
+                8796240307286, 8796236112987, 8796240307287, 8796236112989, 8796150129757, 8796236112991, 8796240307294,
+                5463549109346, 8796240307302, 8796240307307, 8796236113004, 8796240307309, 8796240307310, 5471491023984,
+                5475911820403, 5463435863160, 8796221432963, 8796217238666, 8796240307339, 8796240307349, 8796240307350,
+                5463540720794, 87962403073]
+            print(np.where(ids[0] == x))
+            print(ids[0] in x)
+            for i in range(len(lookback_times)):
+                plt.scatter(spherical_radii[i][np.where(ids[i] == x), 2], spherical_radii[i][np.where(ids[i] == x), 1])
 
-        # # Loop over all radial limits #
-        # mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
-        #     len(lookback_times)), np.zeros(len(lookback_times))
-        # for k, radial_cut in enumerate([0.1]):
-        #     for j in range(len(lookback_times)):
-        #         outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
-        #                 spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
-        #         inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
-        #                 spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
-        #         mass_outflows[j] = np.sum(gas_masses[j][outflow_mask])
-        #         mass_inflows[j] = np.sum(gas_masses[j][inflow_mask])
-        #         mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
-        #     net_flow = mass_inflows / mass_outflows
-        #     axis00.plot(lookback_times, net_flow, color=colors[k - 3], label=r'$\mathrm{%sR_{vir}}$' % str(
-        #     radial_cut))
-        # axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
-        # axis01.plot(lookback_times, mass_loading, c=colors[0])
+        elif method == 'time_interval':
+            # Loop over all radial limits #
+            for k, radial_cut in enumerate([0.1]):
+                for j in range(len(lookback_times)):
+                    outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (spherical_radii[j] + (
+                        radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
+                    inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (spherical_radii[j] + (
+                        radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[j]))
+                    mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask]) * 1e10, dT * 1e6)
+                    mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask]) * 1e10, dT * 1e6)
+                    mass_loading[j] = mass_outflows[j] * 1e10 / np.sum(sfrs[j])
+                    wind_loading[j] = np.sum(wind_masses[j]) / np.sum(stellar_masses[j])
 
-        # Loop over all radial limits #
-        mass_outflows, mass_inflows, mass_loading = np.zeros(len(lookback_times)), np.zeros(
-            len(lookback_times)), np.zeros(len(lookback_times))
-        for k, radial_cut in enumerate([0.5]):
-            # for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
-            for j in range(len(lookback_times)):
-                outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
-                    spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
-                inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
-                    spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
-                mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask] * (
-                    radial_velocities[j][outflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))),
-                    0.05 * radial_cut * Rvirs[j])
-                mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask] * (
-                    radial_velocities[j][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))),
-                    0.05 * radial_cut * Rvirs[j])
-                mass_loading[j] = mass_outflows[j] * 1e10 / np.sum(sfrs[j])
-            net_flow = mass_inflows - mass_outflows
-            axis00.plot(lookback_times, net_flow * 1e10, color=colors[k - 3],
-                label=r'$\mathrm{%sR_{vir}}$' % str(radial_cut))
-        axis003.plot(lookback_times, Rvirs * 1e3, c=colors[1], linestyle='dashed')
-        axis01.plot(lookback_times, mass_loading, c=colors[0])
+        elif method == 'percentage':
+            # Loop over all radial limits #
+            for k, radial_cut in enumerate([0.1]):
+                for j in range(len(lookback_times)):
+                    outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
+                        spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
+                    inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
+                        spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
+                    mass_outflows[j] = np.sum(gas_masses[j][outflow_mask])
+                    mass_inflows[j] = np.sum(gas_masses[j][inflow_mask])
+                    mass_loading[j] = mass_outflows[j] * 1e10 / np.sum(sfrs[j])
+                    wind_loading[j] = np.sum(wind_masses[j]) / np.sum(stellar_masses[j])
 
+        elif method == 'shell':
+            # Loop over all radial limits #
+            for k, radial_cut in enumerate([0.1]):
+                # for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
+                for j in range(len(lookback_times)):
+                    outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
+                        spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
+                    inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
+                        spherical_radii[j] < 1.05 * radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
+                    mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask] * (
+                        radial_velocities[j][outflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))),
+                        0.05 * radial_cut * Rvirs[j])
+                    mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask] * (
+                        radial_velocities[j][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))),
+                        0.05 * radial_cut * Rvirs[j])
+                    mass_loading[j] = mass_outflows[j] * 1e10 / np.sum(sfrs[j])
+                    wind_loading[j] = np.sum(wind_masses[j]) / np.sum(stellar_masses[j])
+
+        # Plot the evolution of gas flow and mass loading #
+        net_flow = mass_inflows - mass_outflows
+        axis00.plot(lookback_times, net_flow * 1e10, color=colors[-3])
+        axis003.plot(lookback_times, Rvirs * 1e3, c=colors[0], linestyle='dashed')
+        axis01.plot(lookback_times, mass_loading, c=colors[1])
+        axis01.plot(lookback_times, wind_loading, c=colors[2])
         # Create the legends, save and close the figure #
-        axis00.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+        # axis00.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
