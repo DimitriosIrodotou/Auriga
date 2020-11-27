@@ -1,6 +1,7 @@
 import os
 import time
 import glob
+import tests
 import galaxy
 import movies
 import profiles
@@ -279,7 +280,6 @@ class AurigaPdf:
         :return: None
         """
         redshift = 0.0
-        # for redshift in np.linspace(0.0, 1.0, 11):
         pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
 
         # Projections #
@@ -320,7 +320,7 @@ class AurigaPdf:
         # evolution.gas_temperature_regimes(pdf, self, read=False)
         # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
         # evolution.sfr_stars_gas_regimes(pdf, self, region='outer', read=False)
-        evolution.gas_flow(pdf, self, read=False, method='time_interval')
+        evolution.gas_flow(pdf, self, read=False, method='shell')
         # AGN #
         # evolution.AGN_modes_distribution(date, self, read=False)
         # evolution.AGN_feedback_kernel(pdf, self, ds=False, read=False)
@@ -357,13 +357,10 @@ class AurigaPdf:
         # combinations.AGN_modes_distribution_combination(date)
         # combinations.AGN_feedback_kernel_combination(pdf)
 
+        # Tests #
+        # tests.test_gas_flow(date)
+
         pdf.close()
-        # file_name = 'gm/'
-        # file_name = '/rbm/Au-*'
-        # file_name = 'gtd-' + date + '.png'
-        # file_name = 'Auriga-' + date + '.pdf'
-        # os.system('scp -r ../plots/%s di43@gate.mpcdf.mpg.de:/afs/ipp-garching.mpg.de/home/d/di43/Auriga/plots/' %
-        # file_name)
         return None
 
 
@@ -374,6 +371,7 @@ b.add_directory('/u/di43/Auriga/output/', default_level)
 b.make_pdf()  # Generate the pdf.
 
 # Print total time # funzax-wahrIc-miwwe4
-print('Auriga-' + date + '.pdf')
+print('–––––––––––––––––––––––––––––––––––––––––––––')
+os.system('ls -t /u/di43/Auriga/plots/ | head -1')
 print('–––––––––––––––––––––––––––––––––––––––––––––')
 print('Finished main.py in %.4s s' % (time.time() - start_time))
