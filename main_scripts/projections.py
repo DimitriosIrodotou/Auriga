@@ -134,7 +134,7 @@ def stellar_light(pdf, data, redshift, read):
             # if str(s.haloname) in names:
             #     continue
             # else:
-            #     print("Analysing halo:", str(s.haloname))
+            #     print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -162,6 +162,7 @@ def stellar_light(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(10, 10))
         axis00, axis10, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize)
@@ -215,7 +216,7 @@ def stellar_light_components(pdf, data, redshift, read):
             # if str(s.haloname) in names:
             #     continue
             # else:
-            #     print("Analysing halo:", str(s.haloname))
+            #     print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -251,6 +252,7 @@ def stellar_light_components(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axis01, axis10, axis11, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
@@ -314,7 +316,7 @@ def stellar_density(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
                                                                                                           contour=True)  # Generate the axes.
@@ -353,6 +355,7 @@ def stellar_density(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, contour=True)
@@ -419,7 +422,7 @@ def stellar_density_components(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
                                                                                                           contour=True)  # Generate the axes.
@@ -458,6 +461,7 @@ def stellar_density_components(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, contour=True)
@@ -533,7 +537,7 @@ def stellar_light_fit(data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -561,6 +565,7 @@ def stellar_light_fit(data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Loop over all projections #
         projections = ['face_on', 'edge_on']
         for projection in projections:
@@ -607,7 +612,7 @@ def r_band_magnitude(data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -632,6 +637,7 @@ def r_band_magnitude(data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 10))
         axis.set_aspect('equal')
@@ -684,7 +690,7 @@ def gas_density(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -705,6 +711,7 @@ def gas_density(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
@@ -760,7 +767,7 @@ def gas_temperature(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -789,6 +796,7 @@ def gas_temperature(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
@@ -846,7 +854,7 @@ def gas_metallicity(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -867,6 +875,7 @@ def gas_metallicity(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
@@ -923,7 +932,7 @@ def gas_slice(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on Euler's angles #
             s.calc_sf_indizes(s.subfind)
@@ -1046,6 +1055,7 @@ def gas_slice(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(10, 15))
         axis00, axis10, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, velocity_vectors=True)
@@ -1109,7 +1119,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1133,6 +1143,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(10, 7.5))
         gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
@@ -1190,7 +1201,7 @@ def magnetic_field(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1214,6 +1225,7 @@ def magnetic_field(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)
@@ -1270,7 +1282,7 @@ def dark_matter_density(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1298,6 +1310,7 @@ def dark_matter_density(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3, colorbar=True)

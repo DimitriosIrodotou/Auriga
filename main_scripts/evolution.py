@@ -60,7 +60,7 @@ def sfr(pdf, data, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so
             # galaxy's spin is aligned with the z-axis #
@@ -193,7 +193,7 @@ def bar_strength(pdf, data, read):
             if name in names:
                 continue
             else:
-                print("Analysing halo:", name)
+                print("Reading data for halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -299,7 +299,7 @@ def gas_temperature_regimes(pdf, data, read):
             if name in names:
                 continue
             else:
-                print("Analysing halo:", name)
+                print("Reading data for halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -380,7 +380,7 @@ def get_dsr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max):
     # SFR = s.data['gima'][stellar_mask][time_mask] / time_bin_width * 10  #
     # In Msun yr^-1.
 
-    # Convert radial limits to physical units i.e., keep them constant in
+    # Convert radial limits to physical units i.e. keep them constant in
     # co-moving space. #
     a = 1 / (1 + s.redshift)
     gas_mask, = np.where((s.data['sfr'] > 0.0) & (s.r()[s.data['type'] == 0] > radial_cut_min) & (
@@ -440,7 +440,7 @@ def delta_sfr_regimes(pdf, data, region, read):
                 if str(s.haloname) in names:
                     continue
                 else:
-                    print("Analysing halo:", str(s.haloname))
+                    print("Reading data for halo:", str(s.haloname))
 
                 # Get the lookback times and calculate the initial masses #
                 stellar_mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_cut_min) & (
@@ -535,7 +535,7 @@ def get_ssgr_data(snapshot_ids, halo, radial_cut_min, radial_cut_max):
     s.calc_sf_indizes(s.subfind)
     s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
-    # Convert radial limits to physical units i.e., keep them constant in
+    # Convert radial limits to physical units i.e. keep them constant in
     # co-moving space. #
     a = 1 / (1 + s.redshift)
     age = np.zeros(s.npartall)
@@ -619,7 +619,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
                 if str(s.haloname) in names:
                     continue
                 else:
-                    print("Analysing halo:", str(s.haloname))
+                    print("Reading data for halo:", str(s.haloname))
 
                 # Get the lookback times and calculate the initial masses #
                 stellar_mask, = np.where((s.data['age'] > 0.) & (s.r() > radial_cut_min) & (
@@ -795,14 +795,14 @@ def get_gf_data(snapshot_ids, halo):
     spherical_radius = np.sqrt(np.sum(s.data['pos'][gas_mask, :] ** 2, axis=1))
     CoM_velocity = np.sum(s.data['vel'][gas_mask, :] * s.data['mass'][gas_mask][:, None], axis=0) / np.sum(
         s.data['mass'][gas_mask])
-    radial_velocity = np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask],
-        axis=1) / spherical_radius
+    radial_velocity = np.divide(np.sum((s.data['vel'][gas_mask] - CoM_velocity) * s.data['pos'][gas_mask], axis=1),
+        spherical_radius)
     return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), s.subfind.data['frc2'][0], s.data['sfr'][
         gas_mask], s.data['mass'][gas_mask], s.data['id'][gas_mask], temperature, spherical_radius, radial_velocity, \
         s.data['mass'][stellar_mask], s.data['mass'][wind_mask], s.data['pos'][gas_mask]
 
 
-def gas_flow(pdf, data, read, method):
+def gas_flow_loading(pdf, data, read, method):
     """
     Plot the evolution of gas flow and mass loading for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
@@ -828,10 +828,10 @@ def gas_flow(pdf, data, read, method):
             # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + '/name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            # if name in names:
-            #     continue
-            # else:
-            #     print("Analysing halo:", name)
+            if name in names:
+                continue
+            else:
+                print("Reading data for halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -855,11 +855,12 @@ def gas_flow(pdf, data, read, method):
             np.save(path + 'positions_' + str(name), gf_data[:, 10])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_06.*')
+    names = glob.glob(path + '/name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(20, 7.5))
         gs = gridspec.GridSpec(1, 2, wspace=0.3)
@@ -869,11 +870,13 @@ def gas_flow(pdf, data, read, method):
         axis003 = axis00.twinx()
         axis003.yaxis.label.set_color('tab:red')
         axis003.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis003, ylim=[0, 300], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{R_{vir}/kpc}$',
-            aspect=None)
+        plot_tools.set_axis(axis003, ylim=[0, 250], xlabel=r'$\mathrm{t_{look}/Gyr}$',
+            ylabel=r'$\mathrm{0.5R_{vir}/kpc}$', aspect=None)
         axis003.tick_params(axis='y', direction='out', left='off', colors='tab:red')
-        plot_tools.set_axes_evolution(axis00, axis002, ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$', aspect=None)
-        plot_tools.set_axes_evolution(axis01, axis012, yscale='log', ylabel=r'$\mathrm{Mass\;loading}$', aspect=None)
+        plot_tools.set_axes_evolution(axis00, axis002, ylim=[-250, 0], ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$',
+            aspect=None)
+        plot_tools.set_axes_evolution(axis01, axis012, ylim=[1e-3, 1e2], yscale='log', ylabel=r'$\mathrm{Loading}$',
+            aspect=None)
         axis00.tick_params(axis='y', direction='out', colors='black')
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis00.transAxes)
@@ -921,7 +924,7 @@ def gas_flow(pdf, data, read, method):
 
         elif method == 'time_interval':
             # Loop over all radial limits #
-            for k, radial_cut in enumerate([0.1]):
+            for k, radial_cut in enumerate([0.5]):
                 for j in range(len(lookback_times)):
                     outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (spherical_radii[j] + (
                         radial_velocities[j] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[j]))
@@ -934,7 +937,7 @@ def gas_flow(pdf, data, read, method):
 
         elif method == 'percentage':
             # Loop over all radial limits #
-            for k, radial_cut in enumerate([0.1]):
+            for k, radial_cut in enumerate([0.5]):
                 for j in range(len(lookback_times)):
                     outflow_mask, = np.where((spherical_radii[j] < radial_cut * Rvirs[j]) & (
                         spherical_radii[j] > 0.95 * radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
@@ -947,7 +950,7 @@ def gas_flow(pdf, data, read, method):
 
         elif method == 'shell':
             # Loop over all radial limits #
-            for k, radial_cut in enumerate([0.1]):
+            for k, radial_cut in enumerate([0.5]):
                 # for k, radial_cut in enumerate([0.01, 0.1, 0.5, 1]):
                 for j in range(len(lookback_times)):
                     outflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
@@ -964,11 +967,13 @@ def gas_flow(pdf, data, read, method):
         # Plot the evolution of gas flow and mass loading #
         net_flow = mass_inflows - mass_outflows
         axis00.plot(lookback_times, net_flow, color=colors[-3])
-        axis003.plot(lookback_times, Rvirs * 1e3, c=colors[0], linestyle='dashed')
-        axis01.plot(lookback_times, mass_loading, c=colors[1])
-        axis01.plot(lookback_times, wind_loading, c=colors[2])
+        axis003.plot(lookback_times, radial_cut * Rvirs * 1e3, c=colors[1], linestyle='dashed')
+        axis01.plot(lookback_times, mass_loading, c=colors[2], label=r'$\mathrm{Mass\;loading}$')
+        axis01.plot(lookback_times, wind_loading, c=colors[3], label=r'$\mathrm{Wind\;loading}$')
+
         # Create the legends, save and close the figure #
-        # axis00.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+        axis00.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+        axis01.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
         pdf.savefig(figure, bbox_inches='tight')
         plt.close()
     return None
@@ -1006,7 +1011,7 @@ def AGN_modes_distribution(date, data, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Declare arrays to store the desired words and lines that
             # contain these words #
@@ -1060,7 +1065,8 @@ def AGN_modes_distribution(date, data, read):
 
     axis102, axis112, axis122 = axis10.twiny(), axis11.twiny(), axis12.twiny()
     plot_tools.set_axes_evolution(axis10, axis102, yscale='log', ylim=[1e51, 1e61], ylabel=r'$\mathrm{('
-                                                                                           r'Mechanical\;feedback\;energy)/ergs}$',
+                                                                                           r'Mechanical\;feedback'
+                                                                                           r'\;energy)/ergs}$',
         aspect=None, which='major')
     plot_tools.set_axes_evolution(axis11, axis112, ylim=[1e51, 1e61], ylabel=r'$\mathrm{('
                                                                              r'Thermal\;feedback\;energy)/ergs}$',
@@ -1158,7 +1164,7 @@ def get_afk_data(snapshot_ids, halo):
     else:
         blackhole_hsml = 0
 
-    # Convert black hole hsml to physical h-free units i.e., keep it
+    # Convert black hole hsml to physical h-free units i.e. keep it
     # constant in co-moving space. #
     a = 1 / (1 + s.redshift)
     blackhole_hsml = blackhole_hsml * a / 0.6777
@@ -1210,7 +1216,7 @@ def AGN_feedback_kernel(pdf, data, ds, read):
             if name in names:
                 continue
             else:
-                print("Analysing halo:", name)
+                print("Reading data for halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()
@@ -1307,8 +1313,8 @@ def AGN_feedback_active(pdf):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=[1e56, 1e62], yscale='log', ylabel=r'$\mathrm{('
-                                                                                           r'AGN\;feedback\;energy)/ergs}$',
-            aspect=None)
+                                                                                           r'AGN\;feedback\;energy'
+                                                                                           r')/ergs}$', aspect=None)
         figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names[i])[1]), fontsize=20, transform=axis.transAxes)
 
         # Load and plot the data #
@@ -1423,7 +1429,7 @@ def blackhole_masses(pdf, data, read):
             if name in names:
                 continue
             else:
-                print("Analysing halo:", name)
+                print("Reading data for halo:", name)
 
             # Get all snapshots with redshift less than the redshift cut #
             redshifts = halo.get_redshifts()

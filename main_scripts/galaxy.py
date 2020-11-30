@@ -59,7 +59,7 @@ def circularity_distribution(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -78,11 +78,15 @@ def circularity_distribution(pdf, data, redshift, read):
             sorted_r = s.r()[all_mask].argsort()
             cumulative_mass[sorted_r] = np.cumsum(s.data['mass'][all_mask][sorted_r])
 
-            # Calculate the z component of the specific angular momentum and the total (kinetic plus potential) energy of stellar particles #
-            stellar_mask, = np.where((s.data['type'][all_mask] == 4) & (age[all_mask] > 0.))  # Mask the data: select stellar particles.
+            # Calculate the z component of the specific angular momentum and the total (kinetic plus potential)
+            # energy of stellar particles #
+            stellar_mask, = np.where(
+                (s.data['type'][all_mask] == 4) & (age[all_mask] > 0.))  # Mask the data: select stellar particles.
             stellar_masses = s.data['mass'][all_mask][stellar_mask]
-            specific_angular_momentum_z = np.cross(s.data['pos'][all_mask, :][stellar_mask, :], s.data['vel'][all_mask, :][stellar_mask, :])[:, 0]
-            total_energy = 0.5 * (s.data['vel'][all_mask, :][stellar_mask, :] ** 2.).sum(axis=1) + s.data['pot'][all_mask][stellar_mask]
+            specific_angular_momentum_z = np.cross(s.data['pos'][all_mask, :][stellar_mask, :],
+                s.data['vel'][all_mask, :][stellar_mask, :])[:, 0]
+            total_energy = 0.5 * (s.data['vel'][all_mask, :][stellar_mask, :] ** 2.).sum(axis=1) + \
+                           s.data['pot'][all_mask][stellar_mask]
             sorted_total_energy = total_energy.argsort()
             specific_angular_momentum_z = specific_angular_momentum_z[sorted_total_energy]
             stellar_masses = stellar_masses[sorted_total_energy]
@@ -120,11 +124,14 @@ def circularity_distribution(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[-2, 2], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$', ylabel=r'$\mathrm{f(\epsilon)}$', aspect=None)
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[-2, 2], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$',
+            ylabel=r'$\mathrm{f(\epsilon)}$', aspect=None)
+        figure.text(0.0, 0.9,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         epsilon = np.load(path + 'epsilon_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -132,9 +139,11 @@ def circularity_distribution(pdf, data, redshift, read):
         stellar_masses = np.load(path + 'stellar_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the orbital circularity distribution #
-        y_data, edges = np.histogram(epsilon, weights=stellar_masses / np.sum(stellar_masses), bins=100, range=[-1.7, 1.7])
+        y_data, edges = np.histogram(epsilon, weights=stellar_masses / np.sum(stellar_masses), bins=100,
+            range=[-1.7, 1.7])
         y_data /= edges[1:] - edges[:-1]
-        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[0], label=r'$\mathrm{D/T = %.2f}$' % disc_fraction)
+        axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[0],
+            label=r'$\mathrm{D/T = %.2f}$' % disc_fraction)
 
         # Create the legend, save and close the figure #
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
@@ -226,7 +235,7 @@ def tully_fisher(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and do not rotate it #
             s.calc_sf_indizes(s.subfind)
@@ -243,9 +252,11 @@ def tully_fisher(pdf, data, redshift, read):
             circular_velocity = np.sqrt(G * cumulative_mass * 1e10 * msol / (edges[1:] * 1e6 * parsec)) / 1e5
 
             # Calculate the cumulative stellar mass and total circular velocity #
-            stellar_mass, edges = np.histogram(s.r()[stellar_mask], weights=s.data['mass'][stellar_mask], bins=100, range=[0., 0.025])
+            stellar_mass, edges = np.histogram(s.r()[stellar_mask], weights=s.data['mass'][stellar_mask], bins=100,
+                range=[0., 0.025])
             cumulative_stellar_mass = np.cumsum(stellar_mass)
-            total_circular_velocity = circular_velocity[np.abs(cumulative_stellar_mass - 0.8 * np.sum(s.data['mass'][stellar_mask])).argmin()]
+            total_circular_velocity = circular_velocity[
+                np.abs(cumulative_stellar_mass - 0.8 * np.sum(s.data['mass'][stellar_mask])).argmin()]
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -258,19 +269,23 @@ def tully_fisher(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[1e8, 1e12], ylim=[1.4, 2.6], xscale='log', xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$',
-                            ylabel=r'$\mathrm{log_{10}(v_{circ}/(km\;s^{-1}))}$', aspect=None)
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[1e8, 1e12], ylim=[1.4, 2.6], xscale='log',
+            xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', ylabel=r'$\mathrm{log_{10}(v_{circ}/(km\;s^{-1}))}$',
+            aspect=None)
+        figure.text(0.0, 0.9,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        total_circular_velocity = np.load(path + 'total_circular_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        total_circular_velocity = np.load(
+            path + 'total_circular_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         plt.scatter(stellar_mass * 1e10, np.log10(total_circular_velocity), color=colors[0], s=200, zorder=5,
-                    marker='*')  # Plot the Tully-Fisher relation.
+            marker='*')  # Plot the Tully-Fisher relation.
 
         # Plot Pizagno et al. 2007 sample #
         table = "./data/pizagno.txt"
@@ -278,7 +293,8 @@ def tully_fisher(pdf, data, redshift, read):
         vcirc_p = np.genfromtxt(table, comments='#', usecols=9)
         color_p = np.genfromtxt(table, comments='#', usecols=5)
         mass_p = pizagno_convert_color_to_mass(color_p, rmag_p)
-        plt.scatter(1e10 * mass_p, np.log10(vcirc_p), color='lightgray', s=10, marker='^', label=r'$\mathrm{Pizagno+\;07}$')
+        plt.scatter(1e10 * mass_p, np.log10(vcirc_p), color='lightgray', s=10, marker='^',
+            label=r'$\mathrm{Pizagno+\;07}$')
 
         # Plot Verheijen 2001 sample #
         table = "./data/verheijen.txt"
@@ -287,7 +303,8 @@ def tully_fisher(pdf, data, redshift, read):
         vcirc_v = np.genfromtxt(table, comments='#', usecols=7)
         color_v = Bmag_v - Rmag_v
         mass_v = verheijen_convert_color_to_mass(color_v, Bmag_v)
-        plt.scatter(1e10 * mass_v, np.log10(vcirc_v), color='lightgray', s=10, marker='s', label=r'$\mathrm{Verheijen\;01}$')
+        plt.scatter(1e10 * mass_v, np.log10(vcirc_v), color='lightgray', s=10, marker='s',
+            label=r'$\mathrm{Verheijen\;01}$')
 
         # Plot Courteau et al. 2007 sample #
         table = "./data/courteau.txt"
@@ -298,7 +315,8 @@ def tully_fisher(pdf, data, redshift, read):
 
         # Plot best fit from Dutton et al. 2011 #
         masses = np.arange(0.1, 50.0)
-        plt.plot(1e10 * masses, np.log10(obs_tullyfisher_fit(masses)), color='darkgray', lw=0.8, ls='--', label=r'$\mathrm{Dutton+\;11}$')
+        plt.plot(1e10 * masses, np.log10(obs_tullyfisher_fit(masses)), color='darkgray', lw=0.8, ls='--',
+            label=r'$\mathrm{Dutton+\;11}$')
 
         # Create the legend, save and close the figure #
         axis.legend(loc='lower right', fontsize=16, frameon=False, numpoints=1)
@@ -353,7 +371,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and do not rotate it #
             s.calc_sf_indizes(s.subfind)
@@ -380,23 +398,27 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[1e11, 1e13], ylim=[1e9, 1e12], xscale='log', yscale='log', xlabel=r'$\mathrm{M_{halo}/M_{\odot}}$',
-                            ylabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', aspect=None)
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[1e11, 1e13], ylim=[1e9, 1e12], xscale='log', yscale='log',
+            xlabel=r'$\mathrm{M_{halo}/M_{\odot}}$', ylabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', aspect=None)
+        figure.text(0.0, 0.9,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         halo_mass = np.load(path + 'halo_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-        plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=colors[0], s=200, zorder=5, marker='*')  # Plot the abundance matching relation.
+        plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=colors[0], s=200, zorder=5,
+            marker='*')  # Plot the abundance matching relation.
 
         # Plot the cosmic baryon fraction relation #
         masses = np.arange(15., 300.)
         cosmic_baryon_frac = 0.048 / 0.307
-        plt.plot(1e10 * masses, 1e10 * masses * cosmic_baryon_frac, color='k', ls='--', label=r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$')
+        plt.plot(1e10 * masses, 1e10 * masses * cosmic_baryon_frac, color='k', ls='--',
+            label=r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$')
 
         # Plot the Guo+10 relation #
         guo_high = guo_abundance_matching(masses) * 10 ** (+0.2)
@@ -453,7 +475,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and do not rotate it #
             s.calc_sf_indizes(s.subfind)
@@ -462,7 +484,9 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
             # Mask the data: stellar particles inside 0.1*R200c #
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
-            stellar_mask, = np.where((s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.)) - s.nparticlesall[:4].sum()
+            stellar_mask, = np.where(
+                (s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.)) - s.nparticlesall[
+                            :4].sum()
 
             # Calculate the bolometric R-band magnitude in units of the bolometric magnitude of the Sun #
             Rband = convert_rband_to_Rband_mag(s.data['gsph'][stellar_mask, 5], s.data['gsph'][stellar_mask, 4])
@@ -470,7 +494,8 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
 
             stellar_mask, = np.where((s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.))
             gas_mask, = np.where((s.data['type'] == 0) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))
-            gas_fraction = np.sum(s.data['mass'][gas_mask]) / (np.sum(s.data['mass'][gas_mask]) + np.sum(s.data['mass'][stellar_mask]))
+            gas_fraction = np.sum(s.data['mass'][gas_mask]) / (
+                np.sum(s.data['mass'][gas_mask]) + np.sum(s.data['mass'][stellar_mask]))
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'M_R_' + str(s.haloname), M_R)
@@ -483,17 +508,21 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$', ylabel=r'$\mathrm{f_{gas}}$', aspect=None)
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$',
+            ylabel=r'$\mathrm{f_{gas}}$', aspect=None)
+        figure.text(0.0, 0.9,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         gas_fraction = np.load(path + 'gas_fraction_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         M_R = np.load(path + 'M_R_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-        plt.scatter(M_R, gas_fraction, color=colors[0], s=200, zorder=5, marker='*')  # Plot the gas fraction as a function R-band magnitude.
+        plt.scatter(M_R, gas_fraction, color=colors[0], s=200, zorder=5,
+            marker='*')  # Plot the gas fraction as a function R-band magnitude.
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -532,16 +561,17 @@ def bar_strength_profile(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
             mask, = np.where(s.data['age'] > 0.)  # Mask the data: select stellar particles.
 
-            z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][mask, 0] * 1e3, s.data['pos'][mask, 1] * 1e3,
-                                                                    s.data['pos'][mask, 2] * 1e3)  # In Mpc.
-            s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
+            z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][mask, 0] * 1e3,
+                s.data['pos'][mask, 1] * 1e3, s.data['pos'][mask, 2] * 1e3)  # In Mpc.
+            s.data['pos'] = np.vstack(
+                (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
 
             # Split up galaxy in radial bins and calculate the Fourier components #
@@ -578,12 +608,14 @@ def bar_strength_profile(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[0, 10], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{\sqrt{a_{2}^{2}+b_{2}^{2}}/a_{0}}$',
-                            aspect=None)
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[0, 10], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$',
+            ylabel=r'$\mathrm{\sqrt{a_{2}^{2}+b_{2}^{2}}/a_{0}}$', aspect=None)
+        figure.text(0.0, 0.9,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         ratio = np.load(path + 'ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -592,8 +624,8 @@ def bar_strength_profile(pdf, data, redshift, read):
         # Plot the bar strength radial profile and get an estimate for the bar length from the maximum strength #
         A2 = max(ratio)
         plt.plot(r_m, ratio, color=colors[0], label=r'$\mathrm{A_{2}=%.2f}$' % A2)
-        plt.plot([r_m[np.where(ratio == A2)], r_m[np.where(ratio == A2)]], [-0.0, A2], color=colors[0], linestyle='dashed',
-                 label=r'$\mathrm{r_{A_{2}}=%.2fkpc}$' % r_m[np.where(ratio == A2)])
+        plt.plot([r_m[np.where(ratio == A2)], r_m[np.where(ratio == A2)]], [-0.0, A2], color=colors[0],
+            linestyle='dashed', label=r'$\mathrm{r_{A_{2}}=%.2fkpc}$' % r_m[np.where(ratio == A2)])
 
         # Create the legend, save and close the figure #
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
@@ -633,7 +665,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -648,7 +680,8 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
             vertical_mask, = np.where((abs(sdata['pos'][:, 0]) < 0.005))  # Vertical cut in Mpc.
             r_xy = np.sqrt((sdata['pos'][:, 1:] ** 2).sum(axis=1))
 
-            mass, edges = np.histogram(r_xy[vertical_mask], bins=50, range=(0., radial_cut), weights=sdata['mass'][vertical_mask])
+            mass, edges = np.histogram(r_xy[vertical_mask], bins=50, range=(0., radial_cut),
+                weights=sdata['mass'][vertical_mask])
             surface = np.zeros(len(edges) - 1)
             surface[:] = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
             surface_density = np.divide(mass, surface)
@@ -699,12 +732,14 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plot_tools.set_axis(axis, xlim=[0, 30], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
-                            ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None)
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+            ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None)
+        figure.text(0.0, 0.9,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         r = np.load(path + 'r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -724,8 +759,10 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
         plt.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1])
         plt.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0])
 
-        figure.text(0.8, 0.82, r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
-            1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16, transform=axis.transAxes)
+        figure.text(0.8, 0.82,
+            r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
+                1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16,
+            transform=axis.transAxes)
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -775,7 +812,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -800,16 +837,16 @@ def circular_velocity_curves(pdf, data, redshift, read):
             shell_velocity = np.zeros((n_shells, 6))
             for i in range(6):
                 rp = calcGrid.calcRadialProfile(s.data['pos'][start[i]:end[i], :].astype('float64'),
-                                                s.data['mass'][start[i]:end[i]].astype('float64'), 0, n_shells, dr, s.center[0], s.center[1],
-                                                s.center[2])
+                    s.data['mass'][start[i]:end[i]].astype('float64'), 0, n_shells, dr, s.center[0], s.center[1],
+                    s.center[2])
                 radius = rp[1, :]
                 shell_mass[:, i] = rp[0, :]
                 for j in range(1, n_shells):
                     shell_mass[j, i] += shell_mass[j - 1, i]
                 shell_velocity[:, i] = np.sqrt(G * shell_mass[:, i] * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
 
-            rp = calcGrid.calcRadialProfile(s.data['pos'].astype('float64'), s.data['mass'].astype('float64'), 0, n_shells, dr, s.center[0],
-                                            s.center[1], s.center[2])
+            rp = calcGrid.calcRadialProfile(s.data['pos'].astype('float64'), s.data['mass'].astype('float64'), 0,
+                n_shells, dr, s.center[0], s.center[1], s.center[2])
             radius = rp[1, :]
             total_mass = rp[0, :]
 
@@ -829,12 +866,14 @@ def circular_velocity_curves(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$',
-                            aspect=None)
-        figure.text(0.0, 0.9, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$',
+            ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$', aspect=None)
+        figure.text(0.0, 0.9,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         radius = np.load(path + 'radius_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -844,9 +883,12 @@ def circular_velocity_curves(pdf, data, redshift, read):
         # Plot the circular velocity curve #
         vtot = np.sqrt(G * total_mass * 1e10 * msol / (radius * 1e6 * parsec)) / 1e5
         plt.plot(radius * 1e3, vtot, color=colors[0], linewidth=4, label=r'$\mathrm{Total}$')
-        plt.plot(radius * 1e3, shell_velocity[:, 0], color=colors[3], linestyle='--', linewidth=3, label=r'$\mathrm{Gas}$')
-        plt.plot(radius * 1e3, shell_velocity[:, 4], color=colors[2], linestyle='--', linewidth=3, label=r'$\mathrm{Stars}$')
-        plt.plot(radius * 1e3, shell_velocity[:, 1], color=colors[1], linestyle='--', linewidth=3, label=r'$\mathrm{Dark\;matter}$')
+        plt.plot(radius * 1e3, shell_velocity[:, 0], color=colors[3], linestyle='--', linewidth=3,
+            label=r'$\mathrm{Gas}$')
+        plt.plot(radius * 1e3, shell_velocity[:, 4], color=colors[2], linestyle='--', linewidth=3,
+            label=r'$\mathrm{Stars}$')
+        plt.plot(radius * 1e3, shell_velocity[:, 1], color=colors[1], linestyle='--', linewidth=3,
+            label=r'$\mathrm{Dark\;matter}$')
 
         # Create the legend, save and close the figure #
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
@@ -886,13 +928,13 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
             if str(s.haloname) in names:
                 continue
             else:
-                print("Analysing halo:", str(s.haloname))
+                print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            mask, = np.where(
-                (s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius R200c.
+            mask, = np.where((s.data['type'] == 0) & (s.r() < s.subfind.data['frc2'][
+                0]))  # Mask the data: select gas cells inside the virial radius R200c.
 
             # Calculate the temperature of the gas cells #
             ne = s.data['ne'][mask]
@@ -913,22 +955,25 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(10, 7.5))
         gs = gridspec.GridSpec(1, 2, wspace=0.22, width_ratios=[1, 0.05])
         axis00, axis01 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1])
 
-        plot_tools.set_axis(axis00, xlim=[1e-2, 2e2], ylim=[1e1, 1e8], xscale='log', yscale='log', xlabel=r'$\mathrm{R/kpc}$',
-                            ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major')
-        figure.text(0.02, 0.92, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis00.transAxes)
+        plot_tools.set_axis(axis00, xlim=[1e-2, 2e2], ylim=[1e1, 1e8], xscale='log', yscale='log',
+            xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major')
+        figure.text(0.02, 0.92,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the temperature as a function of distance of gas cells #
-        hb = axis00.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log', cmap='gist_earth_r')
+        hb = axis00.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log',
+            cmap='gist_earth_r')
         plot_tools.create_colorbar(axis01, hb, label=r'$\mathrm{Counts\;per\;hexbin}$')
 
         # Save and close the figure #
@@ -969,19 +1014,21 @@ def decomposition_IT20(date, data, redshift, read):
             # if str(s.haloname) in names:
             #     continue
             # else:
-            #     print("Analysing halo:", str(s.haloname))
+            #     print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind)
 
-            stellar_mask, = np.where((s.data['age'] > 0.0) & (s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
+            stellar_mask, = np.where((s.data['age'] > 0.0) & (
+                s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
 
-            # Calculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the galactic angular momentum
+            # Calculate the angular momentum for each particle and for the galaxy and the unit vector parallel to the
+            # galactic angular momentum
             # vector #
             sp_mass = s.data['mass'][stellar_mask]
-            prc_angular_momentum = s.data['mass'][stellar_mask, np.newaxis] * np.cross(s.data['pos'][stellar_mask] * 1e3,
-                                                                                       s.data['vel'][stellar_mask])  # In Msun kpc km s^-1.
+            prc_angular_momentum = s.data['mass'][stellar_mask, np.newaxis] * np.cross(
+                s.data['pos'][stellar_mask] * 1e3, s.data['vel'][stellar_mask])  # In Msun kpc km s^-1.
 
             glx_stellar_angular_momentum = np.sum(prc_angular_momentum, axis=0)
             glx_unit_vector = glx_stellar_angular_momentum / np.linalg.norm(glx_stellar_angular_momentum)
@@ -990,35 +1037,43 @@ def decomposition_IT20(date, data, redshift, read):
             sp_am_unit_vector = RotateCoordinates.rotate_X(s.data, glx_unit_vector, stellar_mask)
 
             # Step (ii) in Section 2.2 Decomposition of IT20 #
-            # Calculate the azimuth (alpha) and elevation (delta) angle of the angular momentum of all stellar particles #
+            # Calculate the azimuth (alpha) and elevation (delta) angle of the angular momentum of all stellar
+            # particles #
             alpha = np.degrees(np.arctan2(sp_am_unit_vector[:, 1], sp_am_unit_vector[:, 2]))  # In degrees.
             delta = np.degrees(np.arcsin(sp_am_unit_vector[:, 0]))  # In degrees.
 
             # Step (ii) in Section 2.2 Decomposition of IT20 #
             # Generate the pixelisation of the angular momentum map #
-            nside = 2 ** 4  # Define the resolution of the grid (number of divisions along the side of a base-resolution grid cell).
+            nside = 2 ** 4  # Define the resolution of the grid (number of divisions along the side of a
+            # base-resolution grid cell).
             hp = HEALPix(nside=nside)  # Initialise the HEALPix pixelisation class.
-            indices = hp.lonlat_to_healpix(alpha * u.deg, delta * u.deg)  # Create a list of HEALPix indices from particles's alpha and delta.
-            densities = np.bincount(indices, minlength=hp.npix)  # Count number of data points in each HEALPix grid cell.
+            indices = hp.lonlat_to_healpix(alpha * u.deg,
+                delta * u.deg)  # Create a list of HEALPix indices from particles's alpha and delta.
+            densities = np.bincount(indices,
+                minlength=hp.npix)  # Count number of data points in each HEALPix grid cell.
 
             # Step (iii) in Section 2.2 Decomposition of IT20 #
             # Smooth the angular momentum map with a top-hat filter of angular radius 30 degrees #
             smoothed_densities = np.zeros(hp.npix)
             # Loop over all grid cells #
             for i in range(hp.npix):
-                mask = hlp.query_disc(nside, hlp.pix2vec(nside, i), np.pi / 6.0)  # Do a 30 degree cone search around each grid cell.
-                smoothed_densities[i] = np.mean(densities[mask])  # Average the densities of the ones inside and assign this value to the grid cell.
+                mask = hlp.query_disc(nside, hlp.pix2vec(nside, i),
+                    np.pi / 6.0)  # Do a 30 degree cone search around each grid cell.
+                smoothed_densities[i] = np.mean(
+                    densities[mask])  # Average the densities of the ones inside and assign this value to the grid cell.
 
             # Step (iii) in Section 2.2 Decomposition of IT20 #
             # Find the location of the density maximum #
             index_densest = np.argmax(smoothed_densities)
-            alpha_densest = (hp.healpix_to_lonlat([index_densest])[0].value + np.pi) % (2 * np.pi) - np.pi  # In radians.
-            delta_densest = (hp.healpix_to_lonlat([index_densest])[1].value + np.pi / 2) % (2 * np.pi) - np.pi / 2  # In radians.
+            alpha_densest = (hp.healpix_to_lonlat([index_densest])[0].value + np.pi) % (
+                2 * np.pi) - np.pi  # In radians.
+            delta_densest = (hp.healpix_to_lonlat([index_densest])[1].value + np.pi / 2) % (
+                2 * np.pi) - np.pi / 2  # In radians.
 
             # Step (iv) in Section 2.2 Decomposition of IT20 #
             # Calculate the angular separation of each stellar particle from the centre of the densest grid cell #
-            Delta_theta = np.arccos(np.sin(delta_densest) * np.sin(np.radians(delta)) + np.cos(delta_densest) * np.cos(np.radians(delta)) * np.cos(
-                alpha_densest - np.radians(alpha)))  # In radians.
+            Delta_theta = np.arccos(np.sin(delta_densest) * np.sin(np.radians(delta)) + np.cos(delta_densest) * np.cos(
+                np.radians(delta)) * np.cos(alpha_densest - np.radians(alpha)))  # In radians.
 
             # Step (v) in Section 2.2 Decomposition of IT20 #
             # Calculate the disc mass fraction as the mass within 30 degrees from the densest grid cell #
@@ -1053,6 +1108,7 @@ def decomposition_IT20(date, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(10, 7.5))
         gs = gridspec.GridSpec(1, 2, wspace=0.2, width_ratios=[1, 0.05])
@@ -1062,8 +1118,9 @@ def decomposition_IT20(date, data, redshift, read):
         axis00.set_ylabel(r'$\mathrm{\delta/\degree}$', size=16)
         axis00.set_yticklabels(['', '-60', '', '-30', '', '0', '', '30', '', '60', ''], size=16)
         axis00.set_xticklabels(['', '-120', '', '-60', '', '0', '', '60', '', '120', ''], size=16)
-        figure.text(0.02, 1, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis00.transAxes)
+        figure.text(0.02, 1,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         density_map = np.load(path + 'density_map_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1118,7 +1175,7 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
             # if str(s.haloname) in names:
             #     continue
             # else:
-            #     print("Analysing halo:", str(s.haloname))
+            #     print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1130,63 +1187,73 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
 
             # Calculate the normalised (wrt CoM) radial velocities #
             # radial_mask, = np.where(s.r() < 0.1 * s.subfind.data['frc2'][0])
-            # CoM_velocity = (s.data['vel'][radial_mask, :] * s.data['mass'][radial_mask][:, None]).sum(axis=0) / s.data['mass'][radial_mask].sum()
-            # radial_velocities = np.divide(((s.data['vel'][:, 1:] - CoM_velocity[1:]) * s.data['pos'][:, 1:] * 1e3).sum(axis=1), rxy)
-            radial_velocities = np.divide((s.data['pos'][:, 1] * s.data['vel'][:, 1] * 1e3 + s.data['pos'][:, 2] * s.data['vel'][:, 2] * 1e3), rxy)
+            # CoM_velocity = (s.data['vel'][radial_mask, :] * s.data['mass'][radial_mask][:, None]).sum(axis=0) /
+            # s.data['mass'][radial_mask].sum()
+            # radial_velocities = np.divide(((s.data['vel'][:, 1:] - CoM_velocity[1:]) * s.data['pos'][:,
+            # 1:] * 1e3).sum(axis=1), rxy)
+            radial_velocities = np.divide(
+                (s.data['pos'][:, 1] * s.data['vel'][:, 1] * 1e3 + s.data['pos'][:, 2] * s.data['vel'][:, 2] * 1e3),
+                rxy)
 
             # Mask the data and calculate the mass distribution of stellar particles #
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
             stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.) & (rxy < 30.0) & (
                 z < 5))  # Mask the data: select all stellar particles inside a 30x30x1kpc region #
-            stellar_mass, edges = np.histogram(rxy[stellar_mask], bins=60, range=[0, 30], weights=s.data['mass'][stellar_mask])
+            stellar_mass, edges = np.histogram(rxy[stellar_mask], bins=60, range=[0, 30],
+                weights=s.data['mass'][stellar_mask])
             stellar_centre = 0.5 * (edges[1:] + edges[:-1])
 
             # Calculate the distribution of the z and r components of the velocity #
             velocities_z, edges = np.histogram(rxy[stellar_mask], bins=60, range=[0, 30],
-                                               weights=s.data['mass'][stellar_mask] * s.data['vel'][stellar_mask, 0])
+                weights=s.data['mass'][stellar_mask] * s.data['vel'][stellar_mask, 0])
             velocities_r, edges = np.histogram(rxy[stellar_mask], bins=60, range=[0, 30],
-                                               weights=s.data['mass'][stellar_mask] * radial_velocities[stellar_mask])
+                weights=s.data['mass'][stellar_mask] * radial_velocities[stellar_mask])
             velocities_z /= stellar_mass
             velocities_r /= stellar_mass
 
             # Calculate the distribution of the z and r components of the velocity dispersion #
             bin_id = np.digitize(rxy[stellar_mask], edges) - 1
             sigma_z, edges = np.histogram(rxy[stellar_mask], bins=60, range=[0, 30],
-                                          weights=s.data['mass'][stellar_mask] * (s.data['vel'][stellar_mask, 0] - velocities_z[bin_id]) ** 2)
+                weights=s.data['mass'][stellar_mask] * (s.data['vel'][stellar_mask, 0] - velocities_z[bin_id]) ** 2)
             sigma_r, edges = np.histogram(rxy[stellar_mask], bins=60, range=[0, 30],
-                                          weights=s.data['mass'][stellar_mask] * (radial_velocities[stellar_mask] - velocities_r[bin_id]) ** 2)
+                weights=s.data['mass'][stellar_mask] * (radial_velocities[stellar_mask] - velocities_r[bin_id]) ** 2)
             stellar_sigma_z = np.sqrt(sigma_z / stellar_mass)
             stellar_sigma_r = np.sqrt(sigma_r / stellar_mass)
 
             # Calculate 3D stellar velocity dispersion fot the whole galaxy #
-            CoM_velocity = np.sum(s.data['mass'][stellar_mask][:, None] * s.data['vel'][stellar_mask, :], axis=0) / np.sum(
-                s.data['mass'][stellar_mask], axis=0)
-            sigma = np.sqrt(np.sum(s.data['mass'][stellar_mask][:, None] * (s.data['vel'][stellar_mask, :] - CoM_velocity) ** 2.0) / np.sum(
-                s.data['mass'][stellar_mask], axis=0))
+            CoM_velocity = np.sum(s.data['mass'][stellar_mask][:, None] * s.data['vel'][stellar_mask, :],
+                axis=0) / np.sum(s.data['mass'][stellar_mask], axis=0)
+            sigma = np.sqrt(np.sum(s.data['mass'][stellar_mask][:, None] * (
+                s.data['vel'][stellar_mask, :] - CoM_velocity) ** 2.0) / np.sum(s.data['mass'][stellar_mask], axis=0))
 
             # Calculate the normalised (wrt CoM) radial velocities #
             radial_mask, = np.where(s.r() < 0.1 * s.subfind.data['frc2'][0])
-            CoM_velocity = (s.data['vel'][radial_mask, :] * s.data['mass'][radial_mask][:, None]).sum(axis=0) / s.data['mass'][radial_mask].sum()
-            radial_velocities = np.divide(((s.data['vel'][:, 1:] - CoM_velocity[1:]) * s.data['pos'][:, 1:] * 1e3).sum(axis=1), rxy)
+            CoM_velocity = (s.data['vel'][radial_mask, :] * s.data['mass'][radial_mask][:, None]).sum(axis=0) / \
+                           s.data['mass'][radial_mask].sum()
+            radial_velocities = np.divide(
+                ((s.data['vel'][:, 1:] - CoM_velocity[1:]) * s.data['pos'][:, 1:] * 1e3).sum(axis=1), rxy)
 
             # Mask the data and calculate the mass distribution of gas cells #
-            gas_mask, = np.where((s.data['type'] == 0) & (rxy < 30.0) & (z < 5))  # Mask the data: select all gas cells inside a 30x30x1kpc region #
+            gas_mask, = np.where((s.data['type'] == 0) & (rxy < 30.0) & (
+                z < 5))  # Mask the data: select all gas cells inside a 30x30x1kpc region #
             gas_mass, edges = np.histogram(rxy[gas_mask], bins=60, range=[0, 30], weights=s.data['mass'][gas_mask])
             gas_centre = 0.5 * (edges[1:] + edges[:-1])
 
             # Calculate the distribution of the z and r components of the velocity #
-            velocities_z, edges = np.histogram(rxy[gas_mask], bins=60, range=[0, 30], weights=s.data['mass'][gas_mask] * s.data['vel'][gas_mask, 0])
-            velocities_r, edges = np.histogram(rxy[gas_mask], bins=60, range=[0, 30], weights=s.data['mass'][gas_mask] * radial_velocities[gas_mask])
+            velocities_z, edges = np.histogram(rxy[gas_mask], bins=60, range=[0, 30],
+                weights=s.data['mass'][gas_mask] * s.data['vel'][gas_mask, 0])
+            velocities_r, edges = np.histogram(rxy[gas_mask], bins=60, range=[0, 30],
+                weights=s.data['mass'][gas_mask] * radial_velocities[gas_mask])
             velocities_z /= gas_mass
             velocities_r /= gas_mass
 
             # Calculate the distribution of the z and r components of the velocity dispersion #
             bin_id = np.digitize(rxy[gas_mask], edges) - 1
             sigma_z, edges = np.histogram(rxy[gas_mask], bins=60, range=[0, 30],
-                                          weights=s.data['mass'][gas_mask] * (s.data['vel'][gas_mask, 0] - velocities_z[bin_id]) ** 2)
+                weights=s.data['mass'][gas_mask] * (s.data['vel'][gas_mask, 0] - velocities_z[bin_id]) ** 2)
             sigma_r, edges = np.histogram(rxy[gas_mask], bins=60, range=[0, 30],
-                                          weights=s.data['mass'][gas_mask] * (radial_velocities[gas_mask] - velocities_r[bin_id]) ** 2)
+                weights=s.data['mass'][gas_mask] * (radial_velocities[gas_mask] - velocities_r[bin_id]) ** 2)
             gas_sigma_z = np.sqrt(sigma_z / gas_mass)
             gas_sigma_r = np.sqrt(sigma_r / gas_mass)
 
@@ -1206,13 +1273,15 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
 
-        plot_tools.set_axis(axis, xlim=[0, 30], ylim=[0, 160], xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{\sigma/(km\;s^{-1})}$', aspect=None,
-                            which='major')
-        figure.text(0.02, 1, r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)), fontsize=16,
-                    transform=axis.transAxes)
+        plot_tools.set_axis(axis, xlim=[0, 30], ylim=[0, 160], xlabel=r'$\mathrm{R/kpc}$',
+            ylabel=r'$\mathrm{\sigma/(km\;s^{-1})}$', aspect=None, which='major')
+        figure.text(0.02, 1,
+            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         gas_centre = np.load(path + 'gas_centre_' + str(re.split('_|.npy', names[i])[1]) + '.npy')

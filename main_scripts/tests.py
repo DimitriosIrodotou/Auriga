@@ -37,6 +37,7 @@ def test_gas_flow(date):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 10))
 
