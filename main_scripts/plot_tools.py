@@ -100,7 +100,7 @@ def binned_sum(x_data, y_data, n_bins, log=False):
     return x_value, sum
 
 
-def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=16):
+def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=20):
     """
     Generate a colorbar.
     :param axis: colorbar axis.
@@ -310,7 +310,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
             axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple3 is True:
-        gs = gridspec.GridSpec(6, 4, hspace=0.1, wspace=0.1, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5],
+        gs = gridspec.GridSpec(6, 4, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5],
             width_ratios=[1, 1, 1, 0.1])
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])

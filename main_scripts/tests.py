@@ -29,7 +29,7 @@ def test_gas_flow(date):
     :return: None
     """
     print("Invoking test_gas_flow")
-    path = '/u/di43/Auriga/plots/data/' + 'gf/'
+    path = '/u/di43/Auriga/plots/data/' + 'gfml/'
 
     # Get the names and sort them #
     names = glob.glob(path + '/name_06NoRNoQ.*')

@@ -320,7 +320,7 @@ class AurigaPdf:
         # evolution.gas_temperature_regimes(pdf, self, read=False)
         # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
         # evolution.sfr_stars_gas_regimes(pdf, self, region='outer', read=False)
-        # evolution.gas_flow_loading(pdf, self, read=False, method='shell')
+        # evolution.gas_flow_mass_loading(pdf, self, read=False, method='shell')
         # AGN #
         # evolution.AGN_modes_distribution(date, self, read=False)
         # evolution.AGN_feedback_kernel(pdf, self, ds=False, read=False)
@@ -356,7 +356,7 @@ class AurigaPdf:
         # combinations.gas_temperature_regimes_combination(pdf)
         # combinations.AGN_modes_distribution_combination(date)
         # combinations.AGN_feedback_kernel_combination(pdf)
-        combinations.loading_combination(pdf, method='time_interval')
+        # combinations.mass_loading_combination(pdf, method='shell')
 
         # Tests #
         # tests.test_gas_flow(date)

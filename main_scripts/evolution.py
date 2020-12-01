@@ -758,14 +758,14 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 
 
 @vectorize_parallel(method='processes', num_procs=8)
-def get_gf_data(snapshot_ids, halo):
+def get_gfml_data(snapshot_ids, halo):
     """
     Parallelised method to the gas inflow/outflow.
     :param snapshot_ids: ids of the snapshots.
     :param halo: data for the halo.
     :return: lookback time, SFR, sfg_ratio, wg_ratio, hg_ratio, np.sum(gas_mass), stellar_mass.
     """
-    print("Invoking get_gf_data")
+    print("Invoking get_gfml_data")
     # Read desired galactic property(ies) for specific particle type(s) for
     # Auriga halo(es) #
     particle_type = [0, 4]
@@ -802,7 +802,7 @@ def get_gf_data(snapshot_ids, halo):
         s.data['mass'][stellar_mask], s.data['mass'][wind_mask], s.data['pos'][gas_mask]
 
 
-def gas_flow_loading(pdf, data, read, method):
+def gas_flow_mass_loading(pdf, data, read, method):
     """
     Plot the evolution of gas flow and mass loading for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
@@ -814,7 +814,7 @@ def gas_flow_loading(pdf, data, read, method):
     print("Invoking gas_flow")
     redshift_cut = 7
     dT = 250  # In Myr.
-    path = '/u/di43/Auriga/plots/data/' + 'gf/'
+    path = '/u/di43/Auriga/plots/data/' + 'gfml/'
 
     # Read the data #
     if read is True:
@@ -838,7 +838,7 @@ def gas_flow_loading(pdf, data, read, method):
             redshift_mask, = np.where(redshifts <= redshift_cut)
             snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
 
-            gf_data = np.array(get_gf_data(snapshot_ids, halo))  # Get gas flow data.
+            gf_data = np.array(get_gfml_data(snapshot_ids, halo))  # Get gas flow data.
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(name), name)
