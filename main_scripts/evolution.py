@@ -72,8 +72,7 @@ def sfr(pdf, data, read):
                 s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select stellar particles inside
             # 0.1*R200c.
             lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask], is_flat=True)  # In Gyr.
-            weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In
-            # Msun yr^-1.
+            weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr^-1.
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)

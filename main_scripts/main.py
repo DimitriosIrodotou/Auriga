@@ -280,7 +280,7 @@ class AurigaPdf:
         :return: None
         """
         redshift = 0.0
-        pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
+        # pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
 
         # Projections #
         # Stellar #
@@ -309,7 +309,7 @@ class AurigaPdf:
         # galaxy.bar_strength_profile(pdf, self, redshift, read=False)
         # galaxy.stellar_surface_density_profiles(pdf, self, redshift, read=False)
         # galaxy.circular_velocity_curves(pdf, self, redshift, read=False)
-        # galaxy.gas_temperature_vs_distance(pdf, self, redshift, read=False)
+        # galaxy.gas_temperature_vs_distance(date, self, redshift, read=False)
         # galaxy.decomposition_IT20(date, self, redshift, read=False)
         # galaxy.velocity_dispersion_profiles(pdf, self, redshift, read=False)
 
@@ -349,7 +349,7 @@ class AurigaPdf:
         # combinations.stellar_surface_density_profiles_combination(pdf)
         # combinations.circular_velocity_curves_combination(pdf)
         # combinations.ssdp_cvc_combination(pdf)
-        # combinations.gas_temperature_vs_distance_combination(date)
+        combinations.gas_temperature_vs_distance_combination(date)
         # combinations.decomposition_IT20_combination(date, redshift)
         # Evolution #
         # combinations.bar_strength_combination(pdf)
@@ -361,7 +361,7 @@ class AurigaPdf:
         # Tests #
         # tests.test_gas_flow(date)
 
-        pdf.close()
+        # pdf.close()
         return None
 
 

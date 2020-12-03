@@ -897,10 +897,10 @@ def circular_velocity_curves(pdf, data, redshift, read):
     return None
 
 
-def gas_temperature_vs_distance(pdf, data, redshift, read):
+def gas_temperature_vs_distance(date, data, redshift, read):
     """
     Plot the temperature as a function of distance of gas cells for Auriga halo(es).
-    :param pdf: path to save the pdf from main.make_pdf
+    :param date: date.
     :param data: data from main.make_pdf
     :param redshift: redshift from main.make_pdf
     :param read: boolean to read new data.
@@ -917,7 +917,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
 
         # Read desired galactic property(ies) for specific particle type(s) for Auriga halo(es) #
         particle_type = [0, 4]
-        attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol']
+        attributes = ['age', 'mass', 'ne', 'pos', 'rho', 'u', 'vol', 'sfr']
         data.select_haloes(default_level, redshift, loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
 
         # Loop over all available haloes #
@@ -947,6 +947,7 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
             np.save(path + 'temperature_' + str(s.haloname), temperature)
+            np.save(path + 'sfr_' + str(s.haloname), s.data['sfr'][mask])
             np.save(path + 'spherical_distance_' + str(s.haloname), s.r()[mask])
 
     # Load and plot the data #
@@ -968,16 +969,18 @@ def gas_temperature_vs_distance(pdf, data, redshift, read):
             fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
+        sfr = np.load(path + 'sfr_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the temperature as a function of distance of gas cells #
-        hb = axis00.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log',
-            cmap='gist_earth_r')
-        plot_tools.create_colorbar(axis01, hb, label=r'$\mathrm{Counts\;per\;hexbin}$')
+        hb = axis00.scatter(spherical_distance * 1e3, temperature, s=5, edgecolor='none', c=sfr * 1e6,
+            cmap='gist_earth', vmin=0, vmax=650)
+        plot_tools.create_colorbar(axis01, hb, label="$\mathrm{SFR/(M_\odot\;Myr^{-1})}$")
 
         # Save and close the figure #
-        pdf.savefig(figure, bbox_inches='tight')
+        plt.savefig('/u/di43/Auriga/plots/' + 'gtd-' + str(re.split('_|.npy', names[i])[1]) + '-' + date + '.png',
+            bbox_inches='tight')
         plt.close()
     return None
 
@@ -1138,7 +1141,8 @@ def decomposition_IT20(date, data, redshift, read):
         figure.text(0.42, 1.1, r'$\mathrm{D/T=%.2f }$' % disc_fraction_IT20, fontsize=16, transform=axis00.transAxes)
 
         # Add save and close the figure #
-        plt.savefig('/u/di43/Auriga/plots/' + 'di-' + date + '.png', bbox_inches='tight')
+        plt.savefig('/u/di43/Auriga/plots/' + 'di-' + str(re.split('_|.npy', names[i])[1]) + '-' + date + '.png',
+            bbox_inches='tight')
         plt.close()
     return None
 

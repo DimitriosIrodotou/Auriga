@@ -926,12 +926,13 @@ def gas_temperature_vs_distance_combination(date):
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]):
         # Load the data #
+        sfr = np.load(path + 'sfr_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the temperature as a function of distance of gas cells #
-        hb = axis.hexbin(spherical_distance * 1e3, temperature, bins='log', xscale='log', yscale='log',
-            cmap='terrain_r')
+        hb = axis.scatter(spherical_distance * 1e3, temperature, s=5, edgecolor='none', c=sfr * 1e6,
+            cmap='nipy_spectral_r', vmin=0, vmax=650)
 
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis.transAxes)
@@ -942,8 +943,8 @@ def gas_temperature_vs_distance_combination(date):
         axis.set_xticklabels([])
 
     # Add a colorbar, save and close the figure #
-    plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$')
-    plt.savefig('/u/di43/Auriga/plots/' + 'gtd-' + date + '.png', bbox_inches='tight')
+    plot_tools.create_colorbar(axiscbar, hb, label="$\mathrm{SFR/(M_\odot\;Myr^{-1})}$")
+    plt.savefig('/u/di43/Auriga/plots/' + 'gtdc-' + date + '.png', bbox_inches='tight')
     plt.close()
     return None
 
