@@ -280,7 +280,7 @@ class AurigaPdf:
         :return: None
         """
         redshift = 0.0
-        # pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
+        pdf = PdfPages('/u/di43/Auriga/plots/Auriga-' + date + '.pdf')
 
         # Projections #
         # Stellar #
@@ -318,7 +318,7 @@ class AurigaPdf:
         # evolution.sfr(pdf, self, read=False)
         # evolution.bar_strength(pdf, self, read=False)
         # evolution.gas_temperature_regimes(pdf, self, read=False)
-        # evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
+        evolution.delta_sfr_regimes(pdf, self, region='outer', read=False)
         # evolution.sfr_stars_gas_regimes(pdf, self, region='outer', read=False)
         # evolution.gas_flow_mass_loading(pdf, self, read=False, method='shell')
         # AGN #
@@ -349,19 +349,19 @@ class AurigaPdf:
         # combinations.stellar_surface_density_profiles_combination(pdf)
         # combinations.circular_velocity_curves_combination(pdf)
         # combinations.ssdp_cvc_combination(pdf)
-        combinations.gas_temperature_vs_distance_combination(date)
+        # combinations.gas_temperature_vs_distance_combination(date)
         # combinations.decomposition_IT20_combination(date, redshift)
         # Evolution #
         # combinations.bar_strength_combination(pdf)
         # combinations.gas_temperature_regimes_combination(pdf)
         # combinations.AGN_modes_distribution_combination(date)
         # combinations.AGN_feedback_kernel_combination(pdf)
-        # combinations.mass_loading_combination(pdf, method='shell')
+        # combinations.mass_loading_combination(pdf, method='time_interval')
 
         # Tests #
         # tests.test_gas_flow(date)
 
-        # pdf.close()
+        pdf.close()
         return None
 
 

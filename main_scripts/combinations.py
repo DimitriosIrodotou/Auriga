@@ -1519,7 +1519,7 @@ def mass_loading_combination(pdf, method):
     :param method: method to calculate flows.
     :return: None
     """
-    print("Invoking loading_combination")
+    print("Invoking mass_loading_combination")
     dT = 250  # In Myr.
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'gfml/'
@@ -1561,15 +1561,15 @@ def mass_loading_combination(pdf, method):
 
             if method == 'time_interval':
                 # Loop over all radial limits #
-                for k, radial_cut in enumerate([0.5]):
-                    for l in range(len(lookback_times)):
-                        outflow_mask, = np.where((spherical_radii[l] < radial_cut * Rvirs[l]) & (spherical_radii[l] + (
-                            radial_velocities[l] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[l]))
-                        inflow_mask, = np.where((spherical_radii[l] > radial_cut * Rvirs[l]) & (spherical_radii[l] + (
-                            radial_velocities[l] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[l]))
-                        mass_outflows[l] = np.divide(np.sum(gas_masses[l][outflow_mask]) * 1e10, dT * 1e6)
-                        mass_inflows[l] = np.divide(np.sum(gas_masses[l][inflow_mask]) * 1e10, dT * 1e6)
-                        mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l])
+                radial_cut=0.5
+                for l in range(len(lookback_times)):
+                    outflow_mask, = np.where((spherical_radii[l] < radial_cut * Rvirs[l]) & (spherical_radii[l] + (
+                        radial_velocities[l] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[l]))
+                    inflow_mask, = np.where((spherical_radii[l] > radial_cut * Rvirs[l]) & (spherical_radii[l] + (
+                        radial_velocities[l] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[l]))
+                    mass_outflows[l] = np.divide(np.sum(gas_masses[l][outflow_mask]) * 1e10, dT * 1e6)
+                    mass_inflows[l] = np.divide(np.sum(gas_masses[l][inflow_mask]) * 1e10, dT * 1e6)
+                    mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l])
 
             elif method == 'shell':
                 # Loop over all lookback times #

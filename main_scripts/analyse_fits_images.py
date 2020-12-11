@@ -77,7 +77,8 @@ def fit_isophotal_ellipses(name, ellipticity):
     image_fits = fits.getdata(name + '_ctf.fits', ext=0)
     centre = get_image_centre(name)
 
-    # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array #
+    # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
+    # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
@@ -86,7 +87,7 @@ def fit_isophotal_ellipses(name, ellipticity):
 
     # Fit a Sersic plus exponential profile #
     popt, pcov = curve_fit(fit_total_profile, isolist.sma, isolist.intens,
-                           p0=[isolist.intens[0], 2, isolist.intens[0], 2, 4])  # p0 = [I_0d, R_d, I_0b, b, n]
+        p0=[isolist.intens[0], 2, isolist.intens[0], 2, 4])  # p0 = [I_0d, R_d, I_0b, b, n]
     I_0d, R_d, I_0b, b, n = popt[0], popt[1], popt[2], popt[3], popt[4]
     R_eff = b * sersic_b_n(n) ** n
     print('I_0d:', I_0d, 'h:', R_d, 'I_0b:', I_0b, 'n:', n, 'R_eff:', R_eff)
@@ -112,7 +113,8 @@ def combine_images(name, ellipticity):
     model = fits.getdata(name + '_model.fits', ext=0)
     residual = fits.getdata(name + '_residual.fits', ext=0)
 
-    # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the image array #
+    # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
+    # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
@@ -120,14 +122,17 @@ def combine_images(name, ellipticity):
     # Plot the original data with some of the isophotes, the elliptical model image, and the residual image #
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(20, 10))
-    gs = gridspec.GridSpec(2, 4, hspace=0.3, wspace=0.3)
-    axis00, axis01, axis02, axis03 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(gs[0, 3])
-    axis10, axis11, axis12, axis13 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2]), plt.subplot(gs[1, 3])
+    gs = gridspec.GridSpec(2, 4, hspace=0.3, wspace=0.4)
+    axis00, axis01, axis02, axis03 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(
+        gs[0, 3])
+    axis10, axis11, axis12, axis13 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2]), plt.subplot(
+        gs[1, 3])
 
     axes = [axis00, axis01, axis02, axis03]
     images = [image_fits, image_fits, model, residual]
     for axis, image in zip(axes, images):
-        plot_tools.set_axis(axis, xlim=[0, 512], ylim=[0, 512], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$', which='major', aspect=None)
+        plot_tools.set_axis(axis, xlim=[0, 512], ylim=[0, 512], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$',
+            which='major', aspect=None)
         axis.grid(True, color='gray', linestyle='-')
         axis.imshow(image, origin='lower', cmap='gray')
 
@@ -137,27 +142,30 @@ def combine_images(name, ellipticity):
         x, y, = iso.sampled_coordinates()
         axis01.plot(x, y, color='tab:red')
 
-    figure.text(0.01, 0.95, r'$\mathrm{%s}$' % str(name), color='w', fontsize=16, transform=axis00.transAxes)
-    figure.text(0.01, 0.95, r'$\mathrm{Sample\;of\;isophotes}$', color='w', fontsize=16, transform=axis01.transAxes)
-    figure.text(0.01, 0.95, r'$\mathrm{Model}$', color='w', fontsize=16, transform=axis02.transAxes)
-    figure.text(0.01, 0.95, r'$\mathrm{Residual}$', color='w', fontsize=16, transform=axis03.transAxes)
+    figure.text(0.01, 0.92, r'$\mathrm{%s}$' % str(name), color='w', fontsize=16, transform=axis00.transAxes)
+    figure.text(0.01, 0.92, r'$\mathrm{Sample\;of\;isophotes}$', color='w', fontsize=16, transform=axis01.transAxes)
+    figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='w', fontsize=16, transform=axis02.transAxes)
+    figure.text(0.01, 0.92, r'$\mathrm{Residual}$', color='w', fontsize=16, transform=axis03.transAxes)
 
     axes = [axis10, axis11, axis12, axis13]
-    y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA/\deg}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$', r'$\mathrm{Mean\,intensity}$']
+    y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA/\deg}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$',
+        r'$\mathrm{Mean\,intensity}$']
     y_values = [isolist.eps, isolist.pa / np.pi * 180., isolist.tflux_e, isolist.intens]
-    y_lims = [(0, 1), (-20, 200), (0.9 * min(isolist.tflux_e), 1.1 * max(isolist.tflux_e)), (0.9 * min(isolist.intens), 1.1 * max(isolist.intens))]
+    y_lims = [(0, 1), (-20, 200), (0.9 * min(isolist.tflux_e), 1.1 * max(isolist.tflux_e)),
+        (0.9 * min(isolist.intens), 1.1 * max(isolist.intens))]
     y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.int_err]
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', color='k', markersize=10)
-        plot_tools.set_axis(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{(Semi-major\;axis\;length)/pix}$',
-                            ylabel=y_label, which='major', aspect=None)
+        plot_tools.set_axis(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log',
+            xlabel=r'$\mathrm{(Semi-major\;axis\;length)/pix}$', ylabel=y_label, which='major', aspect=None)
     axis12.set_yscale('log')
 
     # # Fit a Sersic plus exponential profile #
     # popt, pcov = curve_fit(fit_total_profile, isolist.sma, isolist.intens,
     #                        p0=[isolist.intens[0], 2, isolist.intens[0], 2, 4])  # p0 = [I_0d, R_d, I_0b, b, n]
     # I_0d, R_d, I_0b, b, n = popt[0], popt[1], popt[2], popt[3], popt[4]
-    # axis13.plot(isolist.sma, fit_total_profile(isolist.sma, popt[0], popt[1], popt[2], popt[3], popt[4]), color='purple')
+    # axis13.plot(isolist.sma, fit_total_profile(isolist.sma, popt[0], popt[1], popt[2], popt[3], popt[4]),
+    # color='purple')
     # R_eff = b * sersic_b_n(n) ** n
     # axis13.axvline(x=R_d, color='red')
     # axis13.axvline(x=R_eff, color='blue')
@@ -220,7 +228,8 @@ def sersic_b_n(n):
         b_n = 0.01945 + n * (- 0.8902 + n * (10.95 + n * (- 19.67 + n * 13.43)))
     else:
         x = 1.0 / n
-        b_n = -1.0 / 3.0 + 2. * n + x * (4.0 / 405. + x * (46. / 25515. + x * (131. / 1148175 - x * 2194697. / 30690717750.)))
+        b_n = -1.0 / 3.0 + 2. * n + x * (
+            4.0 / 405. + x * (46. / 25515. + x * (131. / 1148175 - x * 2194697. / 30690717750.)))
     return b_n
 
 
@@ -305,10 +314,13 @@ for name in names:
     # Use Imfit to analyse the image #  # --bootstrap 15
     os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
     # os.system('../../makeimage -o Au-18_psf.fits Au-18_config_Gaussian_psf.dat')  # Create the PSF image
-    os.system('../../imfit -c %s_config.dat --psf %s_psf.fits --nm --model-errors --cashstat ../../../plots/projections/Imfit/%s/%s_ctf.fits '
+    os.system('../../imfit -c %s_config.dat --psf %s_psf.fits --nm --model-errors --cashstat '
+              '../../../plots/projections/Imfit/%s/%s_ctf.fits '
               '--save-model=%s_model.fits '
-              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (name, name, name, name, name, name, name, date))
-    os.system('../../makeimage %s_bestfit_%s.dat --psf %s_psf.fits --nosave --print-fluxes' % (name, date, name))  # Print the flux ratios.
+              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
+                  name, name, name, name, name, name, name, date))
+    os.system('../../makeimage %s_bestfit_%s.dat --psf %s_psf.fits --nosave --print-fluxes' % (
+        name, date, name))  # Print the flux ratios.
 
     # Plot the image, model and residual #
     # plot_fits_image(name + '_psf')
