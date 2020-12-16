@@ -10,6 +10,7 @@ import matplotlib.style as style
 
 from const import *
 from sfigure import *
+from scipy import signal
 from loadmodules import *
 from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
@@ -447,7 +448,7 @@ def delta_sfr_regimes(pdf, data, region, read):
                 # stellar particles inside radial limits.
                 lookback_times = s.cosmology_get_lookback_time_from_a(s.data['age'][stellar_mask],
                     is_flat=True)  # In Gyr.
-                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr ^ -1.
+                weights = s.data['gima'][stellar_mask] * 1e10 / 1e9 / time_bin_width  # In Msun yr^-1.
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -473,7 +474,7 @@ def delta_sfr_regimes(pdf, data, region, read):
         plot_tools.set_axes_evolution(axis, axis2, ylim=(-1.1, 2e1), aspect=None)
     for axis in [axis20, axis21, axis22]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=(1e-1, 1e2), yscale='log', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, aspect=None)
     axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', size=16)
     axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$', size=16)
     axis20.set_ylabel(r'$\mathrm{Mass\;loading}$', size=16)
@@ -531,8 +532,18 @@ def delta_sfr_regimes(pdf, data, region, read):
                 mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l])
 
             # Plot the evolution of bar strength #
-            net_flow = mass_inflows / mass_outflows
-            bottom_axis.plot(lookback_times_gfml, net_flow, color=colors[i])
+            # net_flow = mass_inflows / mass_outflows
+            # bottom_axis.plot(lookback_times_gfml, net_flow, color=colors[i])
+
+            if i == 0:
+                original_net_flow = mass_inflows - mass_outflows
+            else:
+                # Plot the evolution of mass loading #
+                net_flow = mass_inflows - mass_outflows
+                net_flow = signal.resample(net_flow, len(original_net_flow))
+                lookback_times_gfml = signal.resample(lookback_times_gfml, len(original_net_flow))
+                bottom_axis.plot(lookback_times_gfml, (np.divide(net_flow - original_net_flow, original_net_flow)),
+                    color=colors[i])
 
             # Create the legend #
             top_axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
