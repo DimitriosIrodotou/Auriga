@@ -1352,10 +1352,12 @@ def central_combination(pdf, data, redshift, read):
                     numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                numthreads=8)["grid"]
-            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                numthreads=8)["grid"]
+            sfr_face_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
+            sfr_edge_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
@@ -1530,11 +1532,11 @@ def mass_loading_combination(pdf, method):
     figure = plt.figure(figsize=(20, 7.5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     axis002 = axis00.twiny()
-    plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e-1, 1e2], yscale='log', ylabel=r'$\mathrm{Mass\;loading}$',
+    plot_tools.set_axes_evolution(axis00, axis002,  ylabel=r'$\mathrm{Mass\;loading}$',
         aspect=None)
     for axis in [axis01, axis02]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e-1, 1e2], yscale='log', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, aspect=None)
         axis.set_yticklabels([])
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
@@ -1561,7 +1563,7 @@ def mass_loading_combination(pdf, method):
 
             if method == 'time_interval':
                 # Loop over all radial limits #
-                radial_cut=0.5
+                radial_cut = 0.5
                 for l in range(len(lookback_times)):
                     outflow_mask, = np.where((spherical_radii[l] < radial_cut * Rvirs[l]) & (spherical_radii[l] + (
                         radial_velocities[l] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[l]))
@@ -1585,10 +1587,19 @@ def mass_loading_combination(pdf, method):
                         radial_velocities[l][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
                     mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l])
 
-            # Plot the evolution of bar strength #
-            axis.plot(lookback_times, mass_loading, color=colors[j],
-                label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
-            axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            if j == 0:
+                original_mass_loading = mass_loading
+            else:
+                # Plot the evolution of mass loading #
+                mass_loading = plot_tools.linear_resample(mass_loading, len(original_mass_loading))
+                lookback_times = plot_tools.linear_resample(lookback_times, len(original_mass_loading))
+                # bottom_axis.plot(lookback_times_gfml,
+                #     np.divide(mass_loading - original_mass_loading, original_mass_loading), color=colors[i])
+
+                # Plot the evolution of bar strength #
+                axis.plot(lookback_times, np.divide(mass_loading, original_mass_loading), color=colors[j],
+                    label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
+                axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()

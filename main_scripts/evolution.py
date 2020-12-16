@@ -10,7 +10,6 @@ import matplotlib.style as style
 
 from const import *
 from sfigure import *
-from scipy import signal
 from loadmodules import *
 from matplotlib import gridspec
 from parallel_decorators import vectorize_parallel
@@ -456,11 +455,10 @@ def delta_sfr_regimes(pdf, data, region, read):
                 np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 20))
-    gs = gridspec.GridSpec(3, 3, hspace=0.5, wspace=0.05)
+    figure = plt.figure(figsize=(16, 9))
+    gs = gridspec.GridSpec(2, 3, hspace=0.5, wspace=0.05)
     axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
     axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
-    axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
 
     for axis in [axis10, axis11, axis12]:
         axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1, linscaley=0.1)
@@ -472,20 +470,15 @@ def delta_sfr_regimes(pdf, data, region, read):
     for axis in [axis10, axis11, axis12]:
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=(-1.1, 2e1), aspect=None)
-    for axis in [axis20, axis21, axis22]:
-        axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, aspect=None)
-    axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', size=16)
-    axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$', size=16)
-    axis20.set_ylabel(r'$\mathrm{Mass\;loading}$', size=16)
+    axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', size=20)
+    axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$', size=20)
 
     # Loop over all radial limits #
-    top_axes, middle_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12], [axis20, axis21, axis22]
-    for radial_cut_min, radial_cut_max, top_axis, middle_axis, bottom_axis in zip(radial_cuts_min, radial_cuts_max,
-        top_axes, middle_axes, bottom_axes):
+    top_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12]
+    for radial_cut_min, radial_cut_max, top_axis, bottom_axis in zip(radial_cuts_min, radial_cuts_max, top_axes,
+        bottom_axes):
         # Get the names and sort them #
         path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_cut_max) + '/'
-        path_gfml = '/u/di43/Auriga/plots/data/' + 'gfml/'
         names = glob.glob(path + '/name_06*')
         names.sort()
 
@@ -495,59 +488,18 @@ def delta_sfr_regimes(pdf, data, region, read):
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
-            sfrs = np.load(path_gfml + 'sfrs_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-            gas_masses = np.load(path_gfml + 'gas_masses_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
-                allow_pickle=True)
-            lookback_times_gfml = np.load(path_gfml + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
-                allow_pickle=True)
-            spherical_radii = np.load(path_gfml + 'spherical_radii_' + str(re.split('_|.npy', names[i])[1]) + '.npy',
-                allow_pickle=True)
-            radial_velocities = np.load(
-                path_gfml + 'radial_velocities_' + str(re.split('_|.npy', names[i])[1]) + '.npy', allow_pickle=True)
-
-            # Declare arrays to store the data #
-            mass_outflows, mass_inflows, mass_loading, wind_loading = np.zeros(len(lookback_times_gfml)), np.zeros(
-                len(lookback_times_gfml)), np.zeros(len(lookback_times_gfml)), np.zeros(len(lookback_times_gfml))
-
             # Plot the evolution of SFR and the normalised delta SFR #
             counts, bins, bars = top_axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins,
                 range=[0, 13], color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
             if i == 0:
                 original_bins, original_counts = bins, counts
             else:
-                middle_axis.plot(original_bins[:-1], (np.divide(counts - original_counts, original_counts)),
+                bottom_axis.plot(original_bins[:-1], np.divide(counts - original_counts, original_counts),
                     color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
 
-            for l in range(len(lookback_times_gfml)):
-                outflow_mask, = np.where(
-                    (spherical_radii[l] > radial_cut_min) & (spherical_radii[l] < radial_cut_max) & (
-                        radial_velocities[l] > 0))
-                inflow_mask, = np.where(
-                    (spherical_radii[l] > radial_cut_min) & (spherical_radii[l] < radial_cut_max) & (
-                        radial_velocities[l] < 0))
-                mass_outflows[l] = np.divide(np.sum(gas_masses[l][outflow_mask] * np.abs(
-                    radial_velocities[l][outflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
-                mass_inflows[l] = np.divide(np.sum(gas_masses[l][inflow_mask] * np.abs(
-                    radial_velocities[l][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
-                mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l])
-
-            # Plot the evolution of bar strength #
-            # net_flow = mass_inflows / mass_outflows
-            # bottom_axis.plot(lookback_times_gfml, net_flow, color=colors[i])
-
-            if i == 0:
-                original_net_flow = mass_inflows - mass_outflows
-            else:
-                # Plot the evolution of mass loading #
-                net_flow = mass_inflows - mass_outflows
-                net_flow = signal.resample(net_flow, len(original_net_flow))
-                lookback_times_gfml = signal.resample(lookback_times_gfml, len(original_net_flow))
-                bottom_axis.plot(lookback_times_gfml, (np.divide(net_flow - original_net_flow, original_net_flow)),
-                    color=colors[i])
-
             # Create the legend #
-            top_axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-            middle_axis.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1, ncol=2)
+            top_axis.legend(loc='upper right', fontsize=14, frameon=False, numpoints=1)
+            bottom_axis.legend(loc='upper center', fontsize=14, frameon=False, numpoints=1, ncol=2)
 
         # Add the text #
         figure.text(0.01, 0.92,
@@ -1005,9 +957,9 @@ def gas_flow_mass_loading(pdf, data, read, method):
                         spherical_radii[j] < 1e-3 + radial_cut * Rvirs[j]) & (radial_velocities[j] > 0))
                     inflow_mask, = np.where((spherical_radii[j] > radial_cut * Rvirs[j]) & (
                         spherical_radii[j] < 1e-3 + radial_cut * Rvirs[j]) & (radial_velocities[j] < 0))
-                    mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask] * (
+                    mass_outflows[j] = np.divide(np.sum(gas_masses[j][outflow_mask] * np.abs(
                         radial_velocities[j][outflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
-                    mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask] * (
+                    mass_inflows[j] = np.divide(np.sum(gas_masses[j][inflow_mask] * np.abs(
                         radial_velocities[j][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
                     mass_loading[j] = mass_outflows[j] / np.sum(sfrs[j])
                     wind_loading[j] = np.sum(wind_masses[j]) / np.sum(stellar_masses[j])
