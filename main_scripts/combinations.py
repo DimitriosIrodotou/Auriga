@@ -931,9 +931,11 @@ def gas_temperature_vs_distance_combination(date):
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the temperature as a function of distance of gas cells #
-        hb = axis.scatter(spherical_distance * 1e3, temperature, s=5, edgecolor='none', c=sfr * 1e6,
-            cmap='nipy_spectral_r', vmin=0, vmax=650)
-
+        sfr_mask, = np.where(sfr > 0)
+        no_sfr_mask, = np.where(sfr == 0)
+        axis.scatter(spherical_distance[no_sfr_mask] * 1e3, temperature[no_sfr_mask], s=5, edgecolor='none', c='gray')
+        hb = axis.scatter(spherical_distance[sfr_mask] * 1e3, temperature[sfr_mask], s=5, edgecolor='none',
+            c=sfr[sfr_mask] * 1e6, cmap='Spectral_r', vmin=1e-6, vmax=650)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis.transAxes)
 
@@ -1352,12 +1354,10 @@ def central_combination(pdf, data, redshift, read):
                     numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
-            sfr_edge_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
+            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                numthreads=8)["grid"]
+            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                numthreads=8)["grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
@@ -1532,11 +1532,11 @@ def mass_loading_combination(pdf, method):
     figure = plt.figure(figsize=(20, 7.5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     axis002 = axis00.twiny()
-    plot_tools.set_axes_evolution(axis00, axis002,  ylabel=r'$\mathrm{Mass\;loading}$',
+    plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e-1, 1e2], yscale='log', ylabel=r'$\mathrm{Mass\;loading}$',
         aspect=None)
     for axis in [axis01, axis02]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e-1, 1e2], yscale='log', aspect=None)
         axis.set_yticklabels([])
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
@@ -1569,9 +1569,10 @@ def mass_loading_combination(pdf, method):
                         radial_velocities[l] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT > radial_cut * Rvirs[l]))
                     inflow_mask, = np.where((spherical_radii[l] > radial_cut * Rvirs[l]) & (spherical_radii[l] + (
                         radial_velocities[l] * u.km.to(u.Mpc) / u.second.to(u.Myr)) * dT < radial_cut * Rvirs[l]))
+                    gas_mask, = np.where(spherical_radii[l] < radial_cut * Rvirs[l])
                     mass_outflows[l] = np.divide(np.sum(gas_masses[l][outflow_mask]) * 1e10, dT * 1e6)
                     mass_inflows[l] = np.divide(np.sum(gas_masses[l][inflow_mask]) * 1e10, dT * 1e6)
-                    mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l])
+                    mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l][gas_mask])
 
             elif method == 'shell':
                 # Loop over all lookback times #
@@ -1581,11 +1582,12 @@ def mass_loading_combination(pdf, method):
                         spherical_radii[l] < 1e-3 + radial_cut * Rvirs[l]) & (radial_velocities[l] > 0))
                     inflow_mask, = np.where((spherical_radii[l] > radial_cut * Rvirs[l]) & (
                         spherical_radii[l] < 1e-3 + radial_cut * Rvirs[l]) & (radial_velocities[l] < 0))
+                    gas_mask, = np.where(spherical_radii[l] < radial_cut * Rvirs[l])
                     mass_outflows[l] = np.divide(np.sum(gas_masses[l][outflow_mask] * (
                         radial_velocities[l][outflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
                     mass_inflows[l] = np.divide(np.sum(gas_masses[l][inflow_mask] * (
                         radial_velocities[l][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
-                    mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l])
+                    mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l][gas_mask])
 
             if j == 0:
                 original_mass_loading = mass_loading
@@ -1593,13 +1595,11 @@ def mass_loading_combination(pdf, method):
                 # Plot the evolution of mass loading #
                 mass_loading = plot_tools.linear_resample(mass_loading, len(original_mass_loading))
                 lookback_times = plot_tools.linear_resample(lookback_times, len(original_mass_loading))
-                # bottom_axis.plot(lookback_times_gfml,
-                #     np.divide(mass_loading - original_mass_loading, original_mass_loading), color=colors[i])
 
-                # Plot the evolution of bar strength #
-                axis.plot(lookback_times, np.divide(mass_loading, original_mass_loading), color=colors[j],
-                    label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
-                axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            # Plot the evolution of bar strength #
+            axis.plot(lookback_times, mass_loading, color=colors[j],
+                label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
+            axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
