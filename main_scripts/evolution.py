@@ -55,7 +55,7 @@ def sfr(pdf, data, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -80,11 +80,12 @@ def sfr(pdf, data, read):
             np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
@@ -187,7 +188,7 @@ def bar_strength(pdf, data, read):
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
                 continue
@@ -207,11 +208,12 @@ def bar_strength(pdf, data, read):
             np.save(path + 'max_A2s_' + str(name), bs_data[:, 1])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
@@ -253,8 +255,7 @@ def get_gtr_data(snapshot_ids, halo):
 
     # Calculate the temperature of the gas cells #
     gas_mask, = np.where((s.data['type'] == 0) & (
-        s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius
-    # R200c.
+        s.r() < s.subfind.data['frc2'][0]))  # Mask the data: select gas cells inside the virial radius R200c.
     ne = s.data['ne'][gas_mask]
     metallicity = s.data['gz'][gas_mask]
     XH = s.data['gmet'][gas_mask, element['H']]
@@ -293,7 +294,7 @@ def gas_temperature_regimes(pdf, data, read):
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
                 continue
@@ -316,11 +317,12 @@ def gas_temperature_regimes(pdf, data, read):
             np.save(path + 'hg_ratios_' + str(name), gtr_data[:, 3])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
@@ -434,7 +436,7 @@ def delta_sfr_regimes(pdf, data, region, read):
                     os.makedirs(path)
 
                 # Check if halo's data already exists, if not then read it #
-                names = glob.glob(path + '/name_*')
+                names = glob.glob(path + 'name_*')
                 names = [re.split('_|.npy', name)[1] for name in names]
                 if str(s.haloname) in names:
                     continue
@@ -479,11 +481,12 @@ def delta_sfr_regimes(pdf, data, region, read):
         bottom_axes):
         # Get the names and sort them #
         path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_cut_max) + '/'
-        names = glob.glob(path + '/name_06*')
+        names = glob.glob(path + 'name_*')
         names.sort()
 
         # Loop over all available haloes #
         for i in range(len(names)):
+            print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
             # Load the data #
             weights = np.load(path + 'weights_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -614,7 +617,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
                     os.makedirs(path)
 
                 # Check if halo's data already exists, if not then read it #
-                names = glob.glob(path + '/name_*')
+                names = glob.glob(path + 'name_*')
                 names = [re.split('_|.npy', name)[1] for name in names]
                 if str(s.haloname) in names:
                     continue
@@ -664,11 +667,12 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
         path_modes = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
 
         # Get the names and sort them #
-        names = glob.glob(path + '/name_17.*')
+        names = glob.glob(path + 'name_*')
         names.sort()
 
         # Loop over all available haloes #
         for i in range(len(names)):
+            print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
             # Generate the figure and set its parameters #
             figure = plt.figure(figsize=(10, 10))
             gs = gridspec.GridSpec(3, 1, hspace=0.06, height_ratios=[1, 0.5, 0.5])
@@ -826,7 +830,7 @@ def gas_flow_mass_loading(pdf, data, read, method):
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
                 continue
@@ -855,7 +859,7 @@ def gas_flow_mass_loading(pdf, data, read, method):
             np.save(path + 'positions_' + str(name), gf_data[:, 10])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -1006,7 +1010,7 @@ def AGN_modes_distribution(date, data, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -1076,11 +1080,12 @@ def AGN_modes_distribution(date, data, read):
         aspect=None, which='major')
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         if i == 0:
             mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1211,7 +1216,7 @@ def AGN_feedback_kernel(pdf, data, ds, read):
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
                 continue
@@ -1242,11 +1247,12 @@ def AGN_feedback_kernel(pdf, data, ds, read):
             np.save(path + 'blackhole_hsmls_' + str(name), ssgr_data[:, 4])
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
@@ -1304,11 +1310,12 @@ def AGN_feedback_active(pdf):
         os.makedirs(path)
 
     # Get the names and sort them #
-    names = glob.glob(path_kernel + '/name_06.*')
+    names = glob.glob(path_kernel + 'name_06.*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
@@ -1424,7 +1431,7 @@ def blackhole_masses(pdf, data, read):
         haloes = data.get_haloes(default_level)
         for name, halo in haloes.items():
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if name in names:
                 continue
@@ -1435,9 +1442,6 @@ def blackhole_masses(pdf, data, read):
             redshifts = halo.get_redshifts()
             redshift_mask, = np.where(redshifts <= redshift_cut)
             snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
-
-            # Find the black hole's id and use it to get black hole data #
-            s = halo.snaps[snapshot_ids.argmax()].loadsnap(loadonlyhalo=0, loadonlytype=[5])
 
             # Get blackhole data #
             bm_data = np.array(get_bm_data(snapshot_ids, halo))  # Get blackhole masses data.
@@ -1458,11 +1462,12 @@ def blackhole_masses(pdf, data, read):
             np.save(path + 'black_hole_dmasses_quasar_' + str(name), black_hole_dmasses_quasar)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(20, 15))
         gs = gridspec.GridSpec(2, 2, hspace=0.4, wspace=0.2)

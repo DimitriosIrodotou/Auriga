@@ -55,7 +55,7 @@ def gas_movie(data, read):
             # Loop over all available haloes #
             for s in data:
                 # Check if halo's data already exists, if not then read it #
-                names = glob.glob(path + '/name_3000*')
+                names = glob.glob(path + 'name_3000*')
                 names = [re.split('_|.npy', name)[2] for name in names]
                 if str(redshift) in names:
                     continue

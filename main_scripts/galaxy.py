@@ -3,6 +3,7 @@ import re
 import glob
 import calcGrid
 import plot_tools
+import matplotlib
 import numpy as np
 import healpy as hlp
 import astropy.units as u
@@ -38,7 +39,7 @@ def circularity_distribution(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking circularity_distribution")
-    path = '/u/di43/Auriga/plots/data/' + 'cd/'
+    path = '/u/di43/Auriga/plots/data/' + 'cd/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -54,7 +55,7 @@ def circularity_distribution(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -119,7 +120,7 @@ def circularity_distribution(pdf, data, redshift, read):
             np.save(path + 'stellar_masses_' + str(s.haloname), stellar_masses)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -129,8 +130,7 @@ def circularity_distribution(pdf, data, redshift, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plot_tools.set_axis(axis, xlim=[-2, 2], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$',
             ylabel=r'$\mathrm{f(\epsilon)}$', aspect=None)
-        figure.text(0.0, 0.9,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
 
         # Load the data #
@@ -215,7 +215,7 @@ def tully_fisher(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking tully_fisher")
-    path = '/u/di43/Auriga/plots/data/' + 'tf/'
+    path = '/u/di43/Auriga/plots/data/' + 'tf/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -230,7 +230,7 @@ def tully_fisher(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -264,7 +264,7 @@ def tully_fisher(pdf, data, redshift, read):
             np.save(path + 'total_circular_velocity_' + str(s.haloname), total_circular_velocity)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -275,8 +275,7 @@ def tully_fisher(pdf, data, redshift, read):
         plot_tools.set_axis(axis, xlim=[1e8, 1e12], ylim=[1.4, 2.6], xscale='log',
             xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', ylabel=r'$\mathrm{log_{10}(v_{circ}/(km\;s^{-1}))}$',
             aspect=None)
-        figure.text(0.0, 0.9,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
 
         # Load the data #
@@ -351,7 +350,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking stellar_vs_halo_mass")
-    path = '/u/di43/Auriga/plots/data/' + 'svt/'
+    path = '/u/di43/Auriga/plots/data/' + 'svt/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -366,7 +365,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -393,7 +392,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
             np.save(path + 'stellar_mass_' + str(s.haloname), stellar_mass)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -403,8 +402,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plot_tools.set_axis(axis, xlim=[1e11, 1e13], ylim=[1e9, 1e12], xscale='log', yscale='log',
             xlabel=r'$\mathrm{M_{halo}/M_{\odot}}$', ylabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', aspect=None)
-        figure.text(0.0, 0.9,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
 
         # Load the data #
@@ -454,7 +452,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking gas_fraction_vs_magnitude")
-    path = '/u/di43/Auriga/plots/data/' + 'gfvm/'
+    path = '/u/di43/Auriga/plots/data/' + 'gfvm/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -470,7 +468,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -503,7 +501,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
             np.save(path + 'name_' + str(s.haloname), s.haloname)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -513,8 +511,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plot_tools.set_axis(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$',
             ylabel=r'$\mathrm{f_{gas}}$', aspect=None)
-        figure.text(0.0, 0.9,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
 
         # Load the data #
@@ -540,7 +537,7 @@ def bar_strength_profile(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking bar_strength_profile")
-    path = '/u/di43/Auriga/plots/data/' + 'bsp/'
+    path = '/u/di43/Auriga/plots/data/' + 'bsp/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -556,7 +553,7 @@ def bar_strength_profile(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -603,7 +600,7 @@ def bar_strength_profile(pdf, data, redshift, read):
             np.save(path + 'name_' + str(s.haloname), s.haloname)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -613,10 +610,8 @@ def bar_strength_profile(pdf, data, redshift, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plot_tools.set_axis(axis, xlim=[0, 10], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{\sqrt{a_{2}^{2}+b_{2}^{2}}/a_{0}}$', aspect=None)
-        figure.text(0.0, 0.9,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
-
         # Load the data #
         ratio = np.load(path + 'ratio_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         r_m = np.load(path + 'r_m_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -644,7 +639,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking stellar_surface_density_profiles")
-    path = '/u/di43/Auriga/plots/data/' + 'ssdp/'
+    path = '/u/di43/Auriga/plots/data/' + 'ssdp/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -660,7 +655,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -727,7 +722,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
             np.save(path + 'name_' + str(s.haloname), s.haloname)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -737,8 +732,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plot_tools.set_axis(axis, xlim=[0, 30], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None)
-        figure.text(0.0, 0.9,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
 
         # Load the data #
@@ -791,7 +785,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
     :return: None
     """
     print("Invoking circular_velocity_curves")
-    path = '/u/di43/Auriga/plots/data/' + 'cvc/'
+    path = '/u/di43/Auriga/plots/data/' + 'cvc/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -807,7 +801,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -861,7 +855,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
             np.save(path + 'shell_velocity_' + str(s.haloname), shell_velocity)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -871,8 +865,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$', aspect=None)
-        figure.text(0.0, 0.9,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
 
         # Load the data #
@@ -907,7 +900,7 @@ def gas_temperature_vs_distance(date, data, redshift, read):
     :return: None
     """
     print("Invoking gas_temperature_vs_distance")
-    path = '/u/di43/Auriga/plots/data/' + 'gtd/'
+    path = '/u/di43/Auriga/plots/data/' + 'gtd/' + str(redshift) + '/'
 
     # Read the data #
     if read is True:
@@ -923,7 +916,7 @@ def gas_temperature_vs_distance(date, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -951,7 +944,7 @@ def gas_temperature_vs_distance(date, data, redshift, read):
             np.save(path + 'spherical_distance_' + str(s.haloname), s.r()[mask])
 
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -964,9 +957,8 @@ def gas_temperature_vs_distance(date, data, redshift, read):
 
         plot_tools.set_axis(axis00, xlim=[1e-2, 2e2], ylim=[1e1, 1e8], xscale='log', yscale='log',
             xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major')
-        figure.text(0.02, 0.92,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         sfr = np.load(path + 'sfr_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -974,8 +966,11 @@ def gas_temperature_vs_distance(date, data, redshift, read):
         spherical_distance = np.load(path + 'spherical_distance_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the temperature as a function of distance of gas cells #
-        hb = axis00.scatter(spherical_distance * 1e3, temperature, s=5, edgecolor='none', c=sfr * 1e6,
-            cmap='gist_earth', vmin=0, vmax=650)
+        sfr_mask, = np.where(sfr > 0)
+        no_sfr_mask, = np.where(sfr == 0)
+        axis00.scatter(spherical_distance[no_sfr_mask] * 1e3, temperature[no_sfr_mask], s=5, edgecolor='none', c='gray')
+        hb = axis00.scatter(spherical_distance[sfr_mask] * 1e3, temperature[sfr_mask], s=5, edgecolor='none',
+            c=sfr[sfr_mask] * 1e6, cmap='plasma_r', norm=matplotlib.colors.LogNorm(vmin=4, vmax=650))
         plot_tools.create_colorbar(axis01, hb, label="$\mathrm{SFR/(M_\odot\;Myr^{-1})}$")
 
         # Save and close the figure #
@@ -1012,7 +1007,7 @@ def decomposition_IT20(date, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             # if str(s.haloname) in names:
             #     continue
@@ -1106,7 +1101,7 @@ def decomposition_IT20(date, data, redshift, read):
             np.save(path + 'disc_fraction_IT20_' + str(s.haloname), disc_fraction_IT20)
 
     # Load and plot the data #
-    names = glob.glob(path + '/name_06.*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -1121,9 +1116,8 @@ def decomposition_IT20(date, data, redshift, read):
         axis00.set_ylabel(r'$\mathrm{\delta/\degree}$', size=16)
         axis00.set_yticklabels(['', '-60', '', '-30', '', '0', '', '30', '', '60', ''], size=16)
         axis00.set_xticklabels(['', '-120', '', '-60', '', '0', '', '60', '', '120', ''], size=16)
-        figure.text(0.02, 1,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+            fontsize=16, transform=axis.transAxes)
 
         # Load the data #
         density_map = np.load(path + 'density_map_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1174,7 +1168,7 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             # if str(s.haloname) in names:
             #     continue
@@ -1272,7 +1266,7 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
             np.save(path + 'stellar_sigma_z_' + str(s.haloname), stellar_sigma_z)
 
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -1283,8 +1277,7 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
 
         plot_tools.set_axis(axis, xlim=[0, 30], ylim=[0, 160], xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{\sigma/(km\;s^{-1})}$', aspect=None, which='major')
-        figure.text(0.02, 1,
-            r'$\mathrm{Au-%s}$''\n' r'$\mathrm{z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
 
         # Load the data #

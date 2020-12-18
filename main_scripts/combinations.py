@@ -33,12 +33,12 @@ def stellar_light_combination(pdf, redshift):
     """
     print("Invoking stellar_light_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/''sl/' + str(redshift)
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'sl/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 20))
+    figure = plt.figure(figsize=(10, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
         axis42, axis50, axis51, axis52 = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple2=True)
@@ -52,9 +52,10 @@ def stellar_light_combination(pdf, redshift):
     axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
     axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
     for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
-        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the stellar light projections #
         axis_face_on.imshow(face_on, interpolation='nearest', aspect='equal')
@@ -78,9 +79,9 @@ def stellar_light_components_combination(pdf, redshift):
     """
     print("Invoking stellar_light_components_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/''sl/' + str(redshift) + '/'
+    path = '/u/di43/Auriga/plots/data/' + 'sl/' + str(redshift) + '/'
     path_components = '/u/di43/Auriga/plots/data/' + 'slc/' + str(redshift) + '/'
-    names = glob.glob(path + '/name_06*')
+    names = glob.glob(path + 'name_06*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -105,6 +106,7 @@ def stellar_light_components_combination(pdf, redshift):
         axis_spheroid_edge_on in zip(
         range(len(names)), axes_face_on, axes_edge_on, axes_disc_face_on, axes_disc_edge_on, axes_spheroid_face_on,
         axes_spheroid_edge_on):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -143,8 +145,8 @@ def stellar_density_combination(pdf, redshift):
     """
     print("Invoking stellar_density_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'sd/' + str(redshift)
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'sd/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -183,9 +185,10 @@ def stellar_density_combination(pdf, redshift):
     axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
     axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
     for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
-        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the stellar density projections #
         pcm = axis_face_on.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10),
@@ -212,8 +215,8 @@ def gas_density_combination(pdf, redshift):
     """
     print("Invoking gas_density_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'gd/' + str(redshift)
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'gd/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -244,9 +247,10 @@ def gas_density_combination(pdf, redshift):
     axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
     axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
     for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
-        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the gas density projections #
         pcm = axis_face_on.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10),
@@ -273,8 +277,8 @@ def gas_temperature_combination(pdf, redshift):
     """
     print("Invoking gas_temperature_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'gt/' + str(redshift)
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'gt/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -305,11 +309,12 @@ def gas_temperature_combination(pdf, redshift):
     axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
     axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
     for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
-        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        face_on_rho = np.load(path + '/face_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on_rho = np.load(path + '/edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on_rho = np.load(path + 'face_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on_rho = np.load(path + 'edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the density-weighted gas temperature projections #
         pcm = axis_face_on.pcolormesh(x, y, (face_on / face_on_rho).T,
@@ -336,8 +341,8 @@ def gas_metallicity_combination(pdf, redshift):
     """
     print("Invoking gas_metallicity_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'gm/' + str(redshift)
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'gm/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -368,9 +373,10 @@ def gas_metallicity_combination(pdf, redshift):
     axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
     axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
     for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
-        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the gas metallicity projections #
         pcm = axis_face_on.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.),
@@ -397,8 +403,8 @@ def magnetic_field_combination(pdf, redshift):
     """
     print("Invoking magnetic_field_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'mf/' + str(redshift)
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'mf/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -429,9 +435,10 @@ def magnetic_field_combination(pdf, redshift):
     axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
     axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
     for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
-        face_on = np.load(path + '/face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + '/edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the magnetic field projections #
         pcm = axis_face_on.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=1e2),
@@ -449,16 +456,17 @@ def magnetic_field_combination(pdf, redshift):
     return None
 
 
-def circularity_distribution_combination(pdf):
+def circularity_distribution_combination(pdf, redshift):
     """
     Plot a combination of the orbital circularity distribution for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking circularity_distribution_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'cd/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'cd/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -496,16 +504,17 @@ def circularity_distribution_combination(pdf):
     return None
 
 
-def tully_fisher_combination(pdf):
+def tully_fisher_combination(pdf, redshift):
     """
     Plot a combination of the Tully-Fisher relation for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking tully_fisher_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'tf/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'tf/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -549,8 +558,8 @@ def tully_fisher_combination(pdf):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
-        sigma = np.load('/u/di43/Auriga/plots/data/vdp/0.0/' + 'sigma_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         total_circular_velocity = np.load(
             path + 'total_circular_velocity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -568,16 +577,17 @@ def tully_fisher_combination(pdf):
     return None
 
 
-def stellar_vs_halo_mass_combination(pdf):
+def stellar_vs_halo_mass_combination(pdf, redshift):
     """
     Plot a combination of the abundance matching relation for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking stellar_vs_halo_mass_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'svt/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'svt/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -603,6 +613,7 @@ def stellar_vs_halo_mass_combination(pdf):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         halo_mass = np.load(path + 'halo_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         stellar_mass = np.load(path + 'stellar_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -620,17 +631,18 @@ def stellar_vs_halo_mass_combination(pdf):
     return None
 
 
-def gas_fraction_vs_magnitude_combination(pdf):
+def gas_fraction_vs_magnitude_combination(pdf, redshift):
     """
     Plot a combination of the gas fraction (gas to stellar plus gas mass ratio) as a function R-band magnitude for
     Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking gas_fraction_vs_magnitude_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'gfvm/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'gfvm/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -640,6 +652,7 @@ def gas_fraction_vs_magnitude_combination(pdf):
 
     # Loop over all available haloes #
     for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         gas_fraction = np.load(path + 'gas_fraction_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         M_R = np.load(path + 'M_R_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -657,16 +670,17 @@ def gas_fraction_vs_magnitude_combination(pdf):
     return None
 
 
-def bar_strength_profile_combination(pdf):
+def bar_strength_profile_combination(pdf, redshift):
     """
     Plot a combination of the bar strength radial profile from Fourier modes of surface density for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking bar_strength_profile_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'bsp/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'bsp/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -703,16 +717,17 @@ def bar_strength_profile_combination(pdf):
     return None
 
 
-def stellar_surface_density_profiles_combination(pdf):
+def stellar_surface_density_profiles_combination(pdf, redshift):
     """
     Plot a combination of the stellar surface density profiles for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking stellar_surface_density_profiles_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'ssdp/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'ssdp/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -731,6 +746,7 @@ def stellar_surface_density_profiles_combination(pdf):
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         r = np.load(path + 'r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         rfit = np.load(path + 'rfit_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -758,16 +774,17 @@ def stellar_surface_density_profiles_combination(pdf):
     return None
 
 
-def circular_velocity_curves_combination(pdf):
+def circular_velocity_curves_combination(pdf, redshift):
     """
     Plot a combination of the circular velocity curve for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking circular_velocity_curves_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'cvc/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'cvc/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -785,6 +802,7 @@ def circular_velocity_curves_combination(pdf):
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         radius = np.load(path + 'radius_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         total_mass = np.load(path + 'total_mass_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -809,17 +827,18 @@ def circular_velocity_curves_combination(pdf):
     return None
 
 
-def ssdp_cvc_combination(pdf):
+def ssdp_cvc_combination(pdf, redshift):
     """
     Plot a combination of the circular velocity curve and the stellar surface density profiles for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking ssdp_cvc_combination")
     # Get the names and sort them #
-    path_cvc = '/u/di43/Auriga/plots/data/' + 'cvc/'
-    path_ssdp = '/u/di43/Auriga/plots/data/' + 'ssdp/'
-    names = glob.glob(path_cvc + '/name_*')
+    path_cvc = '/u/di43/Auriga/plots/data/' + 'cvc/' + str(redshift) + '/'
+    path_ssdp = '/u/di43/Auriga/plots/data/' + 'ssdp/' + str(redshift) + '/'
+    names = glob.glob(path_cvc + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -852,6 +871,7 @@ def ssdp_cvc_combination(pdf):
     axes_cvc = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
 
     for i, axis, axis_cvc in zip(range(len(names)), axes, axes_cvc):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         r = np.load(path_ssdp + 'r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         rfit = np.load(path_ssdp + 'rfit_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -899,16 +919,17 @@ def ssdp_cvc_combination(pdf):
     return None
 
 
-def gas_temperature_vs_distance_combination(date):
+def gas_temperature_vs_distance_combination(date, redshift):
     """
     Plot a combination of the temperature as a function of distance of gas cells for Auriga halo(es).
     :param date: date.
+    :param redshift: redshift from main.make_pdf
     :return: None
     """
     print("Invoking gas_temperature_vs_distance_combination")
     # Get the names and sort them #
-    path = '/u/di43/Auriga/plots/data/' + 'gtd/'
-    names = glob.glob(path + '/name_*')
+    path = '/u/di43/Auriga/plots/data/' + 'gtd/' + str(redshift) + '/'
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -925,6 +946,7 @@ def gas_temperature_vs_distance_combination(date):
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         sfr = np.load(path + 'sfr_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         temperature = np.load(path + 'temperature_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -935,7 +957,7 @@ def gas_temperature_vs_distance_combination(date):
         no_sfr_mask, = np.where(sfr == 0)
         axis.scatter(spherical_distance[no_sfr_mask] * 1e3, temperature[no_sfr_mask], s=5, edgecolor='none', c='gray')
         hb = axis.scatter(spherical_distance[sfr_mask] * 1e3, temperature[sfr_mask], s=5, edgecolor='none',
-            c=sfr[sfr_mask] * 1e6, cmap='Spectral_r', vmin=1e-6, vmax=650)
+            c=sfr[sfr_mask] * 1e6, cmap='plasma_r', norm=matplotlib.colors.LogNorm(vmin=4, vmax=650))
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis.transAxes)
 
@@ -954,8 +976,7 @@ def gas_temperature_vs_distance_combination(date):
 def decomposition_IT20_combination(date, redshift):
     """
     Plot the angular momentum maps and calculate D/T_IT20 for Auriga halo(es).
-    :param pdf: path to save the pdf from main.make_pdf
-    :param data: data from main.make_pdf
+    :param date: date
     :param redshift: redshift from main.make_pdf
     :return: None
     """
@@ -978,13 +999,12 @@ def decomposition_IT20_combination(date, redshift):
         axis.set_yticklabels(['', '-60', '', '-30', '', '0', '', '30', '', '60', ''], size=20)
 
     # Load and plot the data #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), axes):
-        # Generate the figure and set its parameters #
-
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         density_map = np.load(path + 'density_map_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         disc_fraction_IT20 = np.load(path + 'disc_fraction_IT20_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1017,7 +1037,7 @@ def bar_strength_combination(pdf):
     print("Invoking bar_strength_combination")
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'bse/'
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -1060,7 +1080,7 @@ def gas_temperature_regimes_combination(pdf):
     print("Invoking gas_temperature_regimes_combination")
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'gtr/'
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
@@ -1083,6 +1103,7 @@ def gas_temperature_regimes_combination(pdf):
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1113,7 +1134,7 @@ def AGN_modes_distribution_combination(date):
     print("Invoking AGN_modes_distribution_combination")
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
     n_bins = 130
     time_bin_width = (13 - 0) / n_bins  # In Gyr.
@@ -1135,7 +1156,7 @@ def AGN_modes_distribution_combination(date):
     axis50.set_ylabel(r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', size=20)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
@@ -1193,7 +1214,7 @@ def AGN_modes_distribution_combination(date):
                 x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)],
                     n_bins=n_bins)
                 axis.plot(x_value, sum / time_bin_width, color=colors[0], label=r'$\mathrm{Sum}$')
-                figure.text(0.01, 0.95, 'Au-' + str(re.split('_|.npy', names_flavours[j])[1]), fontsize=20,
+                figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
                     transform=axis.transAxes)
 
             for axis in [axis11, axis12, axis31, axis32, axis51, axis52]:
@@ -1218,7 +1239,7 @@ def AGN_feedback_kernel_combination(pdf):
     print("Invoking AGN_feedback_kernel_combination")
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Remove the NoRNoQ flavours #
@@ -1255,6 +1276,7 @@ def AGN_feedback_kernel_combination(pdf):
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis10, axis01, axis11, axis02, axis12]):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         gas_volumes = np.load(path + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1294,7 +1316,7 @@ def central_combination(pdf, data, redshift, read):
     boxsize = 0.004  # Decrease the boxsize.
 
     # Check if a folder to save the data exists, if not then create one #
-    path = '/u/di43/Auriga/plots/data/' + 'm/' + str(redshift) + '/'
+    path = '/u/di43/Auriga/plots/data/' + 'cc/' + str(redshift) + '/'
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -1308,7 +1330,7 @@ def central_combination(pdf, data, redshift, read):
         # Loop over all available haloes #
         for s in data:
             # Check if halo's data already exists, if not then read it #
-            names = glob.glob(path + '/name_*')
+            names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
             if str(s.haloname) in names:
                 continue
@@ -1411,7 +1433,7 @@ def central_combination(pdf, data, redshift, read):
             np.save(path + 'vrad_edge_on_' + str(s.haloname), vrad_edge_on)
 
     # Get the names and sort them #
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #
@@ -1525,7 +1547,7 @@ def mass_loading_combination(pdf, method):
     dT = 250  # In Myr.
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'gfml/'
-    names = glob.glob(path + '/name_*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
