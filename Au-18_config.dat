@@ -28,22 +28,22 @@ h       140
 
 ########################################################################################################################
 #FUNCTION Sersic
-#PA     90      fixed       # 1st estimate: 90: the galaxy is rotated so the bar is along the x-axis.
-#ell            0,1         # 1st estimate: 0.3,0.8: the first deep in ellipticity (lower values -> profile more circular).
-#n
+#PA     90      fixed       # 1st estimate: the galaxy is rotated so the bar is along the x-axis.
+#ell            0,1         # 1st estimate: the first deep in ellipticity (lower values -> profile more circular).
+#n              0,2         # 1st estimate: higher values -> profile truncates faster.
 #I_e                        # 1st estimate: intensity at R_eff.
 #r_e                        # 1st estimate: R_eff.
 
 #FUNCTION FerrersBar2D
-#PA     90      fixed       # 1st estimate: 90: the galaxy is rotated so the bar is along the x-axis.
-#ell            0.3,0.8     # 1st estimate: 0,1: the peak in ellipticity before the bar ends (higher values -> profile more elliptical).
-#c0                         # 1st estimate: 0,1: it should be boxy (positive values -> profile has boxy shape).
-#n                          # 1st estimate: (higher values -> profile truncates faster).
+#PA     90      fixed       # 1st estimate: the galaxy is rotated so the bar is along the x-axis.
+#ell            0.3,0.8     # 1st estimate: the peak in ellipticity before the bar ends (higher values -> profile more elliptical).
+#c0             0,1         # 1st estimate: it should be boxy (positive values -> profile has boxy shape).
+#n              0,2         # 1st estimate: higher values -> profile truncates faster.
 #I_0                        # 1st estimate: 1/3*I_0 from the exponential fit to the isophotal ellipses.
 #a_bar                      # 1st estimate: the sma value at which the second deep in the ellipticity appears.
 
 #FUNCTION Exponential
-#PA             0,180       # 1st estimate: 90: the galaxy is face-on.
+#PA     180     fixed       # 1st estimate: 180: the galaxy is face-on.
 #ell            0,0.2       # 1st estimate: minimum ellipticity from the isophotal ellipses (disc is face-on so ell should be very close to 0).
 #I_0                        # 1st estimate: 2/3*I_0 from the exponential fit to the isophotal ellipses.
 #h                          # 1st estimate: from the exponential fit to the isophotal ellipses.
