@@ -1,6 +1,6 @@
-# A configuration file for Imfit that specifies a Sersic, a FerrersBar2D and Exponential model for Au-18 #
+# A configuration file for Imfit that specifies a Sersic, a FerrersBar2D and Exponential model for Au-18NoRNoQ #
 
-ORIGINAL_SKY 36.45
+ORIGINAL_SKY 50.84
 
 X0      256.00      254,258
 Y0      256.00      254,258
@@ -8,23 +8,23 @@ Y0      256.00      254,258
 FUNCTION Sersic
 PA      90          fixed
 ell     0.0         0,1
-n       0.27        0,2
-I_e     76
-r_e     126
+n       0.2         0,2
+I_e     85
+r_e     140
 
 FUNCTION FerrersBar2D
 PA      90          fixed
-ell     0.6         0.3,0.6
-c0      0.8         0,1
-n       1.8         0,2
-I_0     80          70,100
-a_bar   62          50,70
+ell     0.7         0.3,0.8
+c0      0.4         0,1
+n       2           0,2
+I_0     92          90,150
+a_bar   37          20,70
 
 FUNCTION Exponential
 PA      180         fixed
 ell     0.0         0,0.2
-I_0     100
-h       300
+I_0     61
+h       70
 
 ########################################################################################################################
 #FUNCTION Sersic
