@@ -9,22 +9,22 @@ FUNCTION Sersic
 PA      90          fixed
 ell     0.0         0,1
 n       0.0         0,2
-I_e     94
+I_e     50
 r_e     165
 
 FUNCTION FerrersBar2D
 PA      90          fixed
 ell     0.4         0.3,0.8
-c0      0.5         0,4
+c0      0.5         0,1
 n       0.5         0,2
-I_0     26          10,50
-a_bar   25          5,30
+I_0     26          20,50
+a_bar   25          15,30
 
 FUNCTION Exponential
 PA      180         fixed
 ell     0.0         0,0.2
 I_0     155
-h       70
+h       134
 
 ########################################################################################################################
 #FUNCTION Sersic
