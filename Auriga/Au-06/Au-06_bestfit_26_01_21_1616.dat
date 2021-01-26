@@ -1,0 +1,32 @@
+# Best-fit model results for imfit 1.7.1 (OpenMP-enabled)
+# Generated on Tue Jan 26 16:16:51 2021 by the following command:
+#    ../../imfit -c Au-06_config.dat --psf Au-06_psf.fits --nm --model-errors --cashstat ../../../plots/projections/Imfit/Au-06/Au-06_ctf.fits --save-model=Au-06_model.fits --save-residual=Au-06_residual.fits --save-params=Au-06_bestfit_26_01_21_1616.dat
+
+# Results of fit:
+#   Algorithm: Nelder-Mead Simplex: status = -5 -- ERROR: forced termination called from objective function
+#   Fit statistic: Cash statistic
+#   Best-fit value: -352456619.741408
+#   Reduced value: none
+#   AIC: -352456585.739073
+#   BIC: -352456407.638371
+
+X0		256.8878
+Y0		256.7893
+FUNCTION Sersic
+PA		 120.63
+ell		0.141805
+n		0.221802
+I_e		78.0927
+r_e		143.468
+FUNCTION FerrersBar2D
+PA		92.8972
+ell		0.444567
+c0		0.560311
+n		0.653979
+I_0		27.4439
+a_bar		25.9536
+FUNCTION Exponential
+PA		167.861
+ell		0.00801658
+I_0		122.837
+h		160.013

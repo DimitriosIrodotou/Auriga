@@ -6,25 +6,25 @@ X0      256.00      254,258
 Y0      256.00      254,258
 
 FUNCTION Sersic
-PA      90          fixed
-ell     0.2         0,1
-n       0.0         0,2
-I_e     76
-r_e     161
+PA      90          0,180
+ell     0.0         0,1
+n       0.1
+I_e     89
+r_e     158
 
 FUNCTION FerrersBar2D
-PA      90          fixed
+PA      90          0,180
 ell     0.2         0,0.4
-c0      0.5         0,1
+c0      0.5         0,0.8
 n       2           0,2
 I_0     25          10,50
-a_bar   10          5,18
+a_bar   10          5,10
 
 FUNCTION Exponential
-PA      180         fixed
+PA      180         0,180
 ell     0.0         0,0.2
-I_0     200
-h       300
+I_0     178
+h       376
 
 ########################################################################################################################
 #ORIGINAL_SKY               # Value from minimum intensity.
