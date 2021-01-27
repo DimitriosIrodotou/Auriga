@@ -17,8 +17,8 @@ PA      90          fixed
 ell     0.6         0,0.8
 c0      0.8         0,2
 n       1.8         0,2
-I_0     80          70,120
-a_bar   50          40,60
+I_0     80          70,100
+a_bar   50          50,60
 
 FUNCTION Exponential
 PA      180         fixed

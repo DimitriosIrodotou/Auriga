@@ -15,10 +15,10 @@ r_e     158
 FUNCTION FerrersBar2D
 PA      90          0,180
 ell     0.2         0,0.4
-c0      0.5         0,0.8
+c0      0.5         0,1
 n       2           0,2
 I_0     25          10,50
-a_bar   10          5,10
+a_bar   10          10,20
 
 FUNCTION Exponential
 PA      180         0,180
