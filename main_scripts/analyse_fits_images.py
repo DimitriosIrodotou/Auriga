@@ -86,11 +86,11 @@ def fit_isophotal_ellipses(name, ellipticity):
     print('average ellipticity:', np.mean(isolist.eps))
 
     # Fit a Sersic plus exponential profile #
-    popt, pcov = curve_fit(fit_total_profile, isolist.sma, isolist.intens,
-        p0=[isolist.intens[0], 2, isolist.intens[0], 2, 4])  # p0 = [I_0d, R_d, I_0b, b, n]
-    I_0d, R_d, I_0b, b, n = popt[0], popt[1], popt[2], popt[3], popt[4]
-    R_eff = b * sersic_b_n(n) ** n
-    print('I_0d:', I_0d, 'h:', R_d, 'I_0b:', I_0b, 'n:', n, 'R_eff:', R_eff)
+    # popt, pcov = curve_fit(fit_total_profile, isolist.sma, isolist.intens,
+    #     p0=[isolist.intens[0], 2, isolist.intens[0], 2, 4])  # p0 = [I_0d, R_d, I_0b, b, n]
+    # I_0d, R_d, I_0b, b, n = popt[0], popt[1], popt[2], popt[3], popt[4]
+    # R_eff = b * sersic_b_n(n) ** n
+    # print('I_0d:', I_0d, 'h:', R_d, 'I_0b:', I_0b, 'n:', n, 'R_eff:', R_eff)
 
     # Fit an exponential profile #
     popt, pcov = curve_fit(fit_exponential_profile, isolist.sma, isolist.intens, p0=[isolist.intens[0], 1])
@@ -140,12 +140,18 @@ def combine_images(name, ellipticity):
     for sma in smas:
         iso = isolist.get_closest(sma)
         x, y, = iso.sampled_coordinates()
-        axis01.plot(x, y, color='tab:red')
+        axis01.plot(x, y, color='tab:green')
 
     figure.text(0.01, 0.92, r'$\mathrm{%s}$' % str(name), color='w', fontsize=16, transform=axis00.transAxes)
     figure.text(0.01, 0.92, r'$\mathrm{Sample\;of\;isophotes}$', color='w', fontsize=16, transform=axis01.transAxes)
     figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='w', fontsize=16, transform=axis02.transAxes)
     figure.text(0.01, 0.92, r'$\mathrm{Residual}$', color='w', fontsize=16, transform=axis03.transAxes)
+
+    # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
+    # image array #
+    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
+    ellipse = Ellipse(model, geometry)
+    isolist_model = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
 
     axes = [axis10, axis11, axis12, axis13]
     y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA/\deg}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$',
@@ -157,8 +163,17 @@ def combine_images(name, ellipticity):
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', color='k', markersize=10)
         plot_tools.set_axis(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log',
-            xlabel=r'$\mathrm{(Semi-major\;axis\;length)/pix}$', ylabel=y_label, which='major', aspect=None)
+            xlabel=r'$\mathrm{sma/pix}$', ylabel=y_label, which='major', aspect=None)
     axis12.set_yscale('log')
+    axis12.set_ylim(1e3, 1e7)
+
+    y_values = [isolist_model.eps, isolist_model.pa / np.pi * 180., isolist_model.tflux_e, isolist_model.intens]
+    y_errors = [isolist_model.ellip_err, isolist_model.pa_err / np.pi * 180., np.zeros(len(isolist_model.x0_err)),
+        isolist_model.int_err]
+    for axis, y_value, y_error in zip(axes, y_values, y_errors):
+        axis.errorbar(isolist_model.sma, y_value, yerr=y_error, fmt='o', color='tab:red', markersize=10,
+            label=r'$\mathrm{Model}$')
+    axis10.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
 
     # # Fit a Sersic plus exponential profile #
     # popt, pcov = curve_fit(fit_total_profile, isolist.sma, isolist.intens,
@@ -298,31 +313,41 @@ Imfit_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
 
 # Get the names and sort them #
-names = glob.glob(plots_path + 'Au-18')
+names = glob.glob(plots_path + 'Au-06')
 names = [re.split('/Imfit|/', name)[-1] for name in names]
 names.sort()
 
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    # os.chdir(plots_path + name)  # Change to each halo's plots directory
-    ellipticity = 0.42  # {'Au-06NoRNoQ':0.6, 'Au-18':0.42}
-    # min_intensity = 36.45  # {'Au-06':85.57, 'Au-06NoRNoQ':47.86, 'Au-18':36.45}
-    # convert_for_fit(name, min_intensity)
+    ellipticity = 0.31  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
+    min_intensity = 0  # Set to 0 the first time you fit a galaxy and then to the minimum.
+    os.chdir(plots_path + name)  # Change to each halo's plots directory
+    # convert_for_fit(name, min_intensity)  # Use only once.
     # fit_isophotal_ellipses(name, ellipticity)
 
     # Use Imfit to analyse the image #  # --bootstrap 15
     os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
-    # os.system('../../makeimage -o Au-18_psf.fits Au-18_config_Gaussian_psf.dat')  # Create the PSF image
-    os.system('../../imfit -c %s_config.dat --psf %s_psf.fits --nm --model-errors --cashstat '
+    os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
+    os.system('../../imfit -c %s_config.dat --psf %s_psf.fits --sky=80 --nm --cashstat --model-errors '
               '../../../plots/projections/Imfit/%s/%s_ctf.fits '
               '--save-model=%s_model.fits '
               '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
                   name, name, name, name, name, name, name, date))
-    os.system('../../makeimage %s_bestfit_%s.dat --psf %s_psf.fits --nosave --print-fluxes' % (
-        name, date, name))  # Print the flux ratios.
+    os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 512' % (
+        name, date))  # Print the flux ratios.
 
     # Plot the image, model and residual #
-    # plot_fits_image(name + '_psf')
+    # plot_fits_image(name + '_model')
     os.chdir(plots_path + name)  # Change to each halo's plots directory
     combine_images(name, ellipticity)
+
+# ellipticity
+# {'Au-06':0.31, 'Au-6NoR':0.19, 'Au-06NoRNoQ':0.55}
+# {'Au-17':0.50, 'Au-17NoR':0.45, 'Au-17NoRNoQ':0.51}
+# {'Au-18':0.42, 'Au-18NoR':0.57, 'Au-18NoRNoQ':0.51}
+
+# min_intensity
+# {'Au-06':84.26, 'Au-6NoR':82.46, 'Au-06NoRNoQ':47.86}
+# {'Au-17':29.36, 'Au-17NoR':31.14, 'Au-17NoRNoQ':60.05}
+# {'Au-18':36.45, 'Au-18NoR':68.15, 'Au-18NoRNoQ':50.84}
