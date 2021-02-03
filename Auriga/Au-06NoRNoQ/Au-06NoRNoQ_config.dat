@@ -1,4 +1,4 @@
-# A configuration file for Imfit that specifies a Sersic, a FerrersBar2D and Exponential model for Au-06NoRNoQ #
+# A configuration file for Imfit that specifies two FerrersBar2D and a BrokenExponential model for Au-06NoRNoQ #
 
 ORIGINAL_SKY            59.58
 
@@ -7,19 +7,19 @@ Y0                      256         254,258
 
 FUNCTION FerrersBar2D
 PA                      90          fixed
-ell                     0.54        0.3,0.8
-c0                      0.5         0,1
+ell                     0.5         0.3,0.8
+c0                      0.5         0.5,1
 n                       2           0,2
-I_0                     30          20,40
+I_0                     30          30,50
 a_bar                   20          10,30
 
 FUNCTION FerrersBar2D
 PA                      90          fixed
-ell                     0.54        0.3,0.8
+ell                     0.5         0.3,0.8
 c0                      0.5         0,1
 n                       2           0,2
-I_0                     60          20,80
-a_bar                   70          60,80
+I_0                     60          50,70
+a_bar                   50          40,50
 
 FUNCTION BrokenExponential
 PA                      180         fixed
@@ -31,25 +31,22 @@ r_break                 180
 alpha                   0.1
 
 ########################################################################################################################
-#ORIGINAL_SKY               # Value from minimum intensity.
 
-#FUNCTION Sersic
-#PA     90      fixed       # 1st estimate: the galaxy is rotated so the bar is along the x-axis.
-#ell            0,1         # 1st estimate: the first deep in ellipticity (lower -> more circular).
-#n              0,2         # 1st estimate: higher -> profile truncates faster.
-#I_e                        # 1st estimate: intensity at R_eff.
-#r_e                        # 1st estimate: R_eff.
+#ORIGINAL_SKY                                       # Value from minimum intensity.
 
 #FUNCTION FerrersBar2D
-#PA     90      fixed       # 1st estimate: the galaxy is rotated so the bar is along the x-axis.
-#ell            0.3,0.8     # 1st estimate: the peak in ellipticity before the bar ends (higher -> more elliptical).
-#c0             0,1         # 1st estimate: it should be boxy (higher -> higher distribution).
-#n              0,2         # 1st estimate: higher -> profile truncates faster.
-#I_0                        # 1st estimate: 1/3*I_0 from the exponential fit to the isophotal ellipses.
-#a_bar                      # 1st estimate: the sma value at which the second deep in the ellipticity appears.
+#PA                     90          fixed           # The galaxy is rotated so the bar is along the x-axis.
+#ell                                0.3,0.8         # The peak in ellipticity before the bar ends (> more elliptical).
+#c0                     0.5         0,1             # Boxy isophotes (> higher distribution).
+#n                      2           0,2             # Truncation of profile (> faster truncation).
+#I_0                                                # 1st estimate: 1/3*I_0 from the isophotal ellipses.
+#a_bar                                              # 1st estimate: sma value at the second deep in the ellipticity.
 
-#FUNCTION Exponential
-#PA     180     fixed       # 1st estimate: 180: the galaxy is face-on.
-#ell            0,0.2       # 1st estimate: minimum ellipticity from the isophotal ellipses (disc is face-on -> ell~0).
-#I_0                        # 1st estimate: 2/3*I_0 from the exponential fit to the isophotal ellipses.
-#h                          # 1st estimate: from the exponential fit to the isophotal ellipses.
+#FUNCTION BrokenExponential
+#PA                     180         fixed           # The galaxy is face-on.
+#ell                                0,0.2           # Minimum ellipticity from the isophotal ellipses.
+#I_0                                                # 1st estimate: 2/3*I_0 from the isophotal ellipses.
+#h1                                                 # 1st estimate: 4/5*h from the isophotal ellipses.
+#h2                                                 # 1st estimate: 1/5*h from the isophotal ellipses.
+#r_break                                            # 1st estimate: 4/5*h from the isophotal ellipses.
+#alpha                  0.5         0,1             # Sharpness of the break.
