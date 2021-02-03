@@ -1,45 +1,43 @@
 # A configuration file for Imfit that specifies a Sersic, a FerrersBar2D and Exponential model for Au-06 #
-ORIGINAL_SKY 84.26
 
-X0      256.00      254,258
-Y0      256.00      254,258
+ORIGINAL_SKY            84.26
 
+X0                      256         254,258
+Y0                      256         254,258
 
 FUNCTION FerrersBar2D
-PA          90          fixed
-ell         0.7         0.3,0.7
-c0          0.1         0,1
-n           2           0,2
-I_0         70
-a_bar       30          30,40
+PA                      90          fixed
+ell                     0.6         0.4,0.7
+c0                      0.1         0,1
+n                       2           0,2
+I_0                     70          30,100
+a_bar                   50          30,70
 
 FUNCTION BrokenExponential
-PA          180         fixed
-ell         0.1         0,0.2
-I_0         150
-h1          98
-h2          5
-r_break     190
-alpha       0.1
+PA                      180         fixed
+ell                     0.1         0,0.2
+I_0                     130
+h1                      110
+h2                      10          10,15
+r_break                 200
+alpha                   0.5
 
 ########################################################################################################################
+#ORIGINAL_SKY                                       # Value from minimum intensity.
+
 #FUNCTION FerrersBar2D
-#PA     90      fixed       # 1st estimate: the galaxy is rotated so the bar is along the x-axis.
-#ell            0.3,0.8     # 1st estimate: the peak in ellipticity before the bar ends (higher -> more elliptical).
-#c0             0,1         # 1st estimate: it should be boxy (higher -> higher distribution).
+#PA                     90          fixed           # The galaxy is rotated so the bar is along the x-axis.
+#ell                                0.3,0.8         # The peak in ellipticity before the bar ends (> -> more elliptical).
+#c0         0.5         0,1             # It should be boxy (higher -> higher distribution).
 #n              0,2         # 1st estimate: higher -> profile truncates faster.
 #I_0                        # 1st estimate: 1/3*I_0 from the exponential fit to the isophotal ellipses.
 #a_bar                      # 1st estimate: the sma value at which the second deep in the ellipticity appears.
 
-#FUNCTION Sersic
-#PA     90      fixed       # 1st estimate: the galaxy is rotated so the bar is along the x-axis.
-#ell            0,1         # 1st estimate: the first deep in ellipticity (lower -> more circular).
-#n              0,2         # 1st estimate: higher -> profile truncates faster.
-#I_e                        # 1st estimate: intensity at R_eff.
-#r_e                        # 1st estimate: R_eff.
-
-#FUNCTION Exponential
-#PA     180     fixed       # 1st estimate: 180: the galaxy is face-on.
-#ell            0,0.2       # 1st estimate: minimum ellipticity from the isophotal ellipses (disc is face-on -> ell~0).
+#FUNCTION BrokenExponential
+#PA     180     fixed       # The galaxy is face-on.
+#ell            0,0.2       # Minimum ellipticity from the isophotal ellipses (disc is face-on -> ell~0).
 #I_0                        # 1st estimate: 2/3*I_0 from the exponential fit to the isophotal ellipses.
-#h                          # 1st estimate: from the exponential fit to the isophotal ellipses.
+#h1                         # 1st estimate: from the exponential fit to the isophotal ellipses.
+#h2                         # 1st estimate: from the exponential fit to the isophotal ellipses.
+#r_break                    # 1st estimate: 150
+#alpha                      # 1st estimate: 0.5         0,1
