@@ -633,18 +633,18 @@ def r_band_magnitude(data, redshift, read):
             # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
-            else:
-                print("Reading data for halo:", str(s.haloname))
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
             # Rotate the data and plot the projections #
-            stellar_mask, = np.where((s.data['age'] > 0.0) & (
-                s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
+            stellar_mask, = np.where(
+                s.data['age'] > 0.0)  # Mask the data: select stellar particles inside a 30kpc sphere.
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
                 s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack(
@@ -1189,9 +1189,8 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / const.KB * (1e6 * const.parsec) ** 2.0 / (
                 1e6 * const.parsec / 1e5) ** 2 * mean_weight
             s.data['temprho'] = s.rho * temperature
-            edge_on = \
-            s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
-                'grid']
+            edge_on = s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True,
+                numthreads=8)['grid']
             edge_on_rho = \
                 s.get_Aslice('rho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
                     'grid']
