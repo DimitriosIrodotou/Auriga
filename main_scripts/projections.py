@@ -17,6 +17,7 @@ from matplotlib import gridspec
 res = 512
 boxsize = 0.06
 default_level = 4
+Msunabs = [5.61, 5.48, 4.83, 3.30, 5.12, 4.68, 4.57, 4.60]
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
 
 
@@ -643,22 +644,26 @@ def r_band_magnitude(data, redshift, read):
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
             # Rotate the data and plot the projections #
-            stellar_mask, = np.where(
-                s.data['age'] > 0.0)  # Mask the data: select stellar particles inside a 30kpc sphere.
+            age = np.zeros(s.npartall)
+            age[s.data['type'] == 4] = s.data['age']
+            stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.)) - s.nparticlesall[
+            :4].sum()  # Mask the data: select stellar particles.
+
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
                 s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack(
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
-            band = 10 ** (-2.0 * s.data['gsph'][stellar_mask, 5] / 5.0)  # r-band magnitude.
+            # Convert the r-band magnitudes to luminosities #
+            r_band_luminosity = 10 ** (0.4 * (Msunabs[5] - s.data['gsph'][stellar_mask, 5]))
 
             # Save data for each halo in numpy arrays #
-            np.save(path + 'band_' + str(s.haloname), band)
-            np.save(path + 'pos_' + str(s.haloname), s.data['pos'])
             np.save(path + 'name_' + str(s.haloname), s.haloname)
+            np.save(path + 'pos_' + str(s.haloname), s.data['pos'])
+            np.save(path + 'r_band_luminosity_' + str(s.haloname), r_band_luminosity)
 
     # Get the names and sort them #
-    names = glob.glob(path + 'name_*')
+    names = glob.glob(path + 'name_06.*')
     names.sort()
 
     # Loop over all available haloes #
@@ -674,11 +679,16 @@ def r_band_magnitude(data, redshift, read):
 
         # Load the data #
         pos = np.load(path + 'pos_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        band = np.load(path + 'band_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        r_band_luminosity = np.load(path + 'r_band_luminosity_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the r-band 2D histogram #
-        plt.hist2d(pos[:, 2], pos[:, 1], weights=band, bins=300, norm=matplotlib.colors.LogNorm(),
-            range=[[-0.03, 0.03], [-0.03, 0.03]], cmap='gray')
+        counts, xedges, yedges = np.histogram2d(pos[:, 2] * 1e3, pos[:, 1] * 1e3, weights=r_band_luminosity, bins=600,
+            range=[[-30, 30], [-30, 30]])
+        surface = np.zeros(len(xedges) - 1)
+        surface[:] = (xedges[1:] - xedges[:-1]) ** 2
+        counts = counts / surface  # In Lsun/kpc^2.
+
+        plt.imshow(counts.T, extent=[-30, 30, -30, 30], origin='lower', cmap='gray', norm=matplotlib.colors.LogNorm())
 
         # Save and close the figure #
         plt.savefig('/u/di43/Auriga/plots/rbm/' + 'Au-' + str(re.split('_|.npy', names[i])[1]), bbox_inches='tight')
@@ -1189,8 +1199,9 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / const.KB * (1e6 * const.parsec) ** 2.0 / (
                 1e6 * const.parsec / 1e5) ** 2 * mean_weight
             s.data['temprho'] = s.rho * temperature
-            edge_on = s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True,
-                numthreads=8)['grid']
+            edge_on = \
+            s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
+                'grid']
             edge_on_rho = \
                 s.get_Aslice('rho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
                     'grid']

@@ -21,38 +21,38 @@ style.use("classic")
 date = time.strftime("%d_%m_%y_%H%M")
 
 
-def convert_for_fit(name, min_intensity):
+def convert_to_fit(name):
     """
-    Add Gaussian noise, Gaussian blur, convert to gray scale and save an image in 512x512 along with its fits version.
-    :param min_intensity: the minimum intensity used to add noise to the image.
+    Add Gaussian blur, convert to gray scale and save an image in 256x256 along with its fits version.
     :param name: name of the file.
     :return:
     """
-    # Load a png image and convert to 512x512 #
+    # Load a png image and convert to 256x256 #
     image_png = Image.open(name + '.png').convert("L")
-    image_png = image_png.resize((512, 512), PIL.Image.NEAREST)
+    image_png = image_png.resize((256, 256), PIL.Image.NEAREST)
 
     # Create and save a fits version of the rescaled image #
     hdu = fits.PrimaryHDU(image_png)
+    hdu.scale('int16', 'old')  # Convert to 16 bit image.
     hdu.writeto(name + '_ctf.fits', overwrite=True)
 
-    # Add flat background noise #
+    # Increase the intensity of all pixels by the same factor #
     image_fits = fits.getdata(name + '_ctf.fits', ext=0)
-    image_fits = image_fits + min_intensity
+    image_fits *= 20
 
     # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
+    figure, axis = plt.subplots(1, frameon=False)
     plt.axis('off')
     axis.set_aspect('equal')
 
     # Add Gaussian blur #
     FWHM = 3
     sigma = FWHM / np.sqrt(8 * np.log(2))
-    image_fits = gaussian_filter(image_fits, sigma=sigma)
+    # image_fits = gaussian_filter(image_fits, sigma=sigma)
     array = np.asarray(image_fits)
 
     # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 10), frameon=False)
+    figure, axis = plt.subplots(1, frameon=False)
     plt.axis('off')
     axis.set_aspect('equal')
 
@@ -81,7 +81,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
-    isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
+    isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
     print(isolist.to_table())  # Print the isophote values as a table sorted by the semi-major axis length.
     print('average ellipticity:', np.mean(isolist.eps))
 
@@ -117,7 +117,7 @@ def combine_images(name, ellipticity):
     # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
-    isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
+    isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
 
     # Plot the original data with some of the isophotes, the elliptical model image, and the residual image #
     # Generate the figure and set its parameters #
@@ -131,7 +131,7 @@ def combine_images(name, ellipticity):
     axes = [axis00, axis01, axis02, axis03]
     images = [image_fits, image_fits, model, residual]
     for axis, image in zip(axes, images):
-        plot_tools.set_axis(axis, xlim=[0, 512], ylim=[0, 512], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$',
+        plot_tools.set_axis(axis, xlim=[0, 256], ylim=[0, 256], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$',
             which='major', aspect=None)
         axis.grid(True, color='gray', linestyle='-')
         axis.imshow(image, origin='lower', cmap='gray')
@@ -151,7 +151,7 @@ def combine_images(name, ellipticity):
     # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(model, geometry)
-    isolist_model = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.3)
+    isolist_model = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
 
     axes = [axis10, axis11, axis12, axis13]
     y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA/\deg}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$',
@@ -313,41 +313,35 @@ Imfit_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
 
 # Get the names and sort them #
-names = glob.glob(plots_path + 'Au-06NoRNoQ')
+names = glob.glob(plots_path + 'Au-06')
 names = [re.split('/Imfit|/', name)[-1] for name in names]
 names.sort()
 
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    ellipticity = 0.55  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
-    min_intensity = -59.58  # Set to 0 the first time you fit a galaxy and then to the minimum.
+    ellipticity = 0.4  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
     os.chdir(plots_path + name)  # Change to each halo's plots directory
-    convert_for_fit(name, min_intensity)  # Use only once.
+    convert_to_fit(name)
     fit_isophotal_ellipses(name, ellipticity)
 
     # Use Imfit to analyse the image #  # --bootstrap 15
-    os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
-    os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
-    os.system('../../imfit -c %s_config.dat --psf %s_psf.fits --nm --cashstat --model-errors '
-              '../../../plots/projections/Imfit/%s/%s_ctf.fits '
-              '--save-model=%s_model.fits '
-              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
-                  name, name, name, name, name, name, name, date))
-    os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 512' % (
-        name, date))  # Print the flux ratios.
-
-    # Plot the image, model and residual #
-    # plot_fits_image(name + '_model')
-    os.chdir(plots_path + name)  # Change to each halo's plots directory
-    combine_images(name, ellipticity)
+    # os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
+    # # os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
+    # os.system('../../imfit -c %s_config.dat --nm '
+    #           '../../../plots/projections/Imfit/%s/%s_ctf.fits '
+    #           '--save-model=%s_model.fits '
+    #           '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
+    #               name, name, name, name, name, name, date))
+    # os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
+    #     name, date))  # Print the flux ratios.
+    #
+    # # Plot the image, model and residual #
+    # # plot_fits_image(name + '_model')
+    # os.chdir(plots_path + name)  # Change to each halo's plots directory
+    # combine_images(name, ellipticity)
 
 # ellipticity
-# {'Au-06':0.31, 'Au-6NoR':0.17, 'Au-06NoRNoQ':0.55}
+# {'Au-06':0.36, 'Au-6NoR':0.17, 'Au-06NoRNoQ':0.55}
 # {'Au-17':0.50, 'Au-17NoR':0.45, 'Au-17NoRNoQ':0.51}
 # {'Au-18':0.42, 'Au-18NoR':0.57, 'Au-18NoRNoQ':0.51}
-
-# min_intensity
-# {'Au-06':84.26, 'Au-6NoR':81.93, 'Au-06NoRNoQ':47.86}
-# {'Au-17':29.36, 'Au-17NoR':31.14, 'Au-17NoRNoQ':60.05}
-# {'Au-18':36.45, 'Au-18NoR':68.15, 'Au-18NoRNoQ':50.84}
