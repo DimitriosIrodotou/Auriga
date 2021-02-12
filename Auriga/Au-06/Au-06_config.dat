@@ -1,30 +1,23 @@
 # A configuration file for Imfit that specifies a FerrersBar2D and a BrokenExponential model for Au-06 #
 
-ORIGINAL_SKY            84.26
-
-X0                      256         254,258
-Y0                      256         254,258
+X0                      128         fixed
+Y0                      128         fixed
 
 FUNCTION FerrersBar2D
 PA                      90          fixed
-ell                     0.6         0.4,0.7
+ell                     0.6         0.6,0.8
 c0                      0.1         0,1
 n                       2           0,2
-I_0                     70          30,100
-a_bar                   50          30,70
+I_0                     80          75,100
+a_bar                   25          20,30
 
-FUNCTION BrokenExponential
-PA                      180         fixed
+FUNCTION Exponential
+PA                      180         0,180
 ell                     0.1         0,0.2
-I_0                     130
-h1                      110
-h2                      10          10,15
-r_break                 200
-alpha                   0.5
+I_0                     150         150,171
+h                       30
 
 ########################################################################################################################
-
-#ORIGINAL_SKY                                       # Value from minimum intensity.
 
 #FUNCTION FerrersBar2D
 #PA                     90          fixed           # The galaxy is rotated so the bar is along the x-axis.

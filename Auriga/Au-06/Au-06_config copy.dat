@@ -1,32 +1,26 @@
-# A configuration file for Imfit that specifies two FerrersBar2D and a BrokenExponential model for Au-06NoRNoQ #
+# A configuration file for Imfit that specifies a FerrersBar2D and a BrokenExponential model for Au-06 #
 
-X0                      128         fixed
-Y0                      128         fixed
+ORIGINAL_SKY            84.26
 
-FUNCTION FerrersBar2D
-PA                      90          fixed
-ell                     0.5         0.4,0.7
-c0                      0.7         0.6,1
-n                       2           0,2
-I_0                     30          30,50
-a_bar                   25          25,30
+X0                      256         254,258
+Y0                      256         254,258
 
 FUNCTION FerrersBar2D
 PA                      90          fixed
-ell                     0.5         0.4,0.8
-c0                      0.5         0,1
+ell                     0.6         0.4,0.7
+c0                      0.1         0,1
 n                       2           0,2
-I_0                     60          40,70
-a_bar                   50          40,60
+I_0                     70          30,100
+a_bar                   50          30,70
 
 FUNCTION BrokenExponential
 PA                      180         fixed
 ell                     0.1         0,0.2
-I_0                     110
-h1                      180
-h2                      12          10,15
-r_break                 180
-alpha                   0.1
+I_0                     130
+h1                      110
+h2                      10          10,15
+r_break                 200
+alpha                   0.5
 
 ########################################################################################################################
 
