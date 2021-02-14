@@ -899,10 +899,10 @@ def ssdp_cvc_combination(pdf, redshift):
         p = plot_helper.plot_helper()  # Load the helper.
         axis.axvline(rfit, color='gray', linestyle='--')
         axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors[0], linewidth=0.0)
-        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors[3], label=r'$\mathrm{Total}$')
-        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1], label=r'$\mathrm{Sersic}$')
         axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0],
-            label=r'$\mathrm{Exponential}$')
+            label=r'$\mathrm{Total}$')
+        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1], label=r'$\mathrm{Sersic}$')
+        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors[3], label=r'$\mathrm{Exponential}$')
 
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis.transAxes)

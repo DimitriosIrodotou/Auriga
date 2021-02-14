@@ -33,12 +33,12 @@ def convert_to_fit(name):
 
     # Create and save a fits version of the rescaled image #
     hdu = fits.PrimaryHDU(image_png)
-    hdu.scale('int16', 'old')  # Convert to 16 bit image.
+    # hdu.scale('int16', 'old')  # Convert to 16 bit image.
     hdu.writeto(name + '_ctf.fits', overwrite=True)
 
     # Increase the intensity of all pixels by the same factor #
     image_fits = fits.getdata(name + '_ctf.fits', ext=0)
-    image_fits *= 20
+    # image_fits *= 20
 
     # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, frameon=False)
@@ -46,9 +46,9 @@ def convert_to_fit(name):
     axis.set_aspect('equal')
 
     # Add Gaussian blur #
-    FWHM = 3
+    FWHM = 2
     sigma = FWHM / np.sqrt(8 * np.log(2))
-    # image_fits = gaussian_filter(image_fits, sigma=sigma)
+    image_fits = gaussian_filter(image_fits, sigma=sigma)
     array = np.asarray(image_fits)
 
     # Generate the figure and set its parameters #
@@ -313,35 +313,35 @@ Imfit_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
 
 # Get the names and sort them #
-names = glob.glob(plots_path + 'Au-06')
+names = glob.glob(plots_path + 'Au-06NoRNoQ')
 names = [re.split('/Imfit|/', name)[-1] for name in names]
 names.sort()
 
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    ellipticity = 0.4  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
+    ellipticity = 0.55  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
     os.chdir(plots_path + name)  # Change to each halo's plots directory
-    convert_to_fit(name)
-    fit_isophotal_ellipses(name, ellipticity)
+    # convert_to_fit(name)
+    # fit_isophotal_ellipses(name, ellipticity)
 
     # Use Imfit to analyse the image #  # --bootstrap 15
-    # os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
-    # # os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
-    # os.system('../../imfit -c %s_config.dat --nm '
-    #           '../../../plots/projections/Imfit/%s/%s_ctf.fits '
-    #           '--save-model=%s_model.fits '
-    #           '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
-    #               name, name, name, name, name, name, date))
-    # os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
-    #     name, date))  # Print the flux ratios.
-    #
-    # # Plot the image, model and residual #
-    # # plot_fits_image(name + '_model')
-    # os.chdir(plots_path + name)  # Change to each halo's plots directory
-    # combine_images(name, ellipticity)
+    os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
+    # os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
+    os.system('../../imfit -c %s_config.dat --nm --cashstat '
+              '../../../plots/projections/Imfit/%s/%s_ctf.fits '
+              '--save-model=%s_model.fits '
+              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
+                  name, name, name, name, name, name, date))
+    os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
+        name, date))  # Print the flux ratios.
+
+    # Plot the image, model and residual #
+    # plot_fits_image(name + '_model')
+    os.chdir(plots_path + name)  # Change to each halo's plots directory
+    combine_images(name, ellipticity)
 
 # ellipticity
-# {'Au-06':0.36, 'Au-6NoR':0.17, 'Au-06NoRNoQ':0.55}
+# {'Au-06':0.31, 'Au-6NoR':0.17, 'Au-06NoRNoQ':0.55}
 # {'Au-17':0.50, 'Au-17NoR':0.45, 'Au-17NoRNoQ':0.51}
 # {'Au-18':0.42, 'Au-18NoR':0.57, 'Au-18NoRNoQ':0.51}
