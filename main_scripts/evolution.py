@@ -462,16 +462,16 @@ def delta_sfr_regimes(pdf, data, region, read):
     axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
     axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
 
-    for axis in [axis10, axis11, axis12]:
-        axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1, linscaley=0.1)
+    # for axis in [axis10, axis11, axis12]:
+    #     axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1, linscaley=0.1)
     for axis in [axis01, axis02, axis11, axis12]:
         axis.set_yticklabels([])
     for axis in [axis00, axis01, axis02]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 15], aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 25], aspect=None)
     for axis in [axis10, axis11, axis12]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=(-1.1, 2e1), aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=(-1.1, 16), aspect=None)
     axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', size=20)
     axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$', size=20)
 
@@ -493,19 +493,19 @@ def delta_sfr_regimes(pdf, data, region, read):
 
             # Plot the evolution of SFR and the normalised delta SFR #
             counts, bins, bars = top_axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins,
-                range=[0, 13], color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+                range=[0, 13], color=colors[i], label=r'$\mathrm{Au-%s}$' % (str(re.split('_|.npy', names[i])[1])))
             if i == 0:
                 original_bins, original_counts = bins, counts
             else:
                 bottom_axis.plot(original_bins[:-1], np.divide(counts - original_counts, original_counts),
-                    color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+                    color=colors[i], label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
             # Create the legend #
-            top_axis.legend(loc='upper right', fontsize=14, frameon=False, numpoints=1)
-            bottom_axis.legend(loc='upper center', fontsize=14, frameon=False, numpoints=1, ncol=2)
+            top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
+            bottom_axis.legend(loc='upper center', fontsize=12, frameon=False, numpoints=1, ncol=2)
 
         # Add the text #
-        figure.text(0.01, 0.92,
+        figure.text(0.01, 0.9,
             r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)),
             fontsize=20, transform=top_axis.transAxes)
     # Save and close the figure #
@@ -734,7 +734,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 
             # Plot the evolution of SFR #
             axis00.hist(lookback_times_SFR, weights=weights, histtype='step', bins=n_bins, range=[0, 13],
-                color=colors[i], label="Au-" + (str(re.split('_|.npy', names[i])[1])))
+                color=colors[i], label=r'$\mathrm{Au-%s}$' + (str(re.split('_|.npy', names[i])[1])))
 
             # Plot the feedback modes binned sum line #
             for mode, label, color in zip([mechanicals, thermals], [r'$\mathrm{Mechanical}$', r'$\mathrm{Thermal}$'],

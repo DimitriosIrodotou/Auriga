@@ -226,7 +226,7 @@ def gas_density_combination(pdf, redshift):
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
         axis41, axis42, axis50, axis51, axis52]:
-        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=20)
+        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], aspect=None)
     for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
         axis.set_ylim([-15, 15])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
@@ -237,10 +237,16 @@ def gas_density_combination(pdf, redshift):
     for axis in [axis51, axis52]:
         axis.set_yticklabels([])
     for axis in [axis50, axis51, axis52]:
+        labels = ['', '-20', '', '0', '', '20', '']
+        axis.set_xticklabels(labels)
         axis.set_xlabel(r'$\mathrm{x/kpc}$', size=20)
     for axis in [axis00, axis20, axis40]:
+        labels = ['', '-20', '', '0', '', '20', '']
+        axis.set_yticklabels(labels)
         axis.set_ylabel(r'$\mathrm{y/kpc}$', size=20)
     for axis in [axis10, axis30, axis50]:
+        labels = ['', '-10', '', '0', '', '10', '']
+        axis.set_yticklabels(labels)
         axis.set_ylabel(r'$\mathrm{z/kpc}$', size=20)
 
     # Loop over all available haloes #
@@ -254,12 +260,12 @@ def gas_density_combination(pdf, redshift):
 
         # Plot the gas density projections #
         pcm = axis_face_on.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10),
-            rasterized=True, cmap='magma')
+            rasterized=True, cmap='inferno')
         axis_edge_on.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10),
-            rasterized=True, cmap='magma')
+            rasterized=True, cmap='inferno')
         plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{gas}/(M_\odot\;kpc^{-2})}$')
 
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis_face_on.transAxes)
 
     # Save and close the figure #
@@ -906,10 +912,16 @@ def ssdp_cvc_combination(pdf, redshift):
 
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis.transAxes)
-        # figure.text(0.8, 0.75, r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} =
-        # %.2f$' '\n' % (
-        #     1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=20,
+        # figure.text(0.3, 0.7,
+        #     r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{R_{d}} = %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (
+        #     1. / popt4, popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=16,
         #     transform=axis.transAxes)
+
+        # Compute component masses from the fit #
+        # disc_mass = 2.0 * np.pi * popt0 * popt1 * popt1
+        # bulge_mass = np.pi * popt2 * popt3 * popt3 * gamma(2.0 / popt4 + 1)
+        # print(disc_mass, bulge_mass)
+
         axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
         axis_cvc.legend(loc='upper center', fontsize=16, frameon=False, numpoints=1, ncol=2)
 
@@ -1089,8 +1101,7 @@ def gas_temperature_regimes_combination(pdf):
         res=res, boxsize=boxsize * 1e3, multiple5=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None,
-            size=20)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0.0, 0.75], aspect=None, size=20)
         if axis in [axis10, axis11, axis12, axis20, axis21, axis22]:
             axis2.set_xlabel('')
             axis2.set_xticklabels([])
@@ -1100,24 +1111,41 @@ def gas_temperature_regimes_combination(pdf):
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
         axis.set_ylabel('')
         axis.set_yticklabels([])
+    axis00.set_ylabel(r'$\mathrm{Cold\;gas\;fraction}$', size=20)
+    axis10.set_ylabel(r'$\mathrm{Warm\;gas\;fraction}$', size=20)
+    axis20.set_ylabel(r'$\mathrm{Hot\;gas\;fraction}$', size=20)
 
-    # Loop over all available haloes #
-    for i, axis in zip(range(len(names)), [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]):
-        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
-        # Load the data #
-        wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+    # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
+    names_groups = np.array_split(names, 3)
+    axes = [[axis00, axis10, axis20], [axis01, axis11, axis21], [axis02, axis12, axis22]]
+    for i, axis in zip(range(len(names_groups)), axes):
+        names_flavours = names_groups[i]
+        # Loop over all available flavours #
+        for j in range(len(names_flavours)):
+            print("Plotting data for halo:", str(re.split('_|.npy', names_flavours[j])[1]))
+            # Load the data #
+            wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
-        # Plot the evolution of gas fraction in different temperature regimes #
-        axis.plot(lookback_times, hg_ratios, color=colors[1], label=r'$\mathrm{Hot\;gas}$')
-        axis.plot(lookback_times, sfg_ratios, color=colors[2], label=r'$\mathrm{Cold\;gas}$')
-        axis.plot(lookback_times, wg_ratios, color=colors[3], label=r'$\mathrm{Warm\;gas}$')
+            if j == 0:
+                original_lookback_times = lookback_times
+            else:
+                wg_ratios = plot_tools.linear_resample(wg_ratios, len(original_lookback_times))
+                hg_ratios = plot_tools.linear_resample(hg_ratios, len(original_lookback_times))
+                sfg_ratios = plot_tools.linear_resample(sfg_ratios, len(original_lookback_times))
+                lookback_times = plot_tools.linear_resample(lookback_times, len(original_lookback_times))
 
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
-            transform=axis.transAxes)
-        axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            # Plot the evolution of gas fraction in different temperature regimes #
+            axis[0].plot(lookback_times, sfg_ratios, color=colors2[j],
+                label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
+            axis[1].plot(lookback_times, wg_ratios, color=colors2[j],
+                label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
+            axis[2].plot(lookback_times, hg_ratios, color=colors2[j],
+                label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
+
+            axis[0].legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()

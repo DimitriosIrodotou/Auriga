@@ -289,7 +289,7 @@ class AurigaPdf:
         # projections.stellar_density(pdf, self, redshift, read=False)
         # projections.stellar_density_components(pdf, self, redshift, read=False)
         # projections.stellar_light_fit(self, redshift, read=False)
-        projections.r_band_magnitude(self, redshift, read=False)
+        # projections.r_band_magnitude(self, redshift, read=False)
         # Gas #
         # projections.gas_density(pdf, self, redshift, read=False)
         # projections.gas_temperature(pdf, self, redshift, read=False)
