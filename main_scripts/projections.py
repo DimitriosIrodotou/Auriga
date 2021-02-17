@@ -663,7 +663,7 @@ def r_band_magnitude(data, redshift, read):
             np.save(path + 'r_band_luminosity_' + str(s.haloname), r_band_luminosity)
 
     # Get the names and sort them #
-    names = glob.glob(path + 'name_06.*')
+    names = glob.glob(path + 'name_*')
     names.sort()
 
     # Loop over all available haloes #

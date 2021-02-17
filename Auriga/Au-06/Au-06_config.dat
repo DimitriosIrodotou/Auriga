@@ -1,21 +1,21 @@
-# A configuration file for Imfit that specifies a FerrersBar2D and a BrokenExponential model for Au-06 #
+# A configuration file for Imfit that specifies a FerrersBar2D and an Exponential model for Au-06 #
 
 X0                      128         fixed
 Y0                      128         fixed
 
 FUNCTION FerrersBar2D
 PA                      90          fixed
-ell                     0.6         0.6,0.8
-c0                      0.1         0,1
+ell                     0.7         0.6,0.8
+c0                      0.5         0,1
 n                       2           0,2
-I_0                     80          75,100
-a_bar                   25          20,30
+I_0                     115         110,125
+a_bar                   17          15,20
 
 FUNCTION Exponential
-PA                      180         0,180
-ell                     0.1         0,0.2
-I_0                     150         150,171
-h                       30
+PA                      0           fixed
+ell                     0           fixed
+I_0                     115         100,125
+h                       30          25,35
 
 ########################################################################################################################
 

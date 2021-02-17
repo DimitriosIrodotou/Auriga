@@ -79,7 +79,7 @@ def fit_isophotal_ellipses(name, ellipticity):
 
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
     # image array #
-    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
+    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], fix_center=True, sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
     print(isolist.to_table())  # Print the isophote values as a table sorted by the semi-major axis length.
@@ -115,7 +115,7 @@ def combine_images(name, ellipticity):
 
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
     # image array #
-    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
+    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], fix_center=True, sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
 
@@ -149,7 +149,7 @@ def combine_images(name, ellipticity):
 
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
     # image array #
-    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
+    geometry = EllipseGeometry(x0=centre[0], y0=centre[1], fix_center=True, sma=centre[0] / 10, eps=ellipticity, pa=1e-2)
     ellipse = Ellipse(model, geometry)
     isolist_model = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
 
@@ -313,14 +313,14 @@ Imfit_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
 
 # Get the names and sort them #
-names = glob.glob(plots_path + 'Au-06NoRNoQ')
+names = glob.glob(plots_path + 'Au-06NoR')
 names = [re.split('/Imfit|/', name)[-1] for name in names]
 names.sort()
 
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    ellipticity = 0.55  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
+    ellipticity = 0.3  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
     os.chdir(plots_path + name)  # Change to each halo's plots directory
     # convert_to_fit(name)
     # fit_isophotal_ellipses(name, ellipticity)
@@ -342,6 +342,6 @@ for name in names:
     combine_images(name, ellipticity)
 
 # ellipticity
-# {'Au-06':0.31, 'Au-6NoR':0.17, 'Au-06NoRNoQ':0.55}
+# {'Au-06':0.29, 'Au-6NoR':0.3, 'Au-06NoRNoQ':0.56}
 # {'Au-17':0.50, 'Au-17NoR':0.45, 'Au-17NoRNoQ':0.51}
 # {'Au-18':0.42, 'Au-18NoR':0.57, 'Au-18NoRNoQ':0.51}

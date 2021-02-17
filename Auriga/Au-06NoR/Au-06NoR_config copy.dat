@@ -1,22 +1,29 @@
-# A configuration file for Imfit that specifies a Sersic and an Exponential model for Au-06NoR #
+# A configuration file for Imfit that specifies a Sersic and a BrokenExponential model for Au-06NoR #
 
-X0                      128         fixed
-Y0                      128         fixed
+ORIGINAL_SKY            81.93
+
+X0                      256         254,258
+Y0                      256         254,258
 
 FUNCTION Sersic
-PA                      0           fixed
-ell                     0           fixed
-n                       0.3         0,1
-I_e                     130         120,140
-r_e                     25          20,30
+PA                      180         fixed
+ell                     0.4         0,1
+n                       2
+I_e                     50
+r_e                     16
 
-FUNCTION Exponential
-PA                      0           fixed
-ell                     0           fixed
-I_0                     40          20,60
-h                       30          25,35
+FUNCTION BrokenExponential
+PA                      180         fixed
+ell                     0.1         0,0.2
+I_0                     100
+h1                      180
+h2                      12          10,15
+r_break                 160
+alpha                   0.1
 
 ########################################################################################################################
+
+#ORIGINAL_SKY                                       # Value from minimum intensity.
 
 #FUNCTION Sersic
 #PA                     90          fixed           # 1st estimate: the galaxy is rotated so the bar is along the x-axis.

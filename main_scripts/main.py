@@ -153,7 +153,7 @@ class AurigaOutput:
         self.directory = directory
 
         # Find how many Auriga haloes will be used #
-        haloes = glob.glob("%shalo_" % self.directory)
+        haloes = glob.glob("%shalo_06NoR" % self.directory)
         self.nhalos = len(haloes)
 
         print("Reading data for %d halo(es)" % self.nhalos)
@@ -289,7 +289,7 @@ class AurigaPdf:
         # projections.stellar_density(pdf, self, redshift, read=False)
         # projections.stellar_density_components(pdf, self, redshift, read=False)
         # projections.stellar_light_fit(self, redshift, read=False)
-        # projections.r_band_magnitude(self, redshift, read=False)
+        projections.r_band_magnitude(self, redshift, read=True)
         # Gas #
         # projections.gas_density(pdf, self, redshift, read=False)
         # projections.gas_temperature(pdf, self, redshift, read=False)
