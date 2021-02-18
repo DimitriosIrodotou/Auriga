@@ -6,30 +6,27 @@ Y0                      128         fixed
 FUNCTION Sersic
 PA                      0           fixed
 ell                     0           fixed
-n                       0.3         0,1
-I_e                     130         120,140
-r_e                     25          20,30
+n                       0.3         0,0.8
+I_e                     15          10,21
+r_e                     8           5,11
 
 FUNCTION Exponential
 PA                      0           fixed
 ell                     0           fixed
-I_0                     40          20,60
-h                       30          25,35
+I_0                     130         100,170
+h                       20
 
 ########################################################################################################################
 
 #FUNCTION Sersic
-#PA                     90          fixed           # 1st estimate: the galaxy is rotated so the bar is along the x-axis.
-#ell                                0,1             # First deep in ellipticity (< more circular).
+#PA                     0           fixed           # The galaxy is face on.
+#ell                    0           fixed           # The galaxy is face on.
 #n                      0.5         0,2             # Truncation of profile (> faster truncation).
 #I_e                                                # 1st estimate: intensity at R_eff.
 #r_e                                                # 1st estimate: R_eff.
 
-#FUNCTION BrokenExponential
-#PA                     180         fixed           # The galaxy is face-on.
-#ell                                0,0.2           # Minimum ellipticity from the isophotal ellipses.
-#I_0                                                # 1st estimate: 2/3*I_0 from the isophotal ellipses.
-#h1                                                 # 1st estimate: 4/5*h from the isophotal ellipses.
-#h2                                                 # 1st estimate: 1/5*h from the isophotal ellipses.
-#r_break                                            # 1st estimate: 4/5*h from the isophotal ellipses.
-#alpha                  0.5         0,1             # Sharpness of the break.
+#FUNCTION Exponential
+#PA                     0           fixed           # The galaxy is face-on.
+#ell                    0           fixed           # The galaxy is face on.
+#I_0                                                # 1st estimate: 1/2*I_0 from the isophotal ellipses.
+#h                                                  # 1st estimate: h from the isophotal ellipses.
