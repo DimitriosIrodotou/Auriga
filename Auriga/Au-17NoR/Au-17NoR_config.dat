@@ -29,14 +29,22 @@ h                       25          20,30
 
 #FUNCTION FerrersBar2D
 #PA                     90          fixed           # The bar is along the x-axis.
-#ell                                0.3,0.8         # The peak in ellipticity before the bar ends (> more elliptical).
+#ell                                0.1,0.5         # The peak in ellipticity before the bar ends (> more elliptical).
+#c0                     0.5         0,1             # Boxy isophotes (> higher distribution).
+#n                      0.5         0,1             # Truncation of profile (> faster truncation).
+#I_0                                                # 1st estimate: 1/3*I_0 from the isophotal ellipses.
+#a_bar                                              # 1st estimate: sma value at the second deep in the ellipticity.
+
+#FUNCTION FerrersBar2D
+#PA                     90          fixed           # The bar is along the x-axis.
+#ell                                0.6,0.8         # The peak in ellipticity before the bar ends (> more elliptical).
 #c0                     0.5         0,1             # Boxy isophotes (> higher distribution).
 #n                      2           0,2             # Truncation of profile (> faster truncation).
-#I_0                                                # 1st estimate: 1/2*I_0 from the isophotal ellipses.
-#a_bar                                              # 1st estimate: sma value at the second deep in the ellipticity.
+#I_0                                                # 1st estimate: 1/3*I_0 from the isophotal ellipses.
+#a_bar                                              # 1st estimate: sma value at the first peak in the ellipticity.
 
 #FUNCTION Exponential
 #PA                     0           fixed           # The galaxy is face-on.
 #ell                    0           fixed           # The galaxy is face on.
-#I_0                                                # 1st estimate: 1/2*I_0 from the isophotal ellipses.
+#I_0                                                # 1st estimate: 1/3*I_0 from the isophotal ellipses.
 #h                                                  # 1st estimate: h from the isophotal ellipses.
