@@ -1,4 +1,4 @@
-# A configuration file for Imfit that specifies two FerrersBar2D and an Exponential model for Au-17NoRNoQ #
+# A configuration file for Imfit that specifies a FerrersBar2D and an Exponential model for Au-17NoRNoQ #
 
 X0                      128         fixed
 Y0                      128         fixed
