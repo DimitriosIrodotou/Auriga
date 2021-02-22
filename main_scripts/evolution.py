@@ -108,6 +108,109 @@ def sfr(pdf, data, read):
 
 
 @vectorize_parallel(method='processes', num_procs=8)
+def get_gf_data(snapshot_ids, halo):
+    """
+    Parallelised method to get gas fractions.
+    :param snapshot_ids: ids of the snapshots.
+    :param halo: data for the halo.
+    :return: lookback time, gas_fraction
+    """
+    print("Invoking get_gf_data")
+    # Read desired galactic property(ies) for specific particle type(s) for
+    # Auriga halo(es) #
+    particle_type = [0, 4]
+    attributes = ['age', 'mass']
+    s = halo.snaps[snapshot_ids].loadsnap(loadonlyhalo=0, loadonlytype=particle_type, loadonly=attributes)
+
+    # Select the halo and rotate it based on its principal axes so galaxy's
+    # spin is aligned with the z-axis #
+    s.calc_sf_indizes(s.subfind)
+    s.select_halo(s.subfind, rotate_disk=False)
+
+    # Mask the data: stellar particles inside 0.1*R200c #
+    age = np.zeros(s.npartall)
+    age[s.data['type'] == 4] = s.data['age']
+    stellar_mask, = np.where(
+        (s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.)) - s.nparticlesall[:4].sum()
+
+    stellar_mask, = np.where((s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.))
+    gas_mask, = np.where((s.data['type'] == 0) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))
+    gas_fraction = np.sum(s.data['mass'][gas_mask]) / (
+        np.sum(s.data['mass'][gas_mask]) + np.sum(s.data['mass'][stellar_mask]))
+
+    return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), gas_fraction
+
+
+def gas_fraction(pdf, data, read):
+    """
+    Plot the evolution of gas fraction for Auriga halo(es).
+    :param pdf: path to save the pdf from main.make_pdf
+    :param data: data from main.make_pdf
+    :param read: boolean to read new data.
+    :return: None
+    """
+    print("Invoking gas_fraction")
+    redshift_cut = 7
+    path = '/u/di43/Auriga/plots/data/' + 'gfe/'
+
+    # Read the data #
+    if read is True:
+        # Check if a folder to save the data exists, if not then create one #
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        # Loop over all available haloes #
+        haloes = data.get_haloes(default_level)
+        for name, halo in haloes.items():
+            # Check if halo's data already exists, if not then read it #
+            names = glob.glob(path + 'name_*')
+            names = [re.split('_|.npy', name)[1] for name in names]
+            if name in names:
+                continue
+            else:
+                print("Reading data for halo:", name)
+
+            # Get all snapshots with redshift less than the redshift cut #
+            redshifts = halo.get_redshifts()
+            redshift_mask, = np.where(redshifts <= redshift_cut)
+            snapshot_ids = np.array(list(halo.snaps.keys()))[redshift_mask]
+
+            gf_data = np.array(get_gf_data(snapshot_ids, halo))  # Get gas temperature regimes data.
+
+            # Save data for each halo in numpy arrays #
+            np.save(path + 'name_' + str(name), name)
+            np.save(path + 'lookback_times_' + str(name), gf_data[:, 0])
+            np.save(path + 'gas_fraction_' + str(name), gf_data[:, 1])
+
+    # Get the names and sort them #
+    names = glob.glob(path + 'name_*')
+    names.sort()
+
+    # Loop over all available haloes #
+    for i in range(len(names)):
+        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
+        # Generate the figure and set its parameters #
+        figure, axis = plt.subplots(1, figsize=(10, 7.5))
+        axis2 = axis.twiny()
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{Gas\;fraction}$', aspect=None)
+        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+            transform=axis.transAxes)
+
+        # Load the data #
+        gas_fractions = np.load(path + 'gas_fraction_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+        lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+        # Plot the evolution of gas fraction in different temperature regimes #
+        plt.plot(lookback_times, gas_fractions, color=colors[0])
+
+        # Create the legend, save and close the figure #
+        plt.legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)
+        pdf.savefig(figure, bbox_inches='tight')
+        plt.close()
+    return None
+
+
+@vectorize_parallel(method='processes', num_procs=8)
 def get_bs_data(snapshot_ids, halo):
     """
     Parallelised method to get bar strength from Fourier modes of surface

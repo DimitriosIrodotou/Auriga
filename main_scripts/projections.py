@@ -634,10 +634,10 @@ def r_band_magnitude(data, redshift, read):
             # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
-            else:
-                print("Reading data for halo:", str(s.haloname))
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)

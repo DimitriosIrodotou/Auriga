@@ -1072,6 +1072,13 @@ def bar_strength_combination(pdf):
             max_A2s = np.load(path + 'max_A2s_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
+            # Downsample the runs which have more snapshots #
+            if j == 0:
+                original_lookback_times = lookback_times
+            else:
+                max_A2s = plot_tools.linear_resample(max_A2s, len(original_lookback_times))
+                lookback_times = plot_tools.linear_resample(lookback_times, len(original_lookback_times))
+
             # Plot the evolution of bar strength #
             axis.plot(lookback_times, max_A2s, color=colors[j],
                 label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
@@ -1092,60 +1099,65 @@ def gas_temperature_regimes_combination(pdf):
     print("Invoking gas_temperature_regimes_combination")
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'gtr/'
+    path_gf = '/u/di43/Auriga/plots/data/' + 'gfe/'
     names = glob.glob(path + 'name_*')
     names.sort()
 
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(20, 20))
-    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22 = plot_tools.create_axes_combinations(
-        res=res, boxsize=boxsize * 1e3, multiple5=True)
-    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, \
+        axis32 = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple11=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0.0, 0.75], aspect=None, size=20)
-        if axis in [axis10, axis11, axis12, axis20, axis21, axis22]:
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0.0, 0.87], aspect=None, size=25)
+        if axis in [axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32]:
             axis2.set_xlabel('')
             axis2.set_xticklabels([])
-    for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
         axis.set_xlabel('')
         axis.set_xticklabels([])
-    for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
+    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32]:
         axis.set_ylabel('')
         axis.set_yticklabels([])
-    axis00.set_ylabel(r'$\mathrm{Cold\;gas\;fraction}$', size=20)
-    axis10.set_ylabel(r'$\mathrm{Warm\;gas\;fraction}$', size=20)
-    axis20.set_ylabel(r'$\mathrm{Hot\;gas\;fraction}$', size=20)
+    axis00.set_ylabel(r'$\mathrm{M_{gas} / M_{\bigstar}}$', size=25)
+    axis10.set_ylabel(r'$\mathrm{M_{cold\;gas} / M_{gas}}$', size=25)
+    axis20.set_ylabel(r'$\mathrm{M_{warm\;gas} / M_{gas}}$', size=25)
+    axis30.set_ylabel(r'$\mathrm{M_{hot\;gas} / M_{gas}}$', size=25)
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
     names_groups = np.array_split(names, 3)
-    axes = [[axis00, axis10, axis20], [axis01, axis11, axis21], [axis02, axis12, axis22]]
+    axes = [[axis00, axis10, axis20, axis30], [axis01, axis11, axis21, axis31], [axis02, axis12, axis22, axis32]]
     for i, axis in zip(range(len(names_groups)), axes):
         names_flavours = names_groups[i]
         # Loop over all available flavours #
         for j in range(len(names_flavours)):
             print("Plotting data for halo:", str(re.split('_|.npy', names_flavours[j])[1]))
             # Load the data #
+            gas_fractions = np.load(path_gf + 'gas_fraction_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
+            # Downsample the runs which have more snapshots #
             if j == 0:
                 original_lookback_times = lookback_times
             else:
+                gas_fractions = plot_tools.linear_resample(gas_fractions, len(original_lookback_times))
                 wg_ratios = plot_tools.linear_resample(wg_ratios, len(original_lookback_times))
                 hg_ratios = plot_tools.linear_resample(hg_ratios, len(original_lookback_times))
                 sfg_ratios = plot_tools.linear_resample(sfg_ratios, len(original_lookback_times))
                 lookback_times = plot_tools.linear_resample(lookback_times, len(original_lookback_times))
 
             # Plot the evolution of gas fraction in different temperature regimes #
-            axis[0].plot(lookback_times, sfg_ratios, color=colors2[j],
+            axis[0].plot(lookback_times, gas_fractions, color=colors2[j],
                 label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
-            axis[1].plot(lookback_times, wg_ratios, color=colors2[j],
-                label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
-            axis[2].plot(lookback_times, hg_ratios, color=colors2[j],
-                label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
+            axis[1].plot(lookback_times, sfg_ratios, color=colors2[j])
+            axis[2].plot(lookback_times, wg_ratios, color=colors2[j])
+            axis[3].plot(lookback_times, hg_ratios, color=colors2[j])
 
-            axis[0].legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            axis[0].legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -1404,10 +1416,12 @@ def central_combination(pdf, data, redshift, read):
                     numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                numthreads=8)["grid"]
-            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                numthreads=8)["grid"]
+            sfr_face_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
+            sfr_edge_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
@@ -1639,14 +1653,14 @@ def mass_loading_combination(pdf, method):
                         radial_velocities[l][inflow_mask] * u.km.to(u.Mpc) / u.second.to(u.yr))), 1e-3) * 1e10
                     mass_loading[l] = mass_outflows[l] / np.sum(sfrs[l][gas_mask])
 
+            # Downsample the runs which have more snapshots #
             if j == 0:
                 original_mass_loading = mass_loading
             else:
-                # Plot the evolution of mass loading #
                 mass_loading = plot_tools.linear_resample(mass_loading, len(original_mass_loading))
                 lookback_times = plot_tools.linear_resample(lookback_times, len(original_mass_loading))
 
-            # Plot the evolution of bar strength #
+            # Plot the evolution of mass loading #
             axis.plot(lookback_times, mass_loading, color=colors[j],
                 label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
             axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
