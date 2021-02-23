@@ -524,7 +524,7 @@ def tully_fisher_combination(pdf, redshift):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 7.5))
+    figure, axis = plt.subplots(1, figsize=(10, 10))
     plot_tools.set_axis(axis, xlim=[1e8, 1e12], ylim=[1.4, 2.6], xscale='log',
         xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', ylabel=r'$\mathrm{log_{10}(v_{circ}/(km\;s^{-1}))}$', aspect=None)
 
@@ -559,7 +559,7 @@ def tully_fisher_combination(pdf, redshift):
     # Create the legend #
     legend = plt.legend([Pizagno, Verheijen, Courteau, Dutton],
         [r'$\mathrm{Pizagno+\;07}$', r'$\mathrm{Verheijen\;01}$', r'$\mathrm{Courteau+\;07}$',
-            r'$\mathrm{Dutton+\;11}$'], loc='upper left', fontsize=16, frameon=False, numpoints=1)
+            r'$\mathrm{Dutton+\;11}$'], loc='upper left', fontsize=15, frameon=False, numpoints=1)
     plt.gca().add_artist(legend)
 
     # Loop over all available haloes #
@@ -574,7 +574,7 @@ def tully_fisher_combination(pdf, redshift):
         plt.scatter(stellar_mass * 1e10, np.log10(total_circular_velocity), color=colors2[i], s=100, zorder=5,
             marker=next(marker_array), label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-        plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1,
+        plt.legend(loc='lower center', fontsize=15, frameon=False, numpoints=1, scatterpoints=1,
             ncol=3)  # Create the legend.
 
     # Save and close the figure #
@@ -597,7 +597,7 @@ def stellar_vs_halo_mass_combination(pdf, redshift):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure, axis = plt.subplots(1, figsize=(10, 7.5))
+    figure, axis = plt.subplots(1, figsize=(10, 10))
     plot_tools.set_axis(axis, xlim=[1e11, 1e13], ylim=[1e9, 1e12], xscale='log', yscale='log',
         xlabel=r'$\mathrm{M_{halo}/M_{\odot}}$', ylabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', aspect=None)
 
@@ -614,7 +614,7 @@ def stellar_vs_halo_mass_combination(pdf, redshift):
 
     # Create the legend #
     legend = plt.legend([omega, Guo], [r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$', r'$\mathrm{Guo+\;10}$'],
-        loc='upper left', fontsize=16, frameon=False, numpoints=1)
+        loc='upper left', fontsize=15, frameon=False, numpoints=1)
     plt.gca().add_artist(legend)
 
     # Loop over all available haloes #
@@ -628,7 +628,7 @@ def stellar_vs_halo_mass_combination(pdf, redshift):
         plt.scatter(halo_mass * 1e10, stellar_mass * 1e10, color=colors2[i], s=100, zorder=5, marker=next(marker_array),
             label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-        plt.legend(loc='lower center', fontsize=16, frameon=False, numpoints=1, scatterpoints=1,
+        plt.legend(loc='lower center', fontsize=15, frameon=False, numpoints=1, scatterpoints=1,
             ncol=3)  # Create the legend.
 
     # Save and close the figure #
@@ -690,7 +690,7 @@ def bar_strength_profile_combination(pdf, redshift):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 7.5))
+    figure = plt.figure(figsize=(15, 5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     for axis in [axis00, axis01, axis02]:
         plot_tools.set_axis(axis, xlim=[0, 11], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$',
@@ -711,12 +711,12 @@ def bar_strength_profile_combination(pdf, redshift):
 
             # Plot the bar strength radial profile and get an estimate for the bar length from the maximum strength #
             A2 = max(ratio)
-            axis.plot(r_m, ratio, color=colors[j],
-                label=r'$\mathrm{Au-%s:A_{2}=%.2f}$' % (str(re.split('_|.npy', names_flavours[j])[1]), A2))
+            axis.plot(r_m, ratio, color=colors[j], label=r'$\mathrm{Au-%s:r_{A_{2}}=%.2fkpc}$' % (
+            str(re.split('_|.npy', names_flavours[j])[1]), r_m[np.where(ratio == A2)]))
             axis.plot([r_m[np.where(ratio == A2)], r_m[np.where(ratio == A2)]], [-0.0, A2], color=colors[j],
-                linestyle='dashed', label=r'$\mathrm{r_{A_{2}}=%.2fkpc}$' % r_m[np.where(ratio == A2)])
+                linestyle='dashed')
 
-            axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            axis.legend(loc='upper left', fontsize=15, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -1053,7 +1053,7 @@ def bar_strength_combination(pdf):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 7.5))
+    figure = plt.figure(figsize=(15, 5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     axis002 = axis00.twiny()
     plot_tools.set_axes_evolution(axis00, axis002, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{A_{2}}$', aspect=None)
@@ -1083,7 +1083,7 @@ def bar_strength_combination(pdf):
             axis.plot(lookback_times, max_A2s, color=colors[j],
                 label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
 
-            axis.legend(loc='upper left', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
+            axis.legend(loc='upper left', fontsize=15, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -1416,12 +1416,10 @@ def central_combination(pdf, data, redshift, read):
                     numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
-            sfr_edge_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
+            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                numthreads=8)["grid"]
+            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                numthreads=8)["grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]

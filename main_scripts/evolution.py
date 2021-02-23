@@ -89,7 +89,7 @@ def sfr(pdf, data, read):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 45], ylabel='$\mathrm{Sfr/(M_\odot\;yr^{'
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 45], ylabel='$\mathrm{SFR/(M_\odot\;yr^{'
                                                                         '-1})}$', aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
             transform=axis.transAxes)
@@ -560,7 +560,7 @@ def delta_sfr_regimes(pdf, data, region, read):
                 np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(16, 9))
+    figure = plt.figure(figsize=(15, 10))
     gs = gridspec.GridSpec(2, 3, hspace=0.5, wspace=0.05)
     axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
     axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
@@ -575,8 +575,8 @@ def delta_sfr_regimes(pdf, data, region, read):
     for axis in [axis10, axis11, axis12]:
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=(-1.1, 16), aspect=None)
-    axis00.set_ylabel(r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', size=20)
-    axis10.set_ylabel(r'$\mathrm{(\delta Sfr)_{norm}}$', size=20)
+    axis00.set_ylabel(r'$\mathrm{SFR/(M_\odot\;yr^{-1})}$', size=20)
+    axis10.set_ylabel(r'$\mathrm{(\delta SFR)_{norm}}$', size=20)
 
     # Loop over all radial limits #
     top_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12]
@@ -610,7 +610,7 @@ def delta_sfr_regimes(pdf, data, region, read):
         # Add the text #
         figure.text(0.01, 0.9,
             r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)),
-            fontsize=20, transform=top_axis.transAxes)
+            fontsize=15, transform=top_axis.transAxes)
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -796,7 +796,7 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
 
             # axis002 = axis00.twiny()
             # plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8),
-            # ylabel=r'$\mathrm{Sfr/(M_\odot\;yr^{-1})}$', aspect=None)
+            # ylabel=r'$\mathrm{SFR/(M_\odot\;yr^{-1})}$', aspect=None)
             # axis00.set_xticklabels([])
             axis003 = axis00.twinx()
             plot_tools.set_axis(axis003, ylim=(1e55, 1e61), yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$',

@@ -312,7 +312,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
             axis40, axis41, axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area
 
     elif multiple4 is True:
-        gs = gridspec.GridSpec(1, 3, hspace=0, wspace=0)
+        gs = gridspec.GridSpec(1, 3, hspace=0, wspace=0.05)
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         return axis00, axis01, axis02
 

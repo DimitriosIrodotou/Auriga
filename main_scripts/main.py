@@ -355,7 +355,7 @@ class AurigaPdf:
         # Evolution #
         # combinations.bar_strength_combination(pdf)
         # combinations.gas_temperature_regimes_combination(pdf)
-        # combinations.AGN_modes_distribution_combination(date)
+        combinations.AGN_modes_distribution_combination(date)
         # combinations.AGN_feedback_kernel_combination(pdf)
         # combinations.mass_loading_combination(pdf, method='time_interval')
 
