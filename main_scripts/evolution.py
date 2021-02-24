@@ -561,9 +561,8 @@ def delta_sfr_regimes(pdf, data, region, read):
 
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(15, 10))
-    gs = gridspec.GridSpec(2, 3, hspace=0.5, wspace=0.05)
-    axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
-    axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+    axis00, axis01, axis02, axis10, axis11, axis12 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3,
+        multiple10=True)
 
     # for axis in [axis10, axis11, axis12]:
     #     axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1, linscaley=0.1)

@@ -712,7 +712,7 @@ def bar_strength_profile_combination(pdf, redshift):
             # Plot the bar strength radial profile and get an estimate for the bar length from the maximum strength #
             A2 = max(ratio)
             axis.plot(r_m, ratio, color=colors[j], label=r'$\mathrm{Au-%s:r_{A_{2}}=%.2fkpc}$' % (
-            str(re.split('_|.npy', names_flavours[j])[1]), r_m[np.where(ratio == A2)]))
+                str(re.split('_|.npy', names_flavours[j])[1]), r_m[np.where(ratio == A2)]))
             axis.plot([r_m[np.where(ratio == A2)], r_m[np.where(ratio == A2)]], [-0.0, A2], color=colors[j],
                 linestyle='dashed')
 
@@ -1135,9 +1135,9 @@ def gas_temperature_regimes_combination(pdf):
             print("Plotting data for halo:", str(re.split('_|.npy', names_flavours[j])[1]))
             # Load the data #
             gas_fractions = np.load(path_gf + 'gas_fraction_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
-            sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
             # Downsample the runs which have more snapshots #
@@ -1145,9 +1145,9 @@ def gas_temperature_regimes_combination(pdf):
                 original_lookback_times = lookback_times
             else:
                 gas_fractions = plot_tools.linear_resample(gas_fractions, len(original_lookback_times))
+                sfg_ratios = plot_tools.linear_resample(sfg_ratios, len(original_lookback_times))
                 wg_ratios = plot_tools.linear_resample(wg_ratios, len(original_lookback_times))
                 hg_ratios = plot_tools.linear_resample(hg_ratios, len(original_lookback_times))
-                sfg_ratios = plot_tools.linear_resample(sfg_ratios, len(original_lookback_times))
                 lookback_times = plot_tools.linear_resample(lookback_times, len(original_lookback_times))
 
             # Plot the evolution of gas fraction in different temperature regimes #
@@ -1164,16 +1164,17 @@ def gas_temperature_regimes_combination(pdf):
     return None
 
 
-def AGN_modes_distribution_combination(date):
+def AGN_modes_distribution_combination(pdf):
     """
     Plot a combination of the energy of different black hole feedback modes from log files and plot its evolution for
     Auriga halo(es).
-    :param date: date.
+    :param pdf: path to save the pdf from main.make_pdf
     :return: None
     """
     print("Invoking AGN_modes_distribution_combination")
     # Get the names and sort them #
     path = '/u/di43/Auriga/plots/data/' + 'AGNmd/'
+    path_kernel = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
     names = glob.glob(path + 'name_*')
     names.sort()
     n_bins = 130
@@ -1181,19 +1182,15 @@ def AGN_modes_distribution_combination(date):
 
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(20, 20))
-    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-        axis42, axis50, axis51, axis52 = plot_tools.create_axes_combinations(
-        res=res, boxsize=boxsize * 1e3, multiple7=True)
-
-    for axis in [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]:
+    figure = plt.figure(figsize=(15, 5))
+    axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
+    axis002 = axis00.twiny()
+    plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e56, 2e65], yscale='log',
+        ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$', which='major', aspect=None)
+    for axis in [axis01, axis02]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e51, 2e61], yscale='log', aspect=None, which='major', size=20)
-    for axis in [axis10, axis11, axis12, axis30, axis31, axis32]:
-        axis.set_xlabel('')
-        axis.set_xticklabels([])
-    axis10.set_ylabel(r'$\mathrm{(Mechanical\;feedback\;energy)/ergs}$', size=20)
-    axis30.set_ylabel(r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', size=20)
-    axis50.set_ylabel(r'$\mathrm{(Thermal\;feedback\;energy)/ergs}$', size=20)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e45, 2e65], yscale='log', which='major', aspect=None)
+        axis.set_yticklabels([])
 
     # Get the names and sort them #
     names = glob.glob(path + 'name_*')
@@ -1201,7 +1198,7 @@ def AGN_modes_distribution_combination(date):
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
     names_groups = np.array_split(names, 3)
-    for i in range(len(names_groups)):
+    for i, axis in zip(range(len(names_groups)), [axis00, axis01, axis02]):
         names_flavours = names_groups[i]
         # Loop over all available flavours #
         for j in range(len(names_flavours)):
@@ -1217,55 +1214,45 @@ def AGN_modes_distribution_combination(date):
             thermals = ','.join(thermals)
             thermals = np.fromstring(thermals, dtype=np.float, sep=',')
 
-            # Define the plot and colorbar axes #
-            if j == 0:
-                if i == 0:
-                    axes = [axis10, axis30]
-                    axescbar = [axis00, axis20]
-                    modes = [mechanicals, thermals]
-                if i == 1:
-                    axes = [axis11, axis31]
-                    axescbar = [axis01, axis21]
-                    modes = [mechanicals, thermals]
-                if i == 2:
-                    axes = [axis12, axis32]
-                    axescbar = [axis02, axis22]
-                    modes = [mechanicals, thermals]
-            else:
-                if i == 0:
-                    axes = [axis50]
-                    modes = [thermals]
-                    axescbar = [axis40]
-                if i == 1:
-                    axes = [axis51]
-                    modes = [thermals]
-                    axescbar = [axis41]
-                if i == 2:
-                    axes = [axis52]
-                    modes = [thermals]
-                    axescbar = [axis42]
+            gas_volumes = np.load(path_kernel + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            nsf_gas_volumes = np.load(path_kernel + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            lookback_times_kernel = np.load(
+                path_kernel + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+
+            # Downsample the runs which have more snapshots #
+            gas_volumes = plot_tools.linear_resample(gas_volumes, np.floor(len(lookback_times_kernel) / 5))
+            nsf_gas_volumes = plot_tools.linear_resample(nsf_gas_volumes, np.floor(len(lookback_times_kernel) / 5))
+            thermals_kernel = plot_tools.linear_resample(thermals, np.floor(len(lookback_times_kernel) / 5))
+            lookback_times_kernel = plot_tools.linear_resample(lookback_times, np.floor(len(lookback_times_kernel) / 5))
+
+            # Define the plotting style #
+            if j == 0:  # Original halo.
+                mode_style = ['-', '--']
+                modes = [thermals, mechanicals]
+                mode_name = ['Thermal', 'Mechanical']
+            else:  # NoR flavour.
+                mode_style = ['-']
+                modes = [thermals]
+                mode_name = ['Thermal']
 
             # Plot 2D distribution of the modes and their binned sum line #
-            for axis, axiscbar, mode in zip(axes, axescbar, modes):
-                hb = axis.hexbin(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)], bins='log', yscale='log',
-                    cmap='hot_r')
-                plot_tools.create_colorbar(axiscbar, hb, label=r'$\mathrm{Counts\;per\;hexbin}$',
-                    orientation='horizontal', size=20)
+            for k, mode in enumerate(modes):
                 x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)],
                     n_bins=n_bins)
-                axis.plot(x_value, sum / time_bin_width, color=colors[0], label=r'$\mathrm{Sum}$')
-                figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
-                    transform=axis.transAxes)
+                axis.plot(x_value, sum / time_bin_width, color=colors[j],
+                    label=r'$\mathrm{Au-%s\;%s}$' % (str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]),
+                    linestyle=mode_style[k])
+                if k != 1:
+                    efficiency = nsf_gas_volumes / gas_volumes
+                    axis.plot(lookback_times_kernel, efficiency * thermals_kernel, color=colors[j],
+                        label=r'$\mathrm{Au-%s\;%s}$' % (str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]),
+                        linestyle=':')
 
-            for axis in [axis11, axis12, axis31, axis32, axis51, axis52]:
-                axis.set_yticklabels([])
+            axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
 
-    # Create the legends, save and close the figure #
-    axis10.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-    axis11.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-    axis12.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
-    plt.savefig('/u/di43/Auriga/plots/' + 'AGNmdc-' + date + '.png', bbox_inches='tight')
-
+    # Save and close the figure #
+    pdf.savefig(figure, bbox_inches='tight')
+    plt.close()
     return None
 
 
@@ -1288,7 +1275,7 @@ def AGN_feedback_kernel_combination(pdf):
     names.remove('/u/di43/Auriga/plots/data/AGNfk/name_18NoRNoQ.npy')
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(16, 9))
+    figure = plt.figure(figsize=(15, 10))
     axis00, axis01, axis02, axis10, axis11, axis12 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3,
         multiple10=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
@@ -1296,20 +1283,14 @@ def AGN_feedback_kernel_combination(pdf):
         axis3 = axis.twinx()
         axis3.yaxis.label.set_color('tab:red')
         axis3.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$',
-            ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1],
+        plot_tools.set_axis(axis3, ylim=[-0.1, 2], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$',
+            aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 2],
             ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
         axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
-        if axis in [axis10, axis11, axis12]:
-            axis2.set_xlabel('')
-            axis2.set_xticklabels([])
         if axis in [axis00, axis01, axis10, axis11]:
             axis3.set_ylabel('')
             axis3.set_yticklabels([])
-    for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
-        axis.set_xlabel('')
-        axis.set_xticklabels([])
     for axis in [axis01, axis02, axis11, axis12]:
         axis.set_ylabel('')
         axis.set_yticklabels([])
@@ -1323,18 +1304,34 @@ def AGN_feedback_kernel_combination(pdf):
         nsf_gas_volumes = np.load(path + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
         blackhole_hsmls = np.load(path + 'blackhole_hsmls_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
+        # Downsample the runs which have more snapshots #
+        if i == 0:
+            original_lookback_times = lookback_times
+        else:
+            gas_volumes = plot_tools.linear_resample(gas_volumes, len(original_lookback_times))
+            nsf_gas_volumes = plot_tools.linear_resample(nsf_gas_volumes, len(original_lookback_times))
+            blackhole_hsmls = plot_tools.linear_resample(blackhole_hsmls, len(original_lookback_times))
+            lookback_times = plot_tools.linear_resample(lookback_times, len(original_lookback_times))
+
         # Plot median and 1-sigma lines #
         x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes,
             bin_type='equal_number', n_bins=len(lookback_times) / 5, log=False)
-        axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[0], linewidth=3)
+        median_volumes, = axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[0], linewidth=3)
         axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[0], alpha='0.3')
+        fill_volumes, = plt.fill(np.NaN, np.NaN, color=colors[0], alpha=0.3)
 
         x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3,
             bin_type='equal_number', n_bins=len(lookback_times) / 5, log=False)
-        axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[1], linewidth=3)
+        median_bh, = axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[1], linewidth=3)
         axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[1], alpha='0.3')
+        fill_bh, = plt.fill(np.NaN, np.NaN, color=colors[1], alpha=0.3)
 
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+        # Create the legend #
+        axis.legend([median_volumes, fill_volumes, median_bh, fill_bh],
+            [r'$\mathrm{Median}$', r'$\mathrm{16^{th}-84^{th}\;\%ile}$', r'$\mathrm{Median}$',
+                r'$\mathrm{16^{th}-84^{th}\;\%ile}$'], frameon=False, fontsize=15, loc='upper right')
+
+        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=15,
             transform=axis.transAxes)
 
     # Save and close the figure #
@@ -1416,10 +1413,12 @@ def central_combination(pdf, data, redshift, read):
                     numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                numthreads=8)["grid"]
-            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                numthreads=8)["grid"]
+            sfr_face_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
+            sfr_edge_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]

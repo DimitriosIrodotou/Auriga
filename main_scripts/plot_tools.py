@@ -217,6 +217,7 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     if aspect is not None:
         axis.set_aspect('equal')
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-')
+    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
     axis.tick_params(direction='out', which=which, top='on', bottom='on', left='on', right='on', labelsize=size)
     axis2.tick_params(direction='out', which=which, top='on', left='on', right='on', labelsize=size)
     return None
@@ -376,7 +377,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
             axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple10 is True:
-        gs = gridspec.GridSpec(2, 3, hspace=0, wspace=0)
+        gs = gridspec.GridSpec(2, 3, hspace=0.5, wspace=0.05)
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12
