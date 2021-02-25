@@ -1104,26 +1104,20 @@ def gas_temperature_regimes_combination(pdf):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 20))
+    figure = plt.figure(figsize=(15, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, \
         axis32 = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple11=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0.0, 0.87], aspect=None, size=25)
-        if axis in [axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32]:
-            axis2.set_xlabel('')
-            axis2.set_xticklabels([])
-    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
-        axis.set_xlabel('')
-        axis.set_xticklabels([])
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 1], aspect=None, size=20)
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32]:
         axis.set_ylabel('')
         axis.set_yticklabels([])
-    axis00.set_ylabel(r'$\mathrm{M_{gas} / M_{\bigstar}}$', size=25)
-    axis10.set_ylabel(r'$\mathrm{M_{cold\;gas} / M_{gas}}$', size=25)
-    axis20.set_ylabel(r'$\mathrm{M_{warm\;gas} / M_{gas}}$', size=25)
-    axis30.set_ylabel(r'$\mathrm{M_{hot\;gas} / M_{gas}}$', size=25)
+    axis00.set_ylabel(r'$\mathrm{M_{gas} / M_{\bigstar}}$', size=20)
+    axis10.set_ylabel(r'$\mathrm{M_{cold\;gas} / M_{gas}}$', size=20)
+    axis20.set_ylabel(r'$\mathrm{M_{warm\;gas} / M_{gas}}$', size=20)
+    axis30.set_ylabel(r'$\mathrm{M_{hot\;gas} / M_{gas}}$', size=20)
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
     names_groups = np.array_split(names, 3)
@@ -1157,7 +1151,7 @@ def gas_temperature_regimes_combination(pdf):
             axis[2].plot(lookback_times, wg_ratios, color=colors2[j])
             axis[3].plot(lookback_times, hg_ratios, color=colors2[j])
 
-            axis[0].legend(loc='upper right', fontsize=20, frameon=False, numpoints=1)  # Create the legend.
+            axis[0].legend(loc='upper right', fontsize=15, frameon=False, numpoints=1)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -1189,7 +1183,7 @@ def AGN_modes_distribution_combination(pdf):
         ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$', which='major', aspect=None)
     for axis in [axis01, axis02]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e45, 2e65], yscale='log', which='major', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e56, 2e65], yscale='log', which='major', aspect=None)
         axis.set_yticklabels([])
 
     # Get the names and sort them #
@@ -1214,16 +1208,19 @@ def AGN_modes_distribution_combination(pdf):
             thermals = ','.join(thermals)
             thermals = np.fromstring(thermals, dtype=np.float, sep=',')
 
-            gas_volumes = np.load(path_kernel + 'gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-            nsf_gas_volumes = np.load(path_kernel + 'nsf_gas_volumes_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+            gas_volumes = np.load(path_kernel + 'gas_volumes_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            nsf_gas_volumes = np.load(
+                path_kernel + 'nsf_gas_volumes_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             lookback_times_kernel = np.load(
-                path_kernel + 'lookback_times_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+                path_kernel + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
             # Downsample the runs which have more snapshots #
-            gas_volumes = plot_tools.linear_resample(gas_volumes, np.floor(len(lookback_times_kernel) / 5))
-            nsf_gas_volumes = plot_tools.linear_resample(nsf_gas_volumes, np.floor(len(lookback_times_kernel) / 5))
-            thermals_kernel = plot_tools.linear_resample(thermals, np.floor(len(lookback_times_kernel) / 5))
-            lookback_times_kernel = plot_tools.linear_resample(lookback_times, np.floor(len(lookback_times_kernel) / 5))
+            if j == 0:
+                original_lookback_times = lookback_times_kernel
+            gas_volumes = plot_tools.linear_resample(gas_volumes, np.floor(len(original_lookback_times) / 5))
+            nsf_gas_volumes = plot_tools.linear_resample(nsf_gas_volumes, np.floor(len(original_lookback_times) / 5))
+            lookback_times_kernel = plot_tools.linear_resample(lookback_times,
+                np.floor(len(original_lookback_times) / 5))
 
             # Define the plotting style #
             if j == 0:  # Original halo.
@@ -1242,9 +1239,14 @@ def AGN_modes_distribution_combination(pdf):
                 axis.plot(x_value, sum / time_bin_width, color=colors[j],
                     label=r'$\mathrm{Au-%s\;%s}$' % (str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]),
                     linestyle=mode_style[k])
-                if k != 1:
+                # Recalibrate and plot the thermal energies #
+                if k == 0:
+                    thermals = sum / time_bin_width
                     efficiency = nsf_gas_volumes / gas_volumes
-                    axis.plot(lookback_times_kernel, efficiency * thermals_kernel, color=colors[j],
+                    thermals_kernel = plot_tools.linear_resample(thermals, np.floor(len(original_lookback_times) / 5))
+                    nonzero_mask, = np.where((thermals_kernel > 0) & (efficiency > 0))
+                    axis.plot(lookback_times_kernel[nonzero_mask],
+                        efficiency[nonzero_mask] * thermals_kernel[nonzero_mask], color=colors[j],
                         label=r'$\mathrm{Au-%s\;%s}$' % (str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]),
                         linestyle=':')
 
