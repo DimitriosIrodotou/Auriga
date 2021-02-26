@@ -220,53 +220,39 @@ def gas_density_combination(pdf, redshift):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 15))
-    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-        axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
-        res=res, boxsize=boxsize * 1e3, multiple3=True)
-    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
-        axis41, axis42, axis50, axis51, axis52]:
-        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], aspect=None)
-    for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
-        axis.set_ylim([-15, 15])
-    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
+    figure = plt.figure(figsize=(15, 15))
+    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar, x, y, y2, \
+        area = plot_tools.create_axes_combinations(
+        res=res, boxsize=boxsize * 1e3, multiple12=True)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
+        plot_tools.set_axis(axis, xlim=[-15, 15], ylim=[-15, 15], aspect=None)
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis.set_xticklabels([])
+    for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
         axis.set_yticklabels([])
-    for axis in [axis00, axis10, axis20, axis30, axis40]:
-        axis.set_xticklabels([])
-    for axis in [axis51, axis52]:
-        axis.set_yticklabels([])
-    for axis in [axis50, axis51, axis52]:
-        labels = ['', '-20', '', '0', '', '20', '']
+    for axis in [axis20, axis21, axis22]:
+        labels = ['', '-10', '', '0', '', '10', '']
         axis.set_xticklabels(labels)
         axis.set_xlabel(r'$\mathrm{x/kpc}$', size=20)
-    for axis in [axis00, axis20, axis40]:
-        labels = ['', '-20', '', '0', '', '20', '']
-        axis.set_yticklabels(labels)
-        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=20)
-    for axis in [axis10, axis30, axis50]:
+    for axis in [axis00, axis10, axis20]:
         labels = ['', '-10', '', '0', '', '10', '']
         axis.set_yticklabels(labels)
-        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=20)
+        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=20)
 
     # Loop over all available haloes #
-    axes_face_on = [axis00, axis20, axis40, axis01, axis21, axis41, axis02, axis22, axis42]
-    axes_edge_on = [axis10, axis30, axis50, axis11, axis31, axis51, axis12, axis32, axis52]
-    for i, axis_face_on, axis_edge_on in zip(range(len(names)), axes_face_on, axes_edge_on):
+    axes = [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]
+    for i, axis in zip(range(len(names)), axes):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
 
         # Plot the gas density projections #
-        pcm = axis_face_on.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10),
-            rasterized=True, cmap='inferno')
-        axis_edge_on.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10),
-            rasterized=True, cmap='inferno')
+        pcm = axis.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e7, vmax=1e10), rasterized=True,
+            cmap='inferno')
         plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{gas}/(M_\odot\;kpc^{-2})}$')
 
         figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
-            transform=axis_face_on.transAxes)
+            transform=axis.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -1171,19 +1157,18 @@ def AGN_modes_distribution_combination(pdf):
     path_kernel = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
     names = glob.glob(path + 'name_*')
     names.sort()
-    n_bins = 130
-    time_bin_width = (13 - 0) / n_bins  # In Gyr.
+    n_bins = 130  # len(original_lookback_times) / 5
+    time_bin_width = ((13 - 0) / n_bins) * u.Gyr.to(u.second)  # In second
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 20))
     figure = plt.figure(figsize=(15, 5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     axis002 = axis00.twiny()
-    plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e56, 2e65], yscale='log',
-        ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$', which='major', aspect=None)
+    plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e40, 2e50], yscale='log',
+        ylabel=r'$\mathrm{Energy\;rate/(ergs s^{-1}})$', which='major', aspect=None)
     for axis in [axis01, axis02]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e56, 2e65], yscale='log', which='major', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e40, 2e50], yscale='log', which='major', aspect=None)
         axis.set_yticklabels([])
 
     # Get the names and sort them #
@@ -1196,6 +1181,7 @@ def AGN_modes_distribution_combination(pdf):
         names_flavours = names_groups[i]
         # Loop over all available flavours #
         for j in range(len(names_flavours)):
+            print("Plotting data for halo:", str(re.split('_|.npy', names_flavours[j])[1]))
             # Load the data #
             if j == 0:
                 mechanicals = np.load(path + 'mechanicals_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
@@ -1211,44 +1197,36 @@ def AGN_modes_distribution_combination(pdf):
             gas_volumes = np.load(path_kernel + 'gas_volumes_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             nsf_gas_volumes = np.load(
                 path_kernel + 'nsf_gas_volumes_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
-            lookback_times_kernel = np.load(
-                path_kernel + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
             # Downsample the runs which have more snapshots #
-            if j == 0:
-                original_lookback_times = lookback_times_kernel
-            gas_volumes = plot_tools.linear_resample(gas_volumes, np.floor(len(original_lookback_times) / 5))
-            nsf_gas_volumes = plot_tools.linear_resample(nsf_gas_volumes, np.floor(len(original_lookback_times) / 5))
-            lookback_times_kernel = plot_tools.linear_resample(lookback_times,
-                np.floor(len(original_lookback_times) / 5))
+            gas_volumes = plot_tools.linear_resample(gas_volumes, n_bins)
+            nsf_gas_volumes = plot_tools.linear_resample(nsf_gas_volumes, n_bins)
 
             # Define the plotting style #
             if j == 0:  # Original halo.
-                mode_style = ['-', '--']
+                mode_style = [':', '--']
                 modes = [thermals, mechanicals]
-                mode_name = ['Thermal', 'Mechanical']
+                mode_name = ['thermal', 'mechanical']
             else:  # NoR flavour.
-                mode_style = ['-']
+                mode_style = [':']
                 modes = [thermals]
-                mode_name = ['Thermal']
+                mode_name = ['thermal']
 
             # Plot 2D distribution of the modes and their binned sum line #
             for k, mode in enumerate(modes):
-                x_value, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)],
+                x_values, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)],
                     n_bins=n_bins)
-                axis.plot(x_value, sum / time_bin_width, color=colors[j],
+                axis.plot(x_values, sum / time_bin_width, color=colors[j],
                     label=r'$\mathrm{Au-%s\;%s}$' % (str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]),
                     linestyle=mode_style[k])
-                # Recalibrate and plot the thermal energies #
+
+                # Plot the effective thermal energies #
                 if k == 0:
-                    thermals = sum / time_bin_width
-                    efficiency = nsf_gas_volumes / gas_volumes
-                    thermals_kernel = plot_tools.linear_resample(thermals, np.floor(len(original_lookback_times) / 5))
-                    nonzero_mask, = np.where((thermals_kernel > 0) & (efficiency > 0))
-                    axis.plot(lookback_times_kernel[nonzero_mask],
-                        efficiency[nonzero_mask] * thermals_kernel[nonzero_mask], color=colors[j],
-                        label=r'$\mathrm{Au-%s\;%s}$' % (str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]),
-                        linestyle=':')
+                    efficiency = np.flip(nsf_gas_volumes / gas_volumes)  # binned_sum flips the x_values
+                    mask, = np.where(efficiency > 0)
+                    axis.plot(x_values[mask], efficiency[mask] * sum[mask] / time_bin_width, color=colors[j],
+                        label=r'$\mathrm{Au-%s\;%s_{e}}$' % (
+                            str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]), linestyle='-')
 
             axis.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)  # Create the legend.
 
@@ -1316,16 +1294,17 @@ def AGN_feedback_kernel_combination(pdf):
             lookback_times = plot_tools.linear_resample(lookback_times, len(original_lookback_times))
 
         # Plot median and 1-sigma lines #
-        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes,
-            bin_type='equal_number', n_bins=len(lookback_times) / 5, log=False)
-        median_volumes, = axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[0], linewidth=3)
-        axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[0], alpha='0.3')
+        n_bins = np.int(np.floor(len(original_lookback_times) / 5))
+        x_values, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes,
+            bin_type='equal_width', n_bins=n_bins, log=False)
+        median_volumes, = axis.plot(x_values, median, color=colors[0], linewidth=3)
+        axis.fill_between(x_values, shigh, slow, color=colors[0], alpha='0.3')
         fill_volumes, = plt.fill(np.NaN, np.NaN, color=colors[0], alpha=0.3)
 
-        x_value, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3,
-            bin_type='equal_number', n_bins=len(lookback_times) / 5, log=False)
-        median_bh, = axis.plot(x_value[x_value > 0], median[x_value > 0], color=colors[1], linewidth=3)
-        axis.fill_between(x_value[x_value > 0], shigh[x_value > 0], slow[x_value > 0], color=colors[1], alpha='0.3')
+        x_values, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3,
+            bin_type='equal_width', n_bins=n_bins, log=False)
+        median_bh, = axis.plot(x_values, median, color=colors[1], linewidth=3)
+        axis.fill_between(x_values, shigh, slow, color=colors[1], alpha='0.3')
         fill_bh, = plt.fill(np.NaN, np.NaN, color=colors[1], alpha=0.3)
 
         # Create the legend #

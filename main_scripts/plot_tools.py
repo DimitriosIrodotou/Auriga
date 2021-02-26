@@ -16,55 +16,50 @@ def binned_median_1sigma(x_data, y_data, bin_type, n_bins, log=False):
     :param bin_type: equal number or width type of the bin.
     :param n_bins: number of the bin.
     :param log: boolean.
-    :return: x_value, median, shigh, slow
+    :return: x_values, median, shigh, slow
     """
-    if bin_type == 'equal_number':
-        if log is True:
-            x = np.log10(x_data)
-        else:
-            x = x_data
+    if log is True:
+        x = np.log10(x_data)
+    else:
+        x = x_data
+    x_low = min(x)
 
+    if bin_type == 'equal_number':
         # Declare arrays to store the data #
         n_bins = np.quantile(np.sort(x), np.linspace(0, 1, n_bins + 1))
         slow = np.zeros(len(n_bins))
         shigh = np.zeros(len(n_bins))
         median = np.zeros(len(n_bins))
-        x_value = np.zeros(len(n_bins))
+        x_values = np.zeros(len(n_bins))
 
         # Loop over all bins and calculate the median and 1-sigma lines #
         for i in range(len(n_bins) - 1):
             index, = np.where((x >= n_bins[i]) & (x < n_bins[i + 1]))
-            x_value[i] = np.mean(x_data[index])
+            x_values[i] = np.mean(x_data[index])
             if len(index) > 0:
                 median[i] = np.nanmedian(y_data[index])
                 slow[i] = np.nanpercentile(y_data[index], 15.87)
                 shigh[i] = np.nanpercentile(y_data[index], 84.13)
-        return x_value, median, shigh, slow
+        return x_values, median, shigh, slow
 
     elif bin_type == 'equal_width':
-        if log is True:
-            x = np.log10(x_data)
-        else:
-            x = x_data
-        x_low = min(x)
-
         # Declare arrays to store the data #
         bin_width = (max(x) - min(x)) / n_bins
         slow = np.zeros(n_bins)
         shigh = np.zeros(n_bins)
         median = np.zeros(n_bins)
-        x_value = np.zeros(n_bins)
+        x_values = np.zeros(n_bins)
 
         # Loop over all bins and calculate the median and 1-sigma lines #
         for i in range(n_bins):
             index, = np.where((x >= x_low) & (x < x_low + bin_width))
-            x_value[i] = np.mean(x_data[index])
+            x_values[i] = np.mean(x_data[index])
             if len(index) > 0:
                 median[i] = np.nanmedian(y_data[index])
                 slow[i] = np.nanpercentile(y_data[index], 15.87)
                 shigh[i] = np.nanpercentile(y_data[index], 84.13)
             x_low += bin_width
-        return x_value, median, shigh, slow
+        return x_values, median, shigh, slow
 
 
 def binned_sum(x_data, y_data, n_bins, log=False):
@@ -74,7 +69,7 @@ def binned_sum(x_data, y_data, n_bins, log=False):
     :param y_data: y-axis data.
     :param n_bins: number of the bin.
     :param log: boolean.
-    :return: x_value, sum
+    :return: x_values, sum
     """
     if log is True:
         x = np.log10(x_data)
@@ -85,16 +80,16 @@ def binned_sum(x_data, y_data, n_bins, log=False):
     # Declare arrays to store the data #
     bin_width = (max(x) - min(x)) / n_bins
     sum = np.zeros(n_bins)
-    x_value = np.zeros(n_bins)
+    x_values = np.zeros(n_bins)
 
     # Loop over all bins and calculate the sum line #
     for i in range(n_bins):
         index, = np.where((x >= x_low) & (x < x_low + bin_width))
-        x_value[i] = np.mean(x_data[index])
+        x_values[i] = np.mean(x_data[index])
         if len(index) > 0:
             sum[i] = np.sum(y_data[index])
         x_low += bin_width
-    return x_value, sum
+    return x_values, sum
 
 
 def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=20):
@@ -225,7 +220,8 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 
 def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False,
     multiple=False, multiple2=False, multiple3=False, multiple4=False, multiple5=False, multiple6=False,
-    multiple7=False, mollweide=False, multiple8=False, multiple9=False, multiple10=False, multiple11=False):
+    multiple7=False, mollweide=False, multiple8=False, multiple9=False, multiple10=False, multiple11=False,
+    multiple12=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -390,6 +386,13 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32
 
+    elif multiple12 is True:
+        gs = gridspec.GridSpec(3, 4, hspace=0, wspace=0, width_ratios=[1, 1, 1, 0.1])
+        axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
+        axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        axiscbar = plt.subplot(gs[:, 3])
+        return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar, x, y, y2, area
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
         axis00 = plt.subplot(gs[0, 0])
