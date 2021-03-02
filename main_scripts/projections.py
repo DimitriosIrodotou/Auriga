@@ -9,6 +9,7 @@ import plot_tools
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.style as style
 
 from sfigure import *
 from loadmodules import *
@@ -19,6 +20,9 @@ boxsize = 0.06
 default_level = 4
 Msunabs = [5.61, 5.48, 4.83, 3.30, 5.12, 4.68, 4.57, 4.60]
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
+
+style.use("classic")
+plt.rcParams.update({'font.family':'serif'})
 
 
 def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False):
@@ -147,7 +151,8 @@ def stellar_light(pdf, data, redshift, read):
             stellar_mask, = np.where((s.data['age'] > 0.0) & (
                 s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
-                s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
+                                                                    s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][
+                                                                        stellar_mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack(
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
@@ -239,7 +244,10 @@ def stellar_light_components(pdf, data, redshift, read):
 
                 # Rotate the data and plot the projections #
                 z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
-                    s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
+                                                                        s.data['pos'][stellar_mask, 1] * 1e3,
+                                                                        s.data['pos'][
+                                                                            stellar_mask, 2] * 1e3)  # Distances are
+                # in kpc.
                 pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
                 face_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
@@ -282,7 +290,7 @@ def stellar_light_components(pdf, data, redshift, read):
 
         for axis, label in zip([axis00, axis01, axis10, axis11],
             [r'$\mathrm{Disc\;face-on}$', r'$\mathrm{Spheroid\;face-on}$', r'$\mathrm{Disc\;edge-on}$',
-                r'$\mathrm{Spheroid\;edge-on}$']):
+             r'$\mathrm{Spheroid\;edge-on}$']):
             figure.text(0.01, 0.95, label, fontsize=16, color='w', transform=axis.transAxes)
 
         # Save and close the figure #
@@ -334,7 +342,8 @@ def stellar_density(pdf, data, redshift, read):
             # Rotate the data and get the projections #
             stellar_mask, = np.where(s.data['age'] > 0.0)  # Mask the data: select stellar particles.
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
-                s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
+                                                                    s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][
+                                                                        stellar_mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack(
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
@@ -345,9 +354,11 @@ def stellar_density(pdf, data, redshift, read):
 
             # Get the contour lines #
             face_on_count, face_on_xedges, face_on_yedges = np.histogram2d(s.data['pos'][:, 2] * 1e3,
-                s.data['pos'][:, 1] * 1e3, bins=70, range=[[-30, 30], [-30, 30]])
+                                                                           s.data['pos'][:, 1] * 1e3, bins=70,
+                range=[[-30, 30], [-30, 30]])
             edge_on_count, edge_on_xedges, edge_on_yedges = np.histogram2d(s.data['pos'][:, 2] * 1e3,
-                s.data['pos'][:, 0] * 1e3, bins=20, range=[[-30, 30], [-15, 15]])
+                                                                           s.data['pos'][:, 0] * 1e3, bins=20,
+                range=[[-30, 30], [-15, 15]])
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -456,7 +467,10 @@ def stellar_density_components(pdf, data, redshift, read):
 
                 # Rotate the data and plot the projections #
                 z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
-                    s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
+                                                                        s.data['pos'][stellar_mask, 1] * 1e3,
+                                                                        s.data['pos'][
+                                                                            stellar_mask, 2] * 1e3)  # Distances are
+                # in kpc.
                 pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
                 face_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
@@ -569,7 +583,8 @@ def stellar_light_fit(data, redshift, read):
             stellar_mask, = np.where((s.data['age'] > 0.0) & (
                 s.r() * 1e3 < 30))  # Mask the data: select stellar particles inside a 30kpc sphere.
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
-                s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
+                                                                    s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][
+                                                                        stellar_mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack(
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
@@ -647,10 +662,12 @@ def r_band_magnitude(data, redshift, read):
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
             stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.)) - s.nparticlesall[
-            :4].sum()  # Mask the data: select stellar particles.
+                                                                           :4].sum()  # Mask the data: select stellar
+            # particles.
 
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
-                s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  # Distances are in kpc.
+                                                                    s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][
+                                                                        stellar_mask, 2] * 1e3)  # Distances are in kpc.
             s.data['pos'] = np.vstack(
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
@@ -1004,7 +1021,7 @@ def gas_slice(pdf, data, redshift, read):
             gas_mask, = np.where(s.data['type'] == 0)  # Mask the data: select gas particles.
             ngas = np.size(gas_mask)
             indy = [[1, 2, 0],
-                [1, 0, 2]]  # Swap the position and velocity indices for the face-on and edge-on projections #
+                    [1, 0, 2]]  # Swap the position and velocity indices for the face-on and edge-on projections #
             for j in range(2):
                 # Declare lists/arrays to store the data #
                 frbs = []
@@ -1200,9 +1217,8 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / const.KB * (1e6 * const.parsec) ** 2.0 / (
                 1e6 * const.parsec / 1e5) ** 2 * mean_weight
             s.data['temprho'] = s.rho * temperature
-            edge_on = \
-            s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
-                'grid']
+            edge_on = s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True,
+                numthreads=8)['grid']
             edge_on_rho = \
                 s.get_Aslice('rho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
                     'grid']

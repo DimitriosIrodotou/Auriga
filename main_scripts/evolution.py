@@ -235,7 +235,8 @@ def get_bs_data(snapshot_ids, halo):
     stellar_mask, = np.where(
         (s.data['age'] > 0.0) & (s.r() < 0.1 * s.subfind.data['frc2'][0]))  # Mask the data: select stellar particles.
     z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
-        s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][stellar_mask, 2] * 1e3)  #
+                                                            s.data['pos'][stellar_mask, 1] * 1e3,
+                                                            s.data['pos'][stellar_mask, 2] * 1e3)  #
     # Distances are in Mpc.
     s.data['pos'] = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos']
     # attribute in kpc.
@@ -560,22 +561,25 @@ def delta_sfr_regimes(pdf, data, region, read):
                 np.save(path + 'lookback_times_' + str(s.haloname), lookback_times)
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(15, 10))
+    figure = plt.figure(figsize=(15, 7.5))
     axis00, axis01, axis02, axis10, axis11, axis12 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3,
         multiple10=True)
-
-    # for axis in [axis10, axis11, axis12]:
-    #     axis.set_yscale('symlog', subsy=[2, 3, 4, 5, 6, 7, 8, 9], linthreshy=1, linscaley=0.1)
     for axis in [axis01, axis02, axis11, axis12]:
         axis.set_yticklabels([])
     for axis in [axis00, axis01, axis02]:
+        axis.set_xlabel('')
+        axis.set_xticklabels([])
         axis2 = axis.twiny()
         plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 25], aspect=None)
     for axis in [axis10, axis11, axis12]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=(-1.1, 16), aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[-1.1, 16], aspect=None)
+        axis2.set_xlabel('')
+        axis2.set_xticklabels([])
+        axis2.tick_params(top=False)
     axis00.set_ylabel(r'$\mathrm{SFR/(M_\odot\;yr^{-1})}$', size=20)
     axis10.set_ylabel(r'$\mathrm{(\delta SFR)_{norm}}$', size=20)
+    axis10.set_yticklabels(['', '0', '', '', '6', '', '', '12', '', ''])
 
     # Loop over all radial limits #
     top_axes, bottom_axes = [axis00, axis01, axis02], [axis10, axis11, axis12]
@@ -583,7 +587,7 @@ def delta_sfr_regimes(pdf, data, region, read):
         bottom_axes):
         # Get the names and sort them #
         path = '/u/di43/Auriga/plots/data/' + 'dsr/' + str(radial_cut_max) + '/'
-        names = glob.glob(path + 'name_*')
+        names = glob.glob(path + 'name_')
         names.sort()
 
         # Loop over all available haloes #
@@ -602,12 +606,12 @@ def delta_sfr_regimes(pdf, data, region, read):
                 bottom_axis.plot(original_bins[:-1], np.divide(counts - original_counts, original_counts),
                     color=colors[i], label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]))
 
-            # Create the legend #
-            top_axis.legend(loc='upper right', fontsize=12, frameon=False, numpoints=1)
-            bottom_axis.legend(loc='upper center', fontsize=12, frameon=False, numpoints=1, ncol=2)
+        # Create the legend #
+        axis00.legend(loc='upper left', fontsize=15, frameon=False, numpoints=1)
+        axis10.legend(loc='upper left', fontsize=15, frameon=False, numpoints=1)
 
         # Add the text #
-        figure.text(0.01, 0.9,
+        figure.text(0.6, 0.9,
             r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % ((np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)),
             fontsize=15, transform=top_axis.transAxes)
     # Save and close the figure #
@@ -794,17 +798,17 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
                 axis.set_xticklabels([])
 
             # axis002 = axis00.twiny()
-            # plot_tools.set_axes_evolution(axis00, axis002, ylim=(0, 8),
+            # plot_tools.set_axes_evolution(axis00, axis002, ylim=[0, 8],
             # ylabel=r'$\mathrm{SFR/(M_\odot\;yr^{-1})}$', aspect=None)
             # axis00.set_xticklabels([])
             axis003 = axis00.twinx()
-            plot_tools.set_axis(axis003, ylim=(1e55, 1e61), yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$',
+            plot_tools.set_axis(axis003, ylim=[1e55, 1e61], yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$',
                 aspect=None, which='major')
-            # plot_tools.set_axis(axis10, xlim=(13, 0), ylim=(1e6, 1e11),
+            # plot_tools.set_axis(axis10, xlim=(13, 0), ylim=[1e6, 1e11],
             # yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None,
             # which='major')
             # axis10.set_xticklabels([])
-            # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=(-0.1, 1.1),
+            # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=[-0.1, 1.1],
             # ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{
             # look}/Gyr}$',
             #                     aspect=None)
@@ -905,7 +909,7 @@ def get_gfml_data(snapshot_ids, halo):
         spherical_radius)
     return s.cosmology_get_lookback_time_from_a(s.time, is_flat=True), s.subfind.data['frc2'][0], s.data['sfr'][
         gas_mask], s.data['mass'][gas_mask], s.data['id'][gas_mask], temperature, spherical_radius, radial_velocity, \
-        s.data['mass'][stellar_mask], s.data['mass'][wind_mask], s.data['pos'][gas_mask]
+           s.data['mass'][stellar_mask], s.data['mass'][wind_mask], s.data['pos'][gas_mask]
 
 
 def gas_flow_mass_loading(pdf, data, read, method):
@@ -1016,13 +1020,14 @@ def gas_flow_mass_loading(pdf, data, read, method):
                 common_ids.intersection_update(ids_in_snap)
             print(len(common_ids))
             x = [8796187878443, 8796221432877, 5466789209133, 8796221432879, 8796240307248, 5475303646257,
-                8796181586994, 8796221432881, 8796238210097, 8796236112953, 5463649772607, 8796238210112, 8796231918660,
-                8796240307271, 8796240307272, 8796223530058, 8796240307277, 8796231918670, 8796240307278, 8796225627216,
-                8796236112974, 8796206752852, 5475303646293, 8796208850006, 5463574275157, 8796206752854, 8796240307285,
-                8796240307286, 8796236112987, 8796240307287, 8796236112989, 8796150129757, 8796236112991, 8796240307294,
-                5463549109346, 8796240307302, 8796240307307, 8796236113004, 8796240307309, 8796240307310, 5471491023984,
-                5475911820403, 5463435863160, 8796221432963, 8796217238666, 8796240307339, 8796240307349, 8796240307350,
-                5463540720794, 87962403073]
+                 8796181586994, 8796221432881, 8796238210097, 8796236112953, 5463649772607, 8796238210112,
+                 8796231918660, 8796240307271, 8796240307272, 8796223530058, 8796240307277, 8796231918670,
+                 8796240307278, 8796225627216, 8796236112974, 8796206752852, 5475303646293, 8796208850006,
+                 5463574275157, 8796206752854, 8796240307285, 8796240307286, 8796236112987, 8796240307287,
+                 8796236112989, 8796150129757, 8796236112991, 8796240307294, 5463549109346, 8796240307302,
+                 8796240307307, 8796236113004, 8796240307309, 8796240307310, 5471491023984, 5475911820403,
+                 5463435863160, 8796221432963, 8796217238666, 8796240307339, 8796240307349, 8796240307350,
+                 5463540720794, 87962403073]
             print(np.where(ids[0] == x))
             print(ids[0] in x)
             for i in range(len(lookback_times)):
@@ -1500,10 +1505,10 @@ def get_bm_data(snapshot_ids, halo):
         black_hole_dmass_quasar = s.data['bhmq'][id_mask[0]]
     else:
         black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, black_hole_dmass_radio, \
-            black_hole_dmass_quasar = 0, 0, 0, 0, 0, 0
+        black_hole_dmass_quasar = 0, 0, 0, 0, 0, 0
     return s.cosmology_get_lookback_time_from_a(s.time,
         is_flat=True), black_hole_mass, black_hole_cmass_radio, black_hole_cmass_quasar, black_hole_dmass, \
-        black_hole_dmass_radio, black_hole_dmass_quasar
+           black_hole_dmass_radio, black_hole_dmass_quasar
 
 
 def blackhole_masses(pdf, data, read):
@@ -1551,7 +1556,7 @@ def blackhole_masses(pdf, data, read):
             black_hole_masses = bm_data[:, 1]
             black_hole_cmasses_radio, black_hole_cmasses_quasar = bm_data[:, 2], bm_data[:, 3]
             black_hole_dmasses, black_hole_dmasses_radio, black_hole_dmasses_quasar = bm_data[:, 4], bm_data[:,
-            5], bm_data[:, 6]
+                                                                                                     5], bm_data[:, 6]
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(name), name)

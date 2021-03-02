@@ -336,7 +336,7 @@ class AurigaPdf:
         # combinations.stellar_light_combination(pdf, redshift)
         # combinations.stellar_light_components_combination(pdf, redshift)
         # combinations.stellar_density_combination(pdf, redshift)
-        combinations.gas_density_combination(pdf, redshift)
+        # combinations.gas_density_combination(pdf, redshift)
         # combinations.gas_temperature_combination(pdf, redshift)
         # combinations.gas_metallicity_combination(pdf, redshift)
         # combinations.magnetic_field_combination(pdf, redshift)

@@ -5,6 +5,7 @@ import matplotlib
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.style as style
 
 from const import *
 from sfigure import *
@@ -16,6 +17,9 @@ res = 512
 level = 4
 boxsize = 0.2
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
+
+style.use("classic")
+plt.rcParams.update({'font.family':'serif'})
 
 
 def gas_movie(data, read):
@@ -119,7 +123,7 @@ def gas_movie(data, read):
 
                 # Get the gas total pressure projections #
                 elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22,
-                    137.33]
+                                 137.33]
                 meanweight = np.sum(s.gmet[s.data['type'] == 0, 0:9], axis=1) / (
                     np.sum(s.gmet[s.data['type'] == 0, 0:9] / elements_mass[0:9], axis=1) + s.data['ne'] * s.gmet[
                     s.data['type'] == 0, 0])
@@ -199,7 +203,7 @@ def gas_movie(data, read):
         # Add colorbars in each panel #
         axes = [axis00, axis01, axis10, axis11]
         labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$',
-            r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$', r'$\mathrm{P/k_{B}\;/(K\;cm^{-3})}$']
+                  r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$', r'$\mathrm{P/k_{B}\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
         ticks = [[5e3, 5e5, 5e7], [-1e4, 0, 1e4], [1e6, 1e8, 1e10], [1e4, 1e6, 1e8]]
         for axis, attribute, label, tick in zip(axes, attributes, labels, ticks):
@@ -242,7 +246,7 @@ def gas_movie(data, read):
         # Add colorbars in each panel #
         axes = [axis00, axis01, axis10, axis11]
         labels = [r'$\mathrm{T\;/K}$', r'$\mathrm{v_{rad}/(km\,s^{-1})}$',
-            r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$', r'$\mathrm{P/k_{B}\;/(K\;cm^{-3})}$']
+                  r'$\mathrm{\Sigma_{gas}\;/(M_\odot\;kpc^{-2})}$', r'$\mathrm{P/k_{B}\;/(K\;cm^{-3})}$']
         attributes = [temperature, vrad, rho, pressure]
         ticks = [[5e3, 5e5, 5e7], [-3.5e4, 0, 3.5e4], [1e6, 1e8, 1e10], [1e4, 1e6, 1e8]]
         for axis, attribute, label, tick in zip(axes, attributes, labels, ticks):

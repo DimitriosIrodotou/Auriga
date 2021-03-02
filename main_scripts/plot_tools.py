@@ -1,11 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.style as style
 
 from matplotlib import gridspec
 import satellite_utilities
 
 res = 512
 boxsize = 0.06
+
+style.use("classic")
+plt.rcParams.update({'font.family':'serif'})
 
 
 def binned_median_1sigma(x_data, y_data, bin_type, n_bins, log=False):
@@ -212,7 +216,6 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     if aspect is not None:
         axis.set_aspect('equal')
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-')
-    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
     axis.tick_params(direction='out', which=which, top='on', bottom='on', left='on', right='on', labelsize=size)
     axis2.tick_params(direction='out', which=which, top='on', left='on', right='on', labelsize=size)
     return None
@@ -282,7 +285,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis20, axis21, axis22, axis23, axis24, axis25 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(
             gs[2, 2]), plt.subplot(gs[2, 3]), plt.subplot(gs[2, 4]), plt.subplot(gs[2, 5])
         return axis00, axis01, axis02, axis03, axis04, axis05, axis10, axis11, axis12, axis13, axis14, axis15, \
-            axis20, axis21, axis22, axis23, axis24, axis25, x, y, area
+               axis20, axis21, axis22, axis23, axis24, axis25, x, y, area
 
     elif multiple2 is True:
         gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0)
@@ -293,7 +296,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
-            axis40, axis41, axis42, axis50, axis51, axis52
+               axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple3 is True:
         gs = gridspec.GridSpec(6, 4, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5],
@@ -306,7 +309,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         axiscbar = plt.subplot(gs[:, 3])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
-            axis40, axis41, axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area
+               axis40, axis41, axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area
 
     elif multiple4 is True:
         gs = gridspec.GridSpec(1, 3, hspace=0, wspace=0.05)
@@ -337,7 +340,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
-            axis40, axis41, axis42, axis50, axis51, axis52
+               axis40, axis41, axis42, axis50, axis51, axis52
 
     elif mollweide is True:
         gs = gridspec.GridSpec(3, 4, hspace=0, wspace=0, width_ratios=[1, 1, 1, 0.1])
@@ -359,7 +362,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
-            axis40, axis41, axis42, axis50, axis51, axis52
+               axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple9 is True:
         gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5])
@@ -370,16 +373,16 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
         axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
-            axis40, axis41, axis42, axis50, axis51, axis52
+               axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple10 is True:
-        gs = gridspec.GridSpec(2, 3, hspace=0.5, wspace=0.05)
+        gs = gridspec.GridSpec(2, 3, hspace=0, wspace=0.05, height_ratios=[1, 0.5])
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12
 
     elif multiple11 is True:
-        gs = gridspec.GridSpec(4, 3, hspace=0.7, wspace=0.05)
+        gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0.05)
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
@@ -498,7 +501,7 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
         axis20, axis21, axis22, axis23, axis24, axis25 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(
             gs[2, 2]), plt.subplot(gs[2, 3]), plt.subplot(gs[2, 4]), plt.subplot(gs[2, 5])
         return axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22, axis03, axis13, axis23, \
-            axis04, axis14, axis24, axis05, axis15, axis25, x, y, area
+               axis04, axis14, axis24, axis05, axis15, axis25, x, y, area
 
     elif multiple2 is True:
         gs = gridspec.GridSpec(4, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5])
@@ -507,7 +510,7 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
         axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
         return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, x, y, \
-            y2, area
+               y2, area
 
     elif multiple3 is True:
         gs = gridspec.GridSpec(4, 4, hspace=0.05, wspace=0, height_ratios=[1, 0.5, 1, 0.5], width_ratios=[1, 1, 1, 0.1])
@@ -517,7 +520,7 @@ def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=Fa
         axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
         axiscbar = plt.subplot(gs[:, 3])
         return axis00, axis10, axis20, axis30, axis01, axis11, axis21, axis31, axis02, axis12, axis22, axis32, \
-            axiscbar, x, y, y2, area
+               axiscbar, x, y, y2, area
 
     if multiple4 is True:
         gs = gridspec.GridSpec(2, 3, hspace=0, wspace=0)
@@ -569,7 +572,7 @@ class RotateCoordinates:
         prc_angular_momentum = data['mass'][stellar_mask, np.newaxis] * np.cross(pos * 1e3, vel)  # In Msun kpc km s^-1.
         vector_mask, = np.where(np.linalg.norm(prc_angular_momentum, axis=1) > 0)
         prc_unit_vector = prc_angular_momentum[vector_mask] / np.linalg.norm(prc_angular_momentum[vector_mask], axis=1)[
-        :, np.newaxis]
+                                                              :, np.newaxis]
         return prc_unit_vector
 
 

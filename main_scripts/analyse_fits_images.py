@@ -18,6 +18,7 @@ from photutils.isophote import EllipseGeometry
 from scipy.ndimage.filters import gaussian_filter
 
 style.use("classic")
+plt.rcParams.update({'font.family':'serif'})
 date = time.strftime("%d_%m_%y_%H%M")
 
 

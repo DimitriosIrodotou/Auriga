@@ -9,6 +9,7 @@ import healpy as hlp
 import astropy.units as u
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+import matplotlib.style as style
 
 from const import *
 from sfigure import *
@@ -27,6 +28,9 @@ photo_band = ['U', 'B', 'V', 'K', 'g', 'r', 'i', 'z']
 colors = ['black', 'tab:red', 'tab:green', 'tab:blue']
 Msunabs = [5.61, 5.48, 4.83, 3.30, 5.12, 4.68, 4.57, 4.60]
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
+
+style.use("classic")
+plt.rcParams.update({'font.family':'serif'})
 
 
 def circularity_distribution(pdf, data, redshift, read):
@@ -484,7 +488,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
             age[s.data['type'] == 4] = s.data['age']
             stellar_mask, = np.where(
                 (s.data['type'] == 4) & (s.r() < 0.1 * s.subfind.data['frc2'][0]) & (age > 0.)) - s.nparticlesall[
-                            :4].sum()
+                                                                                                  :4].sum()
 
             # Calculate the bolometric R-band magnitude in units of the bolometric magnitude of the Sun #
             Rband = convert_rband_to_Rband_mag(s.data['gsph'][stellar_mask, 5], s.data['gsph'][stellar_mask, 4])
@@ -566,7 +570,8 @@ def bar_strength_profile(pdf, data, redshift, read):
             mask, = np.where(s.data['age'] > 0.)  # Mask the data: select stellar particles.
 
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][mask, 0] * 1e3,
-                s.data['pos'][mask, 1] * 1e3, s.data['pos'][mask, 2] * 1e3)  # In Mpc.
+                                                                    s.data['pos'][mask, 1] * 1e3,
+                                                                    s.data['pos'][mask, 2] * 1e3)  # In Mpc.
             s.data['pos'] = np.vstack(
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
             x, y = s.data['pos'][:, 2] * 1e3, s.data['pos'][:, 1] * 1e3  # Load positions and convert from Mpc to Kpc.
@@ -1046,7 +1051,8 @@ def decomposition_IT20(date, data, redshift, read):
             # base-resolution grid cell).
             hp = HEALPix(nside=nside)  # Initialise the HEALPix pixelisation class.
             indices = hp.lonlat_to_healpix(alpha * u.deg,
-                delta * u.deg)  # Create a list of HEALPix indices from particles's alpha and delta.
+                                           delta * u.deg)  # Create a list of HEALPix indices from particles's alpha
+            # and delta.
             densities = np.bincount(indices,
                 minlength=hp.npix)  # Count number of data points in each HEALPix grid cell.
 
