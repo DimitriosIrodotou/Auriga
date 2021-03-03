@@ -93,7 +93,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
             iband = [3, 1, 0][k]  # bands = ['U', 'B', 'V', 'K', 'g', 'r', 'i', 'z']
             band = 10 ** (-2.0 * data[:, iband] / 5.0)
             grid = calcGrid.calcGrid(pos, hsml, band, rho, rho, xres, yres, 256, boxx, boxy, boxz, 0., 0., 0., 1, 1,
-                numthreads=8)
+                                     numthreads=8)
 
             drange = datarange[k]
             grid = np.minimum(np.maximum(grid, drange[0]), drange[1])
@@ -105,7 +105,7 @@ def get_projection(pos_orig, mass, data, idir, res, boxsize, type, maxHsml=False
     # Get mass projection #
     elif type == 'mass':
         proj = calcGrid.calcGrid(pos, hsml, data, rho, rho, xres, yres, 256, boxx, boxy, boxz, 0., 0., 0., 1, 1,
-            numthreads=8)
+                                 numthreads=8)
 
     return proj
 
@@ -157,9 +157,9 @@ def stellar_light(pdf, data, redshift, read):
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
             face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                s.data['gsph'][stellar_mask].astype('f8'), 0, res, boxsize, 'light', maxHsml=True)
+                                     s.data['gsph'][stellar_mask].astype('f8'), 0, res, boxsize, 'light', maxHsml=True)
             edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                s.data['gsph'][stellar_mask].astype('f8'), 1, res, boxsize, 'light', maxHsml=True)
+                                     s.data['gsph'][stellar_mask].astype('f8'), 1, res, boxsize, 'light', maxHsml=True)
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -179,7 +179,7 @@ def stellar_light(pdf, data, redshift, read):
         for axis in [axis00, axis10]:
             plot_tools.set_axis(axis)
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -251,9 +251,11 @@ def stellar_light_components(pdf, data, redshift, read):
                 pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
                 face_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                    s.data['gsph'][stellar_mask].astype('f8'), 0, res, boxsize, 'light', maxHsml=True)
+                                         s.data['gsph'][stellar_mask].astype('f8'), 0, res, boxsize, 'light',
+                                         maxHsml=True)
                 edge_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                    s.data['gsph'][stellar_mask].astype('f8'), 1, res, boxsize, 'light', maxHsml=True)
+                                         s.data['gsph'][stellar_mask].astype('f8'), 1, res, boxsize, 'light',
+                                         maxHsml=True)
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -270,11 +272,13 @@ def stellar_light_components(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axis01, axis10, axis11, x, y, y2, area = plot_tools.create_axes_projections(res=res,
-            boxsize=boxsize * 1e3, multiple4=True)  # Generate the axes.
+                                                                                            boxsize=boxsize * 1e3,
+                                                                                            multiple4=True)  #
+        # Generate the axes.
         for axis in [axis00, axis01, axis10, axis11]:
             plot_tools.set_axis(axis)
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         disc_face_on = np.load(path + 'disc_face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -289,8 +293,8 @@ def stellar_light_components(pdf, data, redshift, read):
         axis11.imshow(spheroid_edge_on, interpolation='nearest', aspect='equal')
 
         for axis, label in zip([axis00, axis01, axis10, axis11],
-            [r'$\mathrm{Disc\;face-on}$', r'$\mathrm{Spheroid\;face-on}$', r'$\mathrm{Disc\;edge-on}$',
-             r'$\mathrm{Spheroid\;edge-on}$']):
+                               [r'$\mathrm{Disc\;face-on}$', r'$\mathrm{Spheroid\;face-on}$',
+                                r'$\mathrm{Disc\;edge-on}$', r'$\mathrm{Spheroid\;edge-on}$']):
             figure.text(0.01, 0.95, label, fontsize=16, color='w', transform=axis.transAxes)
 
         # Save and close the figure #
@@ -333,7 +337,8 @@ def stellar_density(pdf, data, redshift, read):
                 print("Reading data for halo:", str(s.haloname))
 
             axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res,
-                boxsize=boxsize * 1e3, contour=True)  # Generate the axes.
+                                                                                                          boxsize=boxsize * 1e3,
+                                                                                                          contour=True)  # Generate the axes.
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -348,17 +353,18 @@ def stellar_density(pdf, data, redshift, read):
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
             face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                s.data['mass'][stellar_mask].astype('f8'), 0, res, boxsize, 'mass') / area * 1e10
+                                     s.data['mass'][stellar_mask].astype('f8'), 0, res, boxsize, 'mass') / area * 1e10
             edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                s.data['mass'][stellar_mask].astype('f8'), 1, res, boxsize, 'mass') / (0.5 * area) * 1e10
+                                     s.data['mass'][stellar_mask].astype('f8'), 1, res, boxsize, 'mass') / (
+                              0.5 * area) * 1e10
 
             # Get the contour lines #
             face_on_count, face_on_xedges, face_on_yedges = np.histogram2d(s.data['pos'][:, 2] * 1e3,
                                                                            s.data['pos'][:, 1] * 1e3, bins=70,
-                range=[[-30, 30], [-30, 30]])
+                                                                           range=[[-30, 30], [-30, 30]])
             edge_on_count, edge_on_xedges, edge_on_yedges = np.histogram2d(s.data['pos'][:, 2] * 1e3,
                                                                            s.data['pos'][:, 0] * 1e3, bins=20,
-                range=[[-30, 30], [-15, 15]])
+                                                                           range=[[-30, 30], [-15, 15]])
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -377,17 +383,19 @@ def stellar_density(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res,
-            boxsize=boxsize * 1e3, contour=True)
+                                                                                                      boxsize=boxsize
+                                                                                                              * 1e3,
+                                                                                                      contour=True)
         for axis in [axis00, axis01]:
             plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
             axis.set_xticklabels([])
         for axis in [axis10, axis11]:
             plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
-                ylabel=r'$\mathrm{z/kpc}$')
+                                ylabel=r'$\mathrm{z/kpc}$')
         cmap = matplotlib.cm.get_cmap('twilight')
         axis01.set_facecolor(cmap(0))
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -397,16 +405,16 @@ def stellar_density(pdf, data, redshift, read):
 
         # Plot the stellar density projections #
         pcm = axis01.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True,
-            cmap=cmap)
+                                cmap=cmap)
         axis11.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True,
-            cmap=cmap)
+                          cmap=cmap)
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
 
         # Plot the contour lines #
         axis00.contour(np.log10(face_on_count).T, colors='black', extent=[-30, 30, -30, 30],
-            levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+                       levels=np.arange(0.0, 5.0 + 0.5, 0.25))
         axis10.contour(np.log10(edge_on_count).T, colors='black', extent=[-30, 30, -15, 15],
-            levels=np.arange(0.0, 5.0 + 0.5, 0.25))
+                       levels=np.arange(0.0, 5.0 + 0.5, 0.25))
 
         # Save and close the figure #
         pdf.savefig(figure, bbox_inches='tight')
@@ -449,7 +457,8 @@ def stellar_density_components(pdf, data, redshift, read):
                 print("Reading data for halo:", str(s.haloname))
 
             axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res,
-                boxsize=boxsize * 1e3, contour=True)  # Generate the axes.
+                                                                                                          boxsize=boxsize * 1e3,
+                                                                                                          contour=True)  # Generate the axes.
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -474,9 +483,11 @@ def stellar_density_components(pdf, data, redshift, read):
                 pos = np.vstack((z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
                 face_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                    s.data['mass'][stellar_mask].astype('f8'), 0, res, boxsize, 'mass') / area * 1e10
+                                         s.data['mass'][stellar_mask].astype('f8'), 0, res, boxsize,
+                                         'mass') / area * 1e10
                 edge_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                    s.data['mass'][stellar_mask].astype('f8'), 1, res, boxsize, 'mass') / (0.5 * area) * 1e10
+                                         s.data['mass'][stellar_mask].astype('f8'), 1, res, boxsize, 'mass') / (
+                                  0.5 * area) * 1e10
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -493,20 +504,22 @@ def stellar_density_components(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axis01, axis10, axis11, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res,
-            boxsize=boxsize * 1e3, contour=True)
+                                                                                                      boxsize=boxsize
+                                                                                                              * 1e3,
+                                                                                                      contour=True)
 
         for axis in [axis00, axis01]:
             plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
             axis.set_xticklabels([])
         for axis in [axis10, axis11]:
             plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
-                ylabel=r'$\mathrm{z/kpc}$')
+                                ylabel=r'$\mathrm{z/kpc}$')
 
         cmap = matplotlib.cm.get_cmap('binary_r')
         for axis in [axis00, axis01, axis10, axis11]:
             axis.set_facecolor(cmap(0))
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path_sd + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -526,15 +539,15 @@ def stellar_density_components(pdf, data, redshift, read):
         # plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
 
         pcm = axis00.pcolormesh(x, y, disc_face_on, norm=matplotlib.colors.LogNorm(vmin=1e7, vmax=1e10),
-            rasterized=True, cmap=cmap)
+                                rasterized=True, cmap=cmap)
         axis10.pcolormesh(x, y2, disc_edge_on, norm=matplotlib.colors.LogNorm(vmin=1e7, vmax=1e10), rasterized=True,
-            cmap=cmap)
+                          cmap=cmap)
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
 
         pcm = axis01.pcolormesh(x, y, spheroid_face_on, norm=matplotlib.colors.LogNorm(vmin=1e7, vmax=1e10),
-            rasterized=True, cmap=cmap)
+                                rasterized=True, cmap=cmap)
         axis11.pcolormesh(x, y2, spheroid_edge_on, norm=matplotlib.colors.LogNorm(vmin=1e7, vmax=1e10), rasterized=True,
-            cmap=cmap)
+                          cmap=cmap)
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
 
         # Save and close the figure #
@@ -589,9 +602,9 @@ def stellar_light_fit(data, redshift, read):
                 (z_rotated, y_rotated, x_rotated)).T  # Rebuild the s.data['pos'] attribute in kpc.
 
             face_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                s.data['gsph'][stellar_mask].astype('f8'), 0, res, boxsize, 'light', maxHsml=True)
+                                     s.data['gsph'][stellar_mask].astype('f8'), 0, res, boxsize, 'light', maxHsml=True)
             edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
-                s.data['gsph'][stellar_mask].astype('f8'), 1, res, boxsize, 'light', maxHsml=True)
+                                     s.data['gsph'][stellar_mask].astype('f8'), 1, res, boxsize, 'light', maxHsml=True)
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -661,9 +674,8 @@ def r_band_magnitude(data, redshift, read):
             # Rotate the data and plot the projections #
             age = np.zeros(s.npartall)
             age[s.data['type'] == 4] = s.data['age']
-            stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.)) - s.nparticlesall[
-                                                                           :4].sum()  # Mask the data: select stellar
-            # particles.
+            # Mask the data: select stellar particles.
+            stellar_mask, = np.where((s.data['type'] == 4) & (age > 0.)) - s.nparticlesall[:4].sum()
 
             z_rotated, y_rotated, x_rotated = plot_tools.rotate_bar(s.data['pos'][stellar_mask, 0] * 1e3,
                                                                     s.data['pos'][stellar_mask, 1] * 1e3, s.data['pos'][
@@ -700,13 +712,13 @@ def r_band_magnitude(data, redshift, read):
 
         # Plot the r-band 2D histogram #
         counts, xedges, yedges = np.histogram2d(pos[:, 2] * 1e3, pos[:, 1] * 1e3, weights=r_band_luminosity, bins=600,
-            range=[[-30, 30], [-30, 30]])
+                                                range=[[-30, 30], [-30, 30]])
         surface = np.zeros(len(xedges) - 1)
         surface[:] = (xedges[1:] - xedges[:-1]) ** 2
         counts = counts / surface  # In Lsun/kpc^2.
 
         plt.imshow(counts.T, extent=[-30, 30, -30, 30], origin='lower', cmap='gray',
-            norm=matplotlib.colors.LogNorm(vmin=5e6))
+                   norm=matplotlib.colors.LogNorm(vmin=5e6))
 
         # Save and close the figure #
         plt.savefig('/u/di43/Auriga/plots/rbm/' + 'Au-' + str(re.split('_|.npy', names[i])[1]), bbox_inches='tight')
@@ -772,13 +784,13 @@ def gas_density(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
-            colorbar=True)
+                                                                                      colorbar=True)
         axis00.set_xticklabels([])
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
-            ylabel=r'$\mathrm{z/kpc}$')
+                            ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -786,9 +798,9 @@ def gas_density(pdf, data, redshift, read):
 
         # Plot the gas density projections #
         pcm = axis00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True,
-            cmap='magma')
+                                cmap='magma')
         axis10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True,
-            cmap='magma')
+                          cmap='magma')
         plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{gas}/(M_\odot\;kpc^{-2})}$')
 
         # Save and close the figure #
@@ -867,13 +879,13 @@ def gas_temperature(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
-            colorbar=True)
+                                                                                      colorbar=True)
         axis00.set_xticklabels([])
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
-            ylabel=r'$\mathrm{z/kpc}$')
+                            ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -883,9 +895,9 @@ def gas_temperature(pdf, data, redshift, read):
 
         # Plot the density-weighted gas temperature projections #
         pcm = axis00.pcolormesh(x, y, (face_on / face_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7),
-            cmap='viridis', rasterized=True)
+                                cmap='viridis', rasterized=True)
         axis10.pcolormesh(x, 0.5 * y, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=1e7),
-            cmap='viridis', rasterized=True)
+                          cmap='viridis', rasterized=True)
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
 
         # Save and close the figure #
@@ -952,13 +964,13 @@ def gas_metallicity(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
-            colorbar=True)
+                                                                                      colorbar=True)
         axis00.set_xticklabels([])
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
-            ylabel=r'$\mathrm{z/kpc}$')
+                            ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -966,9 +978,9 @@ def gas_metallicity(pdf, data, redshift, read):
 
         # Plot the gas metallicity projections #
         pcm = axis00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), rasterized=True,
-            cmap='viridis')
+                                cmap='viridis')
         axis10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=0.3, vmax=3.), rasterized=True,
-            cmap='viridis')
+                          cmap='viridis')
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{Z/Z_\odot}$')
 
         # Save and close the figure #
@@ -1015,7 +1027,7 @@ def gas_slice(pdf, data, redshift, read):
             # Select the halo and rotate it based on Euler's angles #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, remove_bulk_vel=True, use_principal_axis=False, euler_rotation=True,
-                rotate_disk=True, do_rotation=True)
+                          rotate_disk=True, do_rotation=True)
 
             # Loop over the two projections #
             gas_mask, = np.where(s.data['type'] == 0)  # Mask the data: select gas particles.
@@ -1064,8 +1076,8 @@ def gas_slice(pdf, data, redshift, read):
                         gpos[:, :], gmass[:], grho[:] = pos[sfgas, :], mass[sfgas], rho[sfgas]
 
                     A = calcGrid.calcASlice(gpos, grho, res, res, boxx=boxsize, boxy=boxsize, centerx=s.center[0],
-                        centery=s.center[1], centerz=s.center[2], grad=gpos, proj=True, boxz=boxsize / 8,
-                        nz=int(res / 8), numthreads=8)
+                                            centery=s.center[1], centerz=s.center[2], grad=gpos, proj=True,
+                                            boxz=boxsize / 8, nz=int(res / 8), numthreads=8)
                     frbs.append(np.array(A['grid']))
 
                 # Create a coloured image from the gas slice #
@@ -1108,11 +1120,14 @@ def gas_slice(pdf, data, redshift, read):
 
                 # Calculate and plot the arrows of the velocity field #
                 pn, xedges, yedges = np.histogram2d(pos[:, 0], pos[:, 1], bins=30,
-                    range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+                                                    range=[[-0.5 * boxsize, 0.5 * boxsize],
+                                                           [-0.5 * boxsize, 0.5 * boxsize]])
                 vxgrid, xedges, yedges = np.histogram2d(pos[:, 0], pos[:, 1], bins=30, weights=vel[:, 0],
-                    range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+                                                        range=[[-0.5 * boxsize, 0.5 * boxsize],
+                                                               [-0.5 * boxsize, 0.5 * boxsize]])
                 vygrid, xedges, yedges = np.histogram2d(pos[:, 0], pos[:, 1], bins=30, weights=vel[:, 1],
-                    range=[[-0.5 * boxsize, 0.5 * boxsize], [-0.5 * boxsize, 0.5 * boxsize]])
+                                                        range=[[-0.5 * boxsize, 0.5 * boxsize],
+                                                               [-0.5 * boxsize, 0.5 * boxsize]])
                 vxgrid /= pn
                 vygrid /= pn
                 vygrid *= (-1)
@@ -1144,9 +1159,9 @@ def gas_slice(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(10, 15))
         axis00, axis10, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
-            velocity_vectors=True)
+                                                                            velocity_vectors=True)
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
         for axis in [axis00, axis10]:
             axis.set_xticks([])
             axis.set_yticks([])
@@ -1165,7 +1180,7 @@ def gas_slice(pdf, data, redshift, read):
             # Plot the gas slice and the velocity arrows #
             axis.imshow(rgbArray, rasterized=True, aspect='equal')
             axis.quiver(xc, yc, np.rot90(vxgrid), np.rot90(vygrid), scale=4000.0, pivot='middle', color='yellow',
-                alpha=0.8)
+                        alpha=0.8)
             j += 1
 
         # Save and close the figure #
@@ -1217,8 +1232,9 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / const.KB * (1e6 * const.parsec) ** 2.0 / (
                 1e6 * const.parsec / 1e5) ** 2 * mean_weight
             s.data['temprho'] = s.rho * temperature
-            edge_on = s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True,
-                numthreads=8)['grid']
+            edge_on = \
+            s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
+                'grid']
             edge_on_rho = \
                 s.get_Aslice('rho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
                     'grid']
@@ -1243,9 +1259,9 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
         x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
         z = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res + 1)
         plot_tools.set_axis(axis00, xlim=[-100, 100], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
-            ylabel=r'$\mathrm{z/kpc}$')
+                            ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1253,7 +1269,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
 
         # Plot the density-weighted gas temperature projections #
         pcm = axis00.pcolormesh(x * 1e3, z * 1e3, (edge_on / edge_on_rho).T,
-            norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=2e7), rasterized=True, cmap='Spectral_r')
+                                norm=matplotlib.colors.LogNorm(vmin=1e3, vmax=2e7), rasterized=True, cmap='Spectral_r')
         plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
 
         # Save and close the figure #
@@ -1322,13 +1338,13 @@ def magnetic_field(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
-            colorbar=True)
+                                                                                      colorbar=True)
         axis00.set_xticklabels([])
         plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
-            ylabel=r'$\mathrm{z/kpc}$')
+                            ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1336,9 +1352,9 @@ def magnetic_field(pdf, data, redshift, read):
 
         # Plot the magnetic field projections #
         pcm = axis00.pcolormesh(x, y, face_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=1e2), rasterized=True,
-            cmap='CMRmap')
+                                cmap='CMRmap')
         axis10.pcolormesh(x, 0.5 * y, edge_on.T, norm=matplotlib.colors.LogNorm(vmin=1e-1, vmax=1e2), rasterized=True,
-            cmap='CMRmap')
+                          cmap='CMRmap')
         plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{B/\mu G}$')
 
         # Save and close the figure #
@@ -1386,17 +1402,20 @@ def dark_matter_density(pdf, data, redshift, read):
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
 
             axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res,
-                boxsize=boxsize * 1e3, colorbar=True)  # Generate the axes.
+                                                                                          boxsize=boxsize * 1e3,
+                                                                                          colorbar=True)  # Generate the axes.
 
             # Get the dark matter density projections #
             dark_matter_mask, = np.where((s.data['type'] == 1) & (
                 s.r() < 2.0 * boxsize))  # Mask the data: select dark matter particles inside a 0.8Mpc sphere.
             face_on = get_projection(s.data['pos'][dark_matter_mask].astype('f8'),
-                s.data['mass'][dark_matter_mask].astype('f8'), s.data['mass'][dark_matter_mask].astype('f8'), 0, res,
-                boxsize, 'mass') / area * 1e10
+                                     s.data['mass'][dark_matter_mask].astype('f8'),
+                                     s.data['mass'][dark_matter_mask].astype('f8'), 0, res, boxsize,
+                                     'mass') / area * 1e10
             edge_on = get_projection(s.data['pos'][dark_matter_mask].astype('f8'),
-                s.data['mass'][dark_matter_mask].astype('f8'), s.data['mass'][dark_matter_mask].astype('f8'), 1, res,
-                boxsize, 'mass') / (0.5 * area) * 1e10
+                                     s.data['mass'][dark_matter_mask].astype('f8'),
+                                     s.data['mass'][dark_matter_mask].astype('f8'), 1, res, boxsize, 'mass') / (
+                              0.5 * area) * 1e10
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -1413,13 +1432,13 @@ def dark_matter_density(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(7.5, 10))
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
-            colorbar=True)
+                                                                                      colorbar=True)
         axis00.set_xticklabels([])
         plot_tools.set_axis(axis00, xlim=[-200, 200], ylim=[-200, 200], ylabel=r'$\mathrm{y/kpc}$')
         plot_tools.set_axis(axis10, xlim=[-200, 200], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
-            ylabel=r'$\mathrm{z/kpc}$')
+                            ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis00.transAxes)
+                    fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         face_on = np.load(path + 'face_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -1427,9 +1446,9 @@ def dark_matter_density(pdf, data, redshift, read):
 
         # Plot the dark matter density projection #
         pcm = axis00.pcolormesh(x, y, face_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), rasterized=True,
-            cmap='Greys')
+                                cmap='Greys')
         axis10.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e9), rasterized=True,
-            cmap='Greys')
+                          cmap='Greys')
         plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{\Sigma_{DM}/(M_\odot\;kpc^{-2})}$')
 
         # Save and close the figure #

@@ -14,7 +14,9 @@ import matplotlib.collections as collections
 from const import *
 from sfigure import *
 from loadmodules import *
+from matplotlib.lines import Line2D
 from scripts.gigagalaxy.util import plot_helper
+from matplotlib.legend_handler import HandlerTuple
 
 style.use("classic")
 plt.rcParams.update({'font.family':'serif'})
@@ -27,18 +29,24 @@ colors = ['black', 'tab:red', 'tab:green']
 colors3 = ['black', 'tab:red', 'tab:green', 'tab:blue']
 marker_array = iter(['o', 'o', 'o', '^', '^', '^', 's', 's', 's'])
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
-flavours_text = r'$\mathrm{Black:Original}$', r'$\mathrm{Red:NoR}$', r'$\mathrm{Green:NoRNoQ}$'
 colors2 = ['black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green']
-haloes_text = r'$\mathrm{Au-06,\;Au-06NoR,\;Au-06NoRNoQ}$', r'$\mathrm{Au-17,\;Au-17NoR,\;Au-17NoRNoQ}$', r'$\mathrm{' \
-                                                                                                          r'Au-18,\;' \
-                                                                                                          r'Au-18NoR,' \
-                                                                                                          r'\;Au-18NoRNoQ}$'
+haloes_text = [r'$\mathrm{Au-06,\;Au-06NoR,\;Au-06NoRNoQ}$', r'$\mathrm{Au-17,\;Au-17NoR,\;Au-17NoRNoQ}$',
+               r'$\mathrm{Au-18,\;Au-18NoR,\;Au-18NoRNoQ}$']
+flavours_text = [(r'$\mathrm{Au-06:radio}$', r'$\mathrm{Au-06:quasar,\;quasar_{eff}}$',
+                  r'$\mathrm{Au-06NoR:quasar,\;quasar_{eff}}$'), (
+                     r'$\mathrm{Au-17:radio}$', r'$\mathrm{Au-17:quasar,\;quasar_{eff}}$',
+                     r'$\mathrm{Au-17NoR:quasar,\;quasar_{eff}}$'), (
+                     r'$\mathrm{Au-18:radio}$', r'$\mathrm{Au-18:quasar,\;quasar_{eff}}$',
+                     r'$\mathrm{Au-18NoR:quasar,\;quasar_{eff}}$')]
 
 # Create symbols for each halo #
 circles = collections.CircleCollection([10], facecolors=colors, edgecolors='none')
 squares = collections.RegularPolyCollection(numsides=4, rotation=np.pi / 4, sizes=(20,), facecolors=colors,
                                             edgecolors='none')
 triangles = collections.RegularPolyCollection(numsides=3, sizes=(20,), facecolors=colors, edgecolors='none')
+custom_lines = [Line2D([0], [0], color=colors[0], ls='--'),
+                (Line2D([0], [0], color=colors[0], ls=':'), Line2D([0], [0], color=colors[0], ls='-')),
+                (Line2D([0], [0], color=colors[1], ls=':'), Line2D([0], [0], color=colors[1], ls='-'))]
 
 
 def stellar_light_combination(pdf, redshift):
@@ -505,7 +513,7 @@ def circularity_distribution_combination(pdf, redshift):
                                          range=[-1.7, 1.7])
             y_data /= edges[1:] - edges[:-1]
             axis.plot(0.5 * (edges[1:] + edges[:-1]), y_data, color=colors[j], label=r'$\mathrm{Au-%s:D/T=%.2f}$' % (
-            str(re.split('_|.npy', names_flavours[j])[1]), disc_fraction))
+                str(re.split('_|.npy', names_flavours[j])[1]), disc_fraction))
 
             axis.legend(loc='upper left', fontsize=16, frameon=False)  # Create the legend.
     # Save and close the figure #
@@ -924,8 +932,8 @@ def ssdp_cvc_combination(pdf, redshift):
 
         figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=25,
                     transform=axis.transAxes)  # figure.text(0.3, 0.7,  #     r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{
-        # R_{d}} =  # %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (  #     1. / popt4, popt1,
-        # popt3 * p.sersic_b_param(1.0 /  # popt4) ** (1.0 / popt4)), fontsize=16,  #     transform=axis.transAxes)
+        # R_{d}} =  # %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (  #     1. / popt4, popt1,  # popt3 *   #  #
+        # p.sersic_b_param(1.0 /  # popt4) ** (1.0 / popt4)), fontsize=16,  #     transform=axis.transAxes)
 
         # Compute component masses from the fit #  # disc_mass = 2.0 * np.pi * popt0 * popt1 * popt1  # bulge_mass =
         # np.pi * popt2 * popt3 * popt3 * gamma(2.0 / popt4 + 1)  # print(disc_mass, bulge_mass)
@@ -1196,18 +1204,18 @@ def AGN_modes_distribution_combination(pdf):
     path_kernel = '/u/di43/Auriga/plots/data/' + 'AGNfk/'
     names = glob.glob(path + 'name_*')
     names.sort()
-    n_bins = 130  # len(original_lookback_times) / 5
+    n_bins = 89  # len(gas_volumes)
     time_bin_width = ((13 - 0) / n_bins) * u.Gyr.to(u.second)  # In second
 
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(15, 5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     axis002 = axis00.twiny()
-    plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e40, 2e50], yscale='log',
-                                  ylabel=r'$\mathrm{Energy\;rate/(ergs s^{-1}})$', which='major', aspect=None)
+    plot_tools.set_axes_evolution(axis00, axis002, ylim=[1e41, 1e47], yscale='log',
+                                  ylabel=r'$\mathrm{Energy\;rate/(ergs\;s^{-1}})$', which='major', aspect=None)
     for axis in [axis01, axis02]:
         axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e40, 2e50], yscale='log', which='major', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[1e41, 1e47], yscale='log', which='major', aspect=None)
         axis.set_yticklabels([])
 
     # Get the names and sort them #
@@ -1245,31 +1253,28 @@ def AGN_modes_distribution_combination(pdf):
             if j == 0:  # Original halo.
                 mode_style = [':', '--']
                 modes = [thermals, mechanicals]
-                mode_name = ['thermal', 'mechanical']
             else:  # NoR flavour.
                 mode_style = [':']
                 modes = [thermals]
-                mode_name = ['thermal']
 
             # Plot 2D distribution of the modes and their binned sum line #
             for k, mode in enumerate(modes):
                 x_values, sum = plot_tools.binned_sum(lookback_times[np.where(mode > 0)], mode[np.where(mode > 0)],
                                                       n_bins=n_bins)
-                axis.plot(x_values, sum / time_bin_width, color=colors[j],
-                          label=r'$\mathrm{Au-%s\;%s}$' % (str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]),
-                          linestyle=mode_style[k])
-
                 # Plot the effective thermal energies #
                 if k == 0:
                     efficiency = np.flip(nsf_gas_volumes / gas_volumes)  # binned_sum flips the x_values
                     mask, = np.where(efficiency > 0)
-                    axis.plot(x_values[mask], efficiency[mask] * sum[mask] / time_bin_width, color=colors[j],
-                              label=r'$\mathrm{Au-%s\;%s_{e}}$' % (
-                                  str(re.split('_|.npy', names_flavours[j])[1]), mode_name[k]), linestyle='-')
+                    axis.plot(x_values[mask], np.divide(efficiency[mask] * sum[mask], time_bin_width), color=colors[j],
+                              linestyle='-')
 
-            axis.legend(loc='upper right', fontsize=16, frameon=False)  # Create the legend.
+                axis.plot(x_values[mask], sum[mask] / time_bin_width, color=colors[j], linestyle=mode_style[k])
 
-    # Save and close the figure #
+        # Create the legend #
+        axis.legend(custom_lines, flavours_text[i], handler_map={tuple:HandlerTuple(ndivide=None)}, numpoints=1,
+                    frameon=False, fontsize=15, loc='upper left')
+
+        # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
     return None
@@ -1296,23 +1301,30 @@ def AGN_feedback_kernel_combination(pdf):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(15, 10))
     axis00, axis01, axis02, axis10, axis11, axis12 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3,
-                                                                                         multiple10=True)
+                                                                                         multiple13=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis2 = axis.twiny()
         axis3 = axis.twinx()
         axis3.yaxis.label.set_color('tab:red')
         axis3.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis3, ylim=[-0.1, 2], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{BH_{sml}/kpc}$',
+        plot_tools.set_axis(axis3, ylim=[-0.1, 2.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{r_{BH}/kpc}$',
                             aspect=None)
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 2],
-                                      ylabel=r'$\mathrm{V_{nSFR}(r<BH_{sml})/V_{all}(r<BH_{sml})}$', aspect=None)
+        plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 2.1],
+                                      ylabel=r'$\mathrm{V_{nSFR}(r<r_{BH})/V_{all}(r<r_{BH})}$', aspect=None)
         axis3.tick_params(axis='y', direction='out', left='off', colors='tab:red')
+        if axis in [axis10, axis11, axis12]:
+            axis2.set_xlabel('')
+            axis2.set_xticklabels([])
+            axis2.tick_params(top=False)
         if axis in [axis00, axis01, axis10, axis11]:
             axis3.set_ylabel('')
             axis3.set_yticklabels([])
     for axis in [axis01, axis02, axis11, axis12]:
         axis.set_ylabel('')
         axis.set_yticklabels([])
+    for axis in [axis00, axis01, axis02]:
+        axis.set_xlabel('')
+        axis.set_xticklabels([])
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis10, axis01, axis11, axis02, axis12]):
@@ -1348,13 +1360,13 @@ def AGN_feedback_kernel_combination(pdf):
         axis.fill_between(x_values, shigh, slow, color=colors[1], alpha='0.3')
         fill_bh, = plt.fill(np.NaN, np.NaN, color=colors[1], alpha=0.3)
 
-        # Create the legend #
-        axis.legend([median_volumes, fill_volumes, median_bh, fill_bh],
-                    [r'$\mathrm{Median}$', r'$\mathrm{16^{th}-84^{th}\;\%ile}$', r'$\mathrm{Median}$',
-                     r'$\mathrm{16^{th}-84^{th}\;\%ile}$'], frameon=False, fontsize=15, loc='upper right')
-
-        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=15,
+        figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
                     transform=axis.transAxes)
+
+    # Create the legend #
+    axis00.legend([median_volumes, fill_volumes, median_bh, fill_bh],
+                  [r'$\mathrm{Median}$', r'$\mathrm{16^{th}-84^{th}\;\%ile}$', r'$\mathrm{Median}$',
+                   r'$\mathrm{16^{th}-84^{th}\;\%ile}$'], frameon=False, fontsize=20, loc='upper right')
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -1435,12 +1447,10 @@ def central_combination(pdf, data, redshift, read):
                              numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
-            sfr_edge_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
+            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                                       numthreads=8)["grid"]
+            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                                       numthreads=8)["grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
