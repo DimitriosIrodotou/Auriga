@@ -81,7 +81,7 @@ def fit_isophotal_ellipses(name, ellipticity):
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
     # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], fix_center=True, sma=centre[0] / 10, eps=ellipticity,
-        pa=1e-2)
+                               pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
     print(isolist.to_table())  # Print the isophote values as a table sorted by the semi-major axis length.
@@ -118,13 +118,13 @@ def combine_images(name, ellipticity):
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
     # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], fix_center=True, sma=centre[0] / 10, eps=ellipticity,
-        pa=1e-2)
+                               pa=1e-2)
     ellipse = Ellipse(image_fits, geometry)
     isolist = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
 
     # Plot the original data with some of the isophotes, the elliptical model image, and the residual image #
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 10))
+    figure = plt.figure(figsize=(20, 7.5))
     gs = gridspec.GridSpec(2, 4, hspace=0.3, wspace=0.4)
     axis00, axis01, axis02, axis03 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(
         gs[0, 3])
@@ -132,51 +132,50 @@ def combine_images(name, ellipticity):
         gs[1, 3])
 
     axes = [axis00, axis01, axis02, axis03]
-    images = [image_fits, image_fits, model, residual]
+    images = [image_fits, model, image_fits/model, residual]
     for axis, image in zip(axes, images):
         plot_tools.set_axis(axis, xlim=[0, 256], ylim=[0, 256], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$',
-            which='major', aspect=None)
+                            which='major', aspect=None)
         axis.grid(True, color='gray', linestyle='-')
-        axis.imshow(image, origin='lower', cmap='gray_r')
+        axis.imshow(image, origin='upper', cmap='gray_r', interpolation='bicubic')
 
-    smas = np.linspace(centre[0] / 10, centre[0], 10)
-    for sma in smas:
-        iso = isolist.get_closest(sma)
-        x, y, = iso.sampled_coordinates()
-        axis01.plot(x, y, color='tab:green')
+    for axis in [axis00, axis01, axis02, axis03]:
+        labels = ['0', '', '100', '', '200', '']
+        axis.set_xticklabels(labels)
+        axis.set_yticklabels(labels)
 
     figure.text(0.01, 0.92, r'$\mathrm{%s}$' % str(name), color='k', fontsize=16, transform=axis00.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Sample\;of\;isophotes}$', color='k', fontsize=16, transform=axis01.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='k', fontsize=16, transform=axis02.transAxes)
+    figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='k', fontsize=16, transform=axis01.transAxes)
+    figure.text(0.01, 0.92, r'$\mathrm{Input/Model}$', color='k', fontsize=16, transform=axis02.transAxes)
     figure.text(0.01, 0.92, r'$\mathrm{Residual}$', color='k', fontsize=16, transform=axis03.transAxes)
 
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
     # image array #
     geometry = EllipseGeometry(x0=centre[0], y0=centre[1], fix_center=True, sma=centre[0] / 10, eps=ellipticity,
-        pa=1e-2)
+                               pa=1e-2)
     ellipse = Ellipse(model, geometry)
     isolist_model = ellipse.fit_image(minsma=1, maxsma=centre[0], step=0.25)
 
     axes = [axis10, axis11, axis12, axis13]
     y_labels = [r'$\mathrm{Ellipticity}$', r'$\mathrm{PA/\deg}$', r'$\mathrm{Pixels\;inside\;each\;ellipse}$',
-        r'$\mathrm{Mean\,intensity}$']
+                r'$\mathrm{Mean\,intensity}$']
     y_values = [isolist.eps, isolist.pa / np.pi * 180., isolist.tflux_e, isolist.intens]
-    y_lims = [(0, 1), (-20, 200), (0.9 * min(isolist.tflux_e), 1.1 * max(isolist.tflux_e)),
-        (0.9 * min(isolist.intens), 1.1 * max(isolist.intens))]
+    y_lims = [(-0.1, 1.1), (-20, 220), (0.8 * min(isolist.tflux_e), 1.2 * max(isolist.tflux_e)),
+              (0.8 * min(isolist.intens), 1.2 * max(isolist.intens))]
     y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.int_err]
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', color='k', markersize=10)
         plot_tools.set_axis(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{sma/pix}$',
-            ylabel=y_label, which='major', aspect=None)
+                            ylabel=y_label, which='major', aspect=None)
     axis12.set_yscale('log')
-    axis12.set_ylim(1e3, 1e7)
+    axis12.set_ylim(1e3, 2e7)
 
     y_values = [isolist_model.eps, isolist_model.pa / np.pi * 180., isolist_model.tflux_e, isolist_model.intens]
     y_errors = [isolist_model.ellip_err, isolist_model.pa_err / np.pi * 180., np.zeros(len(isolist_model.x0_err)),
-        isolist_model.int_err]
+                isolist_model.int_err]
     for axis, y_value, y_error in zip(axes, y_values, y_errors):
         axis.errorbar(isolist_model.sma, y_value, yerr=y_error, fmt='o', color='tab:red', markersize=10,
-            label=r'$\mathrm{Model}$')
+                      label=r'$\mathrm{Model}$')
     axis10.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
 
     # # Fit a Sersic plus exponential profile #
@@ -317,28 +316,28 @@ Imfit_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
 
 # Get the names and sort them #
-names = glob.glob(plots_path + 'Au-')
+names = glob.glob(plots_path + 'Au-18NoRNoQ')
 names = [re.split('/Imfit|/', name)[-1] for name in names]
 names.sort()
 
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    ellipticity = 0.5  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
+    ellipticity = 0.52  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
     os.chdir(plots_path + name)  # Change to each halo's plots directory
-    convert_to_fit(name)
-    fit_isophotal_ellipses(name, ellipticity)
+    # convert_to_fit(name)
+    # fit_isophotal_ellipses(name, ellipticity)
 
     # Use Imfit to analyse the image #  # --bootstrap 15
-    os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
+    # os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
     # os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
-    os.system('../../imfit -c %s_config.dat --nm --cashstat '
-              '../../../plots/projections/Imfit/%s/%s_ctf.fits '
-              '--save-model=%s_model.fits '
-              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
-                  name, name, name, name, name, name, date))
-    os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
-        name, date))  # Print the flux ratios.
+    # os.system('../../imfit -c %s_config.dat --nm --cashstat '
+    #           '../../../plots/projections/Imfit/%s/%s_ctf.fits '
+    #           '--save-model=%s_model.fits '
+    #           '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
+    #               name, name, name, name, name, name, date))
+    # os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
+    #     name, date))  # Print the flux ratios.
 
     # Plot the image, model and residual #
     # plot_fits_image(name + '_model')
