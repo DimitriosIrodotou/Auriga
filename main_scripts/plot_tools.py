@@ -163,7 +163,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     if aspect is not None:
         axis.set_aspect('equal')
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-')
-    axis.tick_params(direction='out', which=which, top='on', bottom='on', left='on', right='on', labelsize=size)
+    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
     return None
 
 
@@ -216,8 +216,8 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     if aspect is not None:
         axis.set_aspect('equal')
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-')
-    axis.tick_params(direction='out', which=which, top='on', bottom='on', left='on', right='on', labelsize=size)
-    axis2.tick_params(direction='out', which=which, top='on', left='on', right='on', labelsize=size)
+    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
+    axis2.tick_params(direction='out', which='both', top='on', left='on', right='on', labelsize=size)
     return None
 
 

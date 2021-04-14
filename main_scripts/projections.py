@@ -356,7 +356,7 @@ def stellar_density(pdf, data, redshift, read):
                                      s.data['mass'][stellar_mask].astype('f8'), 0, res, boxsize, 'mass') / area * 1e10
             edge_on = get_projection(s.data['pos'].astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
                                      s.data['mass'][stellar_mask].astype('f8'), 1, res, boxsize, 'mass') / (
-                              0.5 * area) * 1e10
+                          0.5 * area) * 1e10
 
             # Get the contour lines #
             face_on_count, face_on_xedges, face_on_yedges = np.histogram2d(s.data['pos'][:, 2] * 1e3,
@@ -487,7 +487,7 @@ def stellar_density_components(pdf, data, redshift, read):
                                          'mass') / area * 1e10
                 edge_on = get_projection(pos.astype('f8'), s.data['mass'][stellar_mask].astype('f8'),
                                          s.data['mass'][stellar_mask].astype('f8'), 1, res, boxsize, 'mass') / (
-                                  0.5 * area) * 1e10
+                              0.5 * area) * 1e10
 
                 # Save data for each halo in numpy arrays #
                 np.save(path + 'name_' + str(s.haloname), s.haloname)
@@ -1218,10 +1218,10 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             # Check if halo's data already exists, if not then read it #
             names = glob.glob(path + 'name_*')
             names = [re.split('_|.npy', name)[1] for name in names]
-            if str(s.haloname) in names:
-                continue
-            else:
-                print("Reading data for halo:", str(s.haloname))
+            # if str(s.haloname) in names:
+            #     continue
+            # else:
+            #     print("Reading data for halo:", str(s.haloname))
 
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
@@ -1232,9 +1232,8 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             temperature = (5.0 / 3.0 - 1.0) * s.data['u'] / const.KB * (1e6 * const.parsec) ** 2.0 / (
                 1e6 * const.parsec / 1e5) ** 2 * mean_weight
             s.data['temprho'] = s.rho * temperature
-            edge_on = \
-            s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
-                'grid']
+            edge_on = s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True,
+                                   numthreads=8)['grid']
             edge_on_rho = \
                 s.get_Aslice('rho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
                     'grid']
@@ -1245,7 +1244,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             np.save(path + 'edge_on_rho_' + str(s.haloname), edge_on_rho)
 
     # Get the names and sort them #
-    names = glob.glob(path + 'name_*')
+    names = glob.glob(path + 'name_06.*')
     names.sort()
 
     # Loop over all available haloes #
@@ -1403,7 +1402,8 @@ def dark_matter_density(pdf, data, redshift, read):
 
             axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res,
                                                                                           boxsize=boxsize * 1e3,
-                                                                                          colorbar=True)  # Generate the axes.
+                                                                                          colorbar=True)  # Generate
+            # the axes.
 
             # Get the dark matter density projections #
             dark_matter_mask, = np.where((s.data['type'] == 1) & (
@@ -1415,7 +1415,7 @@ def dark_matter_density(pdf, data, redshift, read):
             edge_on = get_projection(s.data['pos'][dark_matter_mask].astype('f8'),
                                      s.data['mass'][dark_matter_mask].astype('f8'),
                                      s.data['mass'][dark_matter_mask].astype('f8'), 1, res, boxsize, 'mass') / (
-                              0.5 * area) * 1e10
+                          0.5 * area) * 1e10
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)

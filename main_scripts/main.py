@@ -295,7 +295,7 @@ class AurigaPdf:
         # projections.gas_temperature(pdf, self, redshift, read=False)
         # projections.gas_metallicity(pdf, self, redshift, read=False)
         # projections.gas_slice(pdf, self, redshift, read=False)
-        # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
+        # projections.gas_temperature_edge_on(pdf, self, redshift, read=True)
         # Magnetic field #
         # projections.magnetic_field(pdf, self, redshift, read=False)
         # Dark matter #
@@ -355,7 +355,8 @@ class AurigaPdf:
         # Evolution #
         # combinations.bar_strength_combination(pdf)
         # combinations.gas_temperature_regimes_combination(pdf)
-        # combinations.AGN_modes_distribution_combination(pdf)
+        # combinations.quasar_mode_distribution_combination(pdf)
+        # combinations.radio_mode_distribution_combination(pdf)
         # combinations.AGN_feedback_kernel_combination(pdf)
         # combinations.mass_loading_combination(pdf, method='time_interval')
 

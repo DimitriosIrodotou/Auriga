@@ -677,7 +677,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
 
             # Define the radial and vertical cuts and calculate the mass surface density #
             radial_cut = 0.1 * s.subfind.data['frc2'][0]  # Radial cut in Mpc.
-            vertical_mask, = np.where((abs(sdata['pos'][:, 0]) < 0.005))  # Vertical cut in Mpc.
+            vertical_mask, = np.where(abs(sdata['pos'][:, 0]) < 0.005)  # Vertical cut in Mpc.
             r_xy = np.sqrt((sdata['pos'][:, 1:] ** 2).sum(axis=1))
 
             mass, edges = np.histogram(r_xy[vertical_mask], bins=50, range=(0., radial_cut),
