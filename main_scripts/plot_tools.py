@@ -224,7 +224,7 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False,
     multiple=False, multiple2=False, multiple3=False, multiple4=False, multiple5=False, multiple6=False,
     multiple7=False, mollweide=False, multiple8=False, multiple9=False, multiple10=False, multiple11=False,
-    multiple12=False, multiple13=False):
+    multiple12=False, multiple13=False, multiple14=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -246,6 +246,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
     :param multiple11: 4x3 matrix
     :param multiple12: 3x4 matrix
     :param multiple13: 2x3 matrix
+    :param multiple14: 2x1 matrix
     :return: axes
     """
 
@@ -405,6 +406,12 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12
+
+    elif multiple14 is True:
+        gs = gridspec.GridSpec(2, 1, hspace=0)
+        axis00 = plt.subplot(gs[0, 0])
+        axis10 = plt.subplot(gs[1, 0])
+        return axis00, axis10
     else:
         gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 0.5])
         axis00 = plt.subplot(gs[0, 0])

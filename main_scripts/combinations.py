@@ -1103,7 +1103,8 @@ def bar_strength_combination(pdf):
 
 def gas_temperature_regimes_combination(pdf):
     """
-    Plot a combination of the evolution of gas fractions in different temperature regimes for Auriga halo(es).
+    Plot a combination of the evolution of mass- and volume-weighted gas fractions in different temperature regimes
+    for Auriga halo(es).
     :param pdf: path to save the pdf from main.make_pdf
     :return: None
     """
@@ -1112,67 +1113,80 @@ def gas_temperature_regimes_combination(pdf):
     path = '/u/di43/Auriga/plots/data/' + 'gtr/'
     names = glob.glob(path + 'name_*')
     names.sort()
+    k = 0
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 20))
-    axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22 = plot_tools.create_axes_combinations(
-        res=res, boxsize=boxsize * 1e3, multiple5=True)
-    for axis in [axis00, axis01, axis02]:
-        axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 1.1], aspect=None, size=25)
-        axis.set_xlabel('')
-        axis.set_xticklabels([])
-    for axis in [axis10, axis11, axis12, axis20, axis21, axis22]:
-        axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 1.1], aspect=None, size=25)
-        axis.set_xlabel('')
-        axis.set_xticklabels([])
-        axis2.set_xlabel('')
-        axis2.set_xticklabels([])
-        axis2.tick_params(top=False)
-    for axis in [axis20, axis21, axis22]:
-        axis2 = axis.twiny()
-        plot_tools.set_axes_evolution(axis, axis2, ylim=[0, 1.1], aspect=None, size=25)
-        axis2.set_xlabel('')
-        axis2.set_xticklabels([])
-        axis2.tick_params(top=False)
-    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis21, axis22]:
-        axis.set_ylabel('')
-        axis.set_yticklabels([])
-    axis00.set_ylabel(r'$\mathrm{M_{cold\;gas} / M_{gas}}$', size=25)
-    axis10.set_ylabel(r'$\mathrm{M_{warm\;gas} / M_{gas}}$', size=25)
-    axis20.set_ylabel(r'$\mathrm{M_{hot\;gas} / M_{gas}}$', size=25)
+    figure = plt.figure(figsize=(15, 15))
+    axis00, axis10 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple14=True)
+    plot_tools.set_axis(axis00, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Volume\; fraction}$',
+                        aspect=None)
+    plot_tools.set_axis(axis10, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Mass\; fraction}$', aspect=None)
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
     names_groups = np.array_split(names, 3)
-    axes = [[axis00, axis10, axis20], [axis01, axis11, axis21], [axis02, axis12, axis22]]
-    for i, axis in zip(range(len(names_groups)), axes):
+
+    for i in range(len(names_groups)):
         names_flavours = names_groups[i]
         # Loop over all available flavours #
         for j in range(len(names_flavours)):
             print("Plotting data for halo:", str(re.split('_|.npy', names_flavours[j])[1]))
             # Load the data #
-            sfg_ratios = np.load(path + 'sfg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
-            wg_ratios = np.load(path + 'wg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
-            hg_ratios = np.load(path + 'hg_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            sfg_mass_ratios = np.load(
+                path + 'sfg_mass_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            wg_mass_ratios = np.load(path + 'wg_mass_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            hg_mass_ratios = np.load(path + 'hg_mass_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+
+            sfg_volume_ratios = np.load(
+                path + 'sfg_volume_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            wg_volume_ratios = np.load(
+                path + 'wg_volume_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
+            hg_volume_ratios = np.load(
+                path + 'hg_volume_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
 
             # Downsample the runs which have more snapshots #
             if j == 0:
                 original_lookback_times = lookback_times
             else:
-                sfg_ratios = plot_tools.linear_resample(sfg_ratios, len(original_lookback_times))
-                wg_ratios = plot_tools.linear_resample(wg_ratios, len(original_lookback_times))
-                hg_ratios = plot_tools.linear_resample(hg_ratios, len(original_lookback_times))
+                sfg_mass_ratios = plot_tools.linear_resample(sfg_mass_ratios, len(original_lookback_times))
+                wg_mass_ratios = plot_tools.linear_resample(wg_mass_ratios, len(original_lookback_times))
+                hg_mass_ratios = plot_tools.linear_resample(hg_mass_ratios, len(original_lookback_times))
                 lookback_times = plot_tools.linear_resample(lookback_times, len(original_lookback_times))
 
-            # Plot the evolution of gas fraction in different temperature regimes #
-            axis[0].plot(lookback_times, sfg_ratios, color=colors2[j], lw=3,
-                         label=r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[j])[1]))
-            axis[1].plot(lookback_times, wg_ratios, color=colors2[j], lw=3)
-            axis[2].plot(lookback_times, hg_ratios, color=colors2[j], lw=3)
+            # Plot the mass- and volume-weighted gas fractions in different temperature regimes #
+            time_mask, = np.where(lookback_times < 1)  # In Gyr.
+            b1, = axis00.bar(k / 10, np.average(sfg_volume_ratios[time_mask]), width=0.1, color=colors3[3],
+                             edgecolor='none')
+            b2, = axis00.bar(k / 10, np.average(wg_volume_ratios[time_mask]),
+                             bottom=np.average(sfg_volume_ratios[time_mask]), width=0.1, color=colors3[2],
+                             edgecolor='none')
+            b3, = axis00.bar(k / 10, np.average(hg_volume_ratios[time_mask]), bottom=np.sum(
+                np.vstack([np.average(sfg_volume_ratios[time_mask]), np.average(wg_volume_ratios[time_mask])]).T),
+                             width=0.1, color=colors3[1], edgecolor='none')
+            b4, = axis10.bar(k / 10, np.average(sfg_mass_ratios[time_mask]), width=0.1, color=colors3[3],
+                             edgecolor='none')
+            b5, = axis10.bar(k / 10, np.average(wg_mass_ratios[time_mask]),
+                             bottom=np.average(sfg_mass_ratios[time_mask]), width=0.1, color=colors3[2],
+                             edgecolor='none')
+            b6, = axis10.bar(k / 10, np.average(hg_mass_ratios[time_mask]), bottom=np.sum(
+                np.vstack([np.average(sfg_mass_ratios[time_mask]), np.average(wg_mass_ratios[time_mask])]).T),
+                             width=0.1, color=colors3[1], edgecolor='none')
+            k += 1
 
-            axis[0].legend(loc='upper right', fontsize=25, frameon=False)  # Create the legend.
+    axis00.legend([b1, b2, b3], [r'$\mathrm{V_{cold\;gas} / V_{gas}}$', r'$\mathrm{V_{warm\;gas} / V_{gas}}$',
+                                 r'$\mathrm{V_{hot\;gas} / V_{gas}}$'], loc='upper center', fontsize=25, frameon=False,
+                  ncol=3)
+    axis10.legend([b4, b5, b6], [r'$\mathrm{M_{cold\;gas} / M_{gas}}$', r'$\mathrm{M_{warm\;gas} / M_{gas}}$',
+                                 r'$\mathrm{M_{hot\;gas} / M_{gas}}$'], loc='upper center', fontsize=25, frameon=False,
+                  ncol=3)
+
+    axis00.set_xticklabels([])
+    axis00.set_xticks(np.arange(-0.1, 0.9, 0.1))
+    axis10.set_xticks(np.arange(-0.1, 0.9, 0.1))
+    axis10.set_xticklabels(np.append('', [r'$\mathrm{Au-%s}$' % re.split('_|.npy', halo)[1] for halo in names]), '',
+                           rotation=45, ha="right")
+
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -1475,10 +1489,12 @@ def central_combination(pdf, data, redshift, read):
                              numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                                       numthreads=8)["grid"]
-            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
-                                       numthreads=8)["grid"]
+            sfr_face_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
+            sfr_edge_on = \
+            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
+                "grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
