@@ -1118,9 +1118,15 @@ def gas_temperature_regimes_combination(pdf):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(15, 15))
     axis00, axis10 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple14=True)
-    plot_tools.set_axis(axis00, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Volume\; fraction}$',
-                        aspect=None)
-    plot_tools.set_axis(axis10, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Mass\; fraction}$', aspect=None)
+    plot_tools.set_axis(axis00, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Volume\; fraction}$', aspect=None,
+                        size=30)
+    plot_tools.set_axis(axis10, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Mass\; fraction}$', aspect=None,
+                        size=30)
+    axis00.set_xticklabels([])
+    axis00.set_xticks(np.arange(-0.1, 0.9, 0.1))
+    axis10.set_xticks(np.arange(-0.1, 0.9, 0.1))
+    axis10.set_xticklabels(np.append('', [r'$\mathrm{Au-%s}$' % re.split('_|.npy', halo)[1] for halo in names]), '',
+                           rotation=25, ha="right")
 
     # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
     names_groups = np.array_split(names, 3)
@@ -1135,8 +1141,6 @@ def gas_temperature_regimes_combination(pdf):
                 path + 'sfg_mass_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             wg_mass_ratios = np.load(path + 'wg_mass_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             hg_mass_ratios = np.load(path + 'hg_mass_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
-            lookback_times = np.load(path + 'lookback_times_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
-
             sfg_volume_ratios = np.load(
                 path + 'sfg_volume_ratios_' + str(re.split('_|.npy', names_flavours[j])[1]) + '.npy')
             wg_volume_ratios = np.load(
@@ -1156,36 +1160,32 @@ def gas_temperature_regimes_combination(pdf):
 
             # Plot the mass- and volume-weighted gas fractions in different temperature regimes #
             time_mask, = np.where(lookback_times < 1)  # In Gyr.
-            b1, = axis00.bar(k / 10, np.average(sfg_volume_ratios[time_mask]), width=0.1, color=colors3[3],
+            b1, = axis00.bar(k / 10, np.average(sfg_volume_ratios[time_mask]), width=0.09, color=colors3[3], alpha=0.85,
                              edgecolor='none')
             b2, = axis00.bar(k / 10, np.average(wg_volume_ratios[time_mask]),
-                             bottom=np.average(sfg_volume_ratios[time_mask]), width=0.1, color=colors3[2],
+                             bottom=np.average(sfg_volume_ratios[time_mask]), width=0.09, color=colors3[2], alpha=0.85,
                              edgecolor='none')
             b3, = axis00.bar(k / 10, np.average(hg_volume_ratios[time_mask]), bottom=np.sum(
                 np.vstack([np.average(sfg_volume_ratios[time_mask]), np.average(wg_volume_ratios[time_mask])]).T),
-                             width=0.1, color=colors3[1], edgecolor='none')
-            b4, = axis10.bar(k / 10, np.average(sfg_mass_ratios[time_mask]), width=0.1, color=colors3[3],
+                             width=0.09, color=colors3[1], alpha=0.85, edgecolor='none')
+            b4, = axis10.bar(k / 10, np.average(sfg_mass_ratios[time_mask]), width=0.09, color=colors3[3], alpha=0.85,
                              edgecolor='none')
             b5, = axis10.bar(k / 10, np.average(wg_mass_ratios[time_mask]),
-                             bottom=np.average(sfg_mass_ratios[time_mask]), width=0.1, color=colors3[2],
+                             bottom=np.average(sfg_mass_ratios[time_mask]), width=0.09, color=colors3[2], alpha=0.85,
                              edgecolor='none')
             b6, = axis10.bar(k / 10, np.average(hg_mass_ratios[time_mask]), bottom=np.sum(
                 np.vstack([np.average(sfg_mass_ratios[time_mask]), np.average(wg_mass_ratios[time_mask])]).T),
-                             width=0.1, color=colors3[1], edgecolor='none')
+                             width=0.09, color=colors3[1], alpha=0.85, edgecolor='none')
             k += 1
 
-    axis00.legend([b1, b2, b3], [r'$\mathrm{V_{cold\;gas} / V_{gas}}$', r'$\mathrm{V_{warm\;gas} / V_{gas}}$',
-                                 r'$\mathrm{V_{hot\;gas} / V_{gas}}$'], loc='upper center', fontsize=25, frameon=False,
-                  ncol=3)
-    axis10.legend([b4, b5, b6], [r'$\mathrm{M_{cold\;gas} / M_{gas}}$', r'$\mathrm{M_{warm\;gas} / M_{gas}}$',
-                                 r'$\mathrm{M_{hot\;gas} / M_{gas}}$'], loc='upper center', fontsize=25, frameon=False,
-                  ncol=3)
+    # Plot vertical lines to separate the haloes #
+    for axis in [axis00, axis10]:
+        axis.axvline(0.25, ymax=0.996 / axis.get_ylim()[1], color=colors[0], lw=3)
+        axis.axvline(0.55, ymax=0.996 / axis.get_ylim()[1], color=colors[0], lw=3)
 
-    axis00.set_xticklabels([])
-    axis00.set_xticks(np.arange(-0.1, 0.9, 0.1))
-    axis10.set_xticks(np.arange(-0.1, 0.9, 0.1))
-    axis10.set_xticklabels(np.append('', [r'$\mathrm{Au-%s}$' % re.split('_|.npy', halo)[1] for halo in names]), '',
-                           rotation=45, ha="right")
+    # Create the legends #
+    axis00.legend([b1, b2, b3], [r'$\mathrm{Cold\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Hot\;gas}$'],
+                  loc='upper center', fontsize=30, frameon=False, ncol=3)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
