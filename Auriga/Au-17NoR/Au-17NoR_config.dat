@@ -3,26 +3,26 @@
 X0                      128         fixed
 Y0                      128         fixed
 
-FUNCTION FerrersBar2D
-PA                      90          fixed
-ell                     0.5         0.4,0.7
-c0                      0.3         0,1
-n                       0.2         0,1
-I_0                     75          70,100
-a_bar                   20          15,23
+#FUNCTION FerrersBar2D
+#PA                      90          fixed
+#ell                     0.5         0.4,0.7
+#c0                      0.3         0,1
+#n                       0.2         0,1
+#I_0                     75          70,100
+#a_bar                   20          15,23
 
 FUNCTION FerrersBar2D
 PA                      90          fixed
-ell                     0.5         0.2,0.7
-c0                      0.2         0,1
+ell                     0.7         0.6,0.8
+c0                      0.2         0,1.5
 n                       2           0,2
-I_0                     90          80,100
+I_0                     120         100,150
 a_bar                   20          17,26
 
 FUNCTION Exponential
 PA                      0           fixed
 ell                     0           fixed
-I_0                     80          70,100
+I_0                     120         100,150
 h                       25          20,30
 
 ########################################################################################################################

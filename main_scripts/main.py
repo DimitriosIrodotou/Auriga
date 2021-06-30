@@ -295,7 +295,7 @@ class AurigaPdf:
         # projections.gas_temperature(pdf, self, redshift, read=False)
         # projections.gas_metallicity(pdf, self, redshift, read=False)
         # projections.gas_slice(pdf, self, redshift, read=False)
-        # projections.gas_temperature_edge_on(pdf, self, redshift, read=True)
+        # projections.gas_temperature_edge_on(pdf, self, redshift, read=False)
         # Magnetic field #
         # projections.magnetic_field(pdf, self, redshift, read=False)
         # Dark matter #
@@ -337,6 +337,7 @@ class AurigaPdf:
         # combinations.stellar_light_components_combination(pdf, redshift)
         # combinations.stellar_density_combination(pdf, redshift)
         # combinations.gas_density_combination(pdf, redshift)
+        combinations.gas_temperature_edge_on_combination(pdf, redshift)
         # combinations.gas_temperature_combination(pdf, redshift)
         # combinations.gas_metallicity_combination(pdf, redshift)
         # combinations.magnetic_field_combination(pdf, redshift)
@@ -352,6 +353,7 @@ class AurigaPdf:
         # combinations.ssdp_cvc_combination(pdf, redshift)
         # combinations.gas_temperature_vs_distance_combination(date, redshift)
         # combinations.decomposition_IT20_combination(date, redshift)
+
         # Evolution #
         # combinations.bar_strength_combination(pdf)
         # combinations.gas_temperature_regimes_combination(pdf)
@@ -373,7 +375,7 @@ b = AurigaPdf()
 b.add_directory('/u/di43/Auriga/output/', default_level)
 b.make_pdf()  # Generate the pdf.
 
-# Print total time # funzax-wahrIc-miwwe4
+# Print total time # kezwek-segze9-vutjoP
 print('–––––––––––––––––––––––––––––––––––––––––––––')
 os.system('ls -t /u/di43/Auriga/plots/ | head -1')
 print('–––––––––––––––––––––––––––––––––––––––––––––')

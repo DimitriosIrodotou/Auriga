@@ -194,7 +194,7 @@ def combine_images(name, ellipticity):
     # I_0d, R_d = popt[0], popt[1]
     # axis13.axvline(x=R_d, color='black')
 
-    plt.savefig(name + '_model_' + str(date) + '.png', bbox_inches='tight')  # Save the figure.
+    plt.savefig(name + '_model_' + str(date) + '.eps', bbox_inches='tight')  # Save the figure.
     return None
 
 
@@ -306,7 +306,7 @@ def plot_fit_data(h=0.0, R_eff=0.0):
         axis.add_patch(circle)
 
     # Create and save a gray scaled version of the image #
-    plt.savefig(name + '_2_' + str(date) + '.png', cmap='gray', bbox_inches='tight')
+    plt.savefig(name + '_2_' + str(date) + '.eps', cmap='gray', bbox_inches='tight')
     plt.close()
     return None
 
@@ -316,28 +316,28 @@ Imfit_path = '/Users/Bam/PycharmProjects/Auriga/Imfit/Auriga/'
 plots_path = '/Users/Bam/PycharmProjects/Auriga/plots/projections/Imfit/'
 
 # Get the names and sort them #
-names = glob.glob(plots_path + 'Au-18NoRNoQ')
+names = glob.glob(plots_path + 'Au-')
 names = [re.split('/Imfit|/', name)[-1] for name in names]
 names.sort()
 
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    ellipticity = 0.52  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
+    ellipticity = 0.55  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
     os.chdir(plots_path + name)  # Change to each halo's plots directory
     # convert_to_fit(name)
     # fit_isophotal_ellipses(name, ellipticity)
 
     # Use Imfit to analyse the image #  # --bootstrap 15
-    # os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
+    os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
     # os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
-    # os.system('../../imfit -c %s_config.dat --nm --cashstat '
-    #           '../../../plots/projections/Imfit/%s/%s_ctf.fits '
-    #           '--save-model=%s_model.fits '
-    #           '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
-    #               name, name, name, name, name, name, date))
-    # os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
-    #     name, date))  # Print the flux ratios.
+    os.system('../../imfit -c %s_config.dat --nm --cashstat '
+              '../../../plots/projections/Imfit/%s/%s_ctf.fits '
+              '--save-model=%s_model.fits '
+              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
+                  name, name, name, name, name, name, date))
+    os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
+        name, date))  # Print the flux ratios.
 
     # Plot the image, model and residual #
     # plot_fits_image(name + '_model')

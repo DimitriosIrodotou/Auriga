@@ -1,0 +1,34 @@
+# Best-fit model results for imfit 1.7.1 (OpenMP-enabled)
+# Generated on Fri Jun 25 15:41:53 2021 by the following command:
+#    ../../imfit -c Au-18NoR_config.dat --nm --cashstat ../../../plots/projections/Imfit/Au-18NoR/Au-18NoR_ctf.fits --save-model=Au-18NoR_model.fits --save-residual=Au-18NoR_residual.fits --save-params=Au-18NoR_bestfit_25_06_21_1541.dat
+
+# Results of fit:
+#   Algorithm: Nelder-Mead Simplex: status = 3 -- SUCCESS: ftol_rel or ftol_abs reached
+#   Fit statistic: Cash statistic
+#   Best-fit value: -7431579.699813
+#   Reduced value: none
+#   AIC: -7431565.698104
+#   BIC: -7431502.067329
+
+X0		128.0000
+Y0		128.0000
+FUNCTION FerrersBar2D
+PA		     90
+ell		0.699988
+c0		0.999806
+n		1.50499
+I_0		    100
+a_bar		29.9999
+FUNCTION Exponential
+PA		      0
+ell		      0
+I_0		    150
+h		 36.257
+
+Estimating fluxes on 256 x 256 image...
+
+Component                 Flux        Magnitude  Fraction
+FerrersBar2D              3.8068e+04      ---     0.02981
+Exponential               1.2390e+06      ---     0.97019
+
+Total                     1.2770e+06
