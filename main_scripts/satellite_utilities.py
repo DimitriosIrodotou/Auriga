@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-# from cosmological_factors import *
+from cosmological_factors import *
 from numpy import *
 
 pi = math.pi

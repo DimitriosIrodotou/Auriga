@@ -119,7 +119,7 @@ def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=
 
 
 def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, aspect='equal',
-    which='both', size=20):
+             which='both', size=20):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -162,6 +162,7 @@ def set_axis(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     # Set grid and tick parameters #
     if aspect is not None:
         axis.set_aspect('equal')
+    axis.set_axisbelow(True)
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-')
     axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
     return None
@@ -215,6 +216,7 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     # Set grid and tick parameters #
     if aspect is not None:
         axis.set_aspect('equal')
+    axis.set_axisbelow(True)
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-')
     axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
     axis2.tick_params(direction='out', which='both', top='on', left='on', right='on', labelsize=size)
@@ -222,9 +224,9 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 
 
 def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False,
-    multiple=False, multiple2=False, multiple3=False, multiple4=False, multiple5=False, multiple6=False,
-    multiple7=False, mollweide=False, multiple8=False, multiple9=False, multiple10=False, multiple11=False,
-    multiple12=False, multiple13=False, multiple14=False):
+                             multiple=False, multiple2=False, multiple3=False, multiple4=False, multiple5=False,
+                             multiple6=False, multiple7=False, mollweide=False, multiple8=False, multiple9=False,
+                             multiple10=False, multiple11=False, multiple12=False, multiple13=False, multiple14=False):
     """
     Generate plot axes.
     :param res: resolution
@@ -304,7 +306,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
 
     elif multiple3 is True:
         gs = gridspec.GridSpec(6, 4, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5],
-            width_ratios=[1, 1, 1, 0.1])
+                               width_ratios=[1, 1, 1, 0.1])
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
@@ -349,11 +351,17 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
     elif mollweide is True:
         gs = gridspec.GridSpec(3, 4, hspace=0, wspace=0, width_ratios=[1, 1, 1, 0.1])
         axis00, axis01, axis02 = plt.subplot(gs[0, 0], projection='mollweide'), plt.subplot(gs[0, 1],
-            projection='mollweide'), plt.subplot(gs[0, 2], projection='mollweide')
+                                                                                            projection='mollweide'), \
+                                 plt.subplot(
+            gs[0, 2], projection='mollweide')
         axis10, axis11, axis12 = plt.subplot(gs[1, 0], projection='mollweide'), plt.subplot(gs[1, 1],
-            projection='mollweide'), plt.subplot(gs[1, 2], projection='mollweide')
+                                                                                            projection='mollweide'), \
+                                 plt.subplot(
+            gs[1, 2], projection='mollweide')
         axis20, axis21, axis22 = plt.subplot(gs[2, 0], projection='mollweide'), plt.subplot(gs[2, 1],
-            projection='mollweide'), plt.subplot(gs[2, 2], projection='mollweide')
+                                                                                            projection='mollweide'), \
+                                 plt.subplot(
+            gs[2, 2], projection='mollweide')
         axiscbar = plt.subplot(gs[:, 3])
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar
 
@@ -369,13 +377,18 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
                axis40, axis41, axis42, axis50, axis51, axis52
 
     elif multiple9 is True:
-        gs = gridspec.GridSpec(6, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 1, 0.5, 1, 0.5])
+        gs = gridspec.GridSpec(8, 3, hspace=0, wspace=0, height_ratios=[1, 0.5, 0.1, 1, 0.5, 0.1, 1, 0.5])
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
-        axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
-        axis30, axis31, axis32 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
-        axis40, axis41, axis42 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
-        axis50, axis51, axis52 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
+        axis_space00, axis_space01, axis_space02 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
+        axis20, axis21, axis22 = plt.subplot(gs[3, 0]), plt.subplot(gs[3, 1]), plt.subplot(gs[3, 2])
+        axis30, axis31, axis32 = plt.subplot(gs[4, 0]), plt.subplot(gs[4, 1]), plt.subplot(gs[4, 2])
+        axis_space10, axis_space11, axis_space12 = plt.subplot(gs[5, 0]), plt.subplot(gs[5, 1]), plt.subplot(gs[5, 2])
+        axis40, axis41, axis42 = plt.subplot(gs[6, 0]), plt.subplot(gs[6, 1]), plt.subplot(gs[6, 2])
+        axis50, axis51, axis52 = plt.subplot(gs[7, 0]), plt.subplot(gs[7, 1]), plt.subplot(gs[7, 2])
+
+        for axis in [axis_space00, axis_space01, axis_space02, axis_space10, axis_space11, axis_space12]:
+            axis.axis('off')
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, \
                axis40, axis41, axis42, axis50, axis51, axis52
 
@@ -468,7 +481,7 @@ def rotate_bar(z, y, x):
 
 
 def create_axes_projections(res=res, boxsize=boxsize, contour=False, colorbar=False, velocity_vectors=False,
-    multiple=False, multiple2=False, multiple3=False, multiple4=False):
+                            multiple=False, multiple2=False, multiple3=False, multiple4=False):
     """
     Generate plot axes.
     :param res: resolution

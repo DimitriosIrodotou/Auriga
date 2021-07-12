@@ -140,9 +140,8 @@ def combine_images(name, ellipticity):
         axis.imshow(image, origin='upper', cmap='gray_r', interpolation='bicubic')
 
     for axis in [axis00, axis01, axis02, axis03]:
-        labels = ['0', '', '100', '', '200', '']
-        axis.set_xticklabels(labels)
-        axis.set_yticklabels(labels)
+        axis.set_xticklabels(['0', '', '100', '', '200', ''])
+        axis.set_yticklabels(['0', '', '100', '', '200', ''])
 
     figure.text(0.01, 0.92, r'$\mathrm{%s}$' % str(name), color='k', fontsize=16, transform=axis00.transAxes)
     figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='k', fontsize=16, transform=axis01.transAxes)

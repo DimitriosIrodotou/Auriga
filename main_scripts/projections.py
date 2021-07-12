@@ -1226,7 +1226,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
             # Select the halo and rotate it based on its principal axes so galaxy's spin is aligned with the z-axis #
             s.calc_sf_indizes(s.subfind)
             s.select_halo(s.subfind, rotate_disk=True, do_rotation=True, use_principal_axis=True)
-            # boxsize = 2 * s.subfind.data['frc2'][0]
+            boxsize = 2.25 * s.subfind.data['frc2'][0]
 
             # Get the density-weighted gas temperature projections #
             mean_weight = 4.0 / (1.0 + 3.0 * 0.76 + 4.0 * 0.76 * s.data['ne']) * 1.67262178e-24
@@ -1234,50 +1234,50 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
                 1e6 * const.parsec / 1e5) ** 2 * mean_weight
             s.data['temprho'] = s.rho * temperature
             edge_on = \
-            s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
+            s.get_Aslice('temprho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=10e-3, proj=True, numthreads=8)[
                 'grid']
             edge_on_rho = \
-            s.get_Aslice('rho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=1e-3, proj=True, numthreads=8)[
+            s.get_Aslice('rho', res=res, axes=[1, 0], box=[boxsize, boxsize], boxz=10e-3, proj=True, numthreads=8)[
                 'grid']
 
             # Save data for each halo in numpy arrays #
             np.save(path + 'name_' + str(s.haloname), s.haloname)
-            np.save(path + 'edge_on_' + str(s.haloname), edge_on)
-            # np.save(path + 'boxsize_' + str(s.haloname), boxsize)
-            np.save(path + 'edge_on_rho_' + str(s.haloname), edge_on_rho)
+            np.save(path + 'edge_on_10_' + str(s.haloname), edge_on)
+            np.save(path + 'boxsize_10_' + str(s.haloname), boxsize)
+            np.save(path + 'edge_on_rho_10_' + str(s.haloname), edge_on_rho)
 
     # Get the names and sort them #
-    names = glob.glob(path + 'name_*')
-    names.sort()
-
-    # Loop over all available haloes #
-    for i in range(len(names)):
-        print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
-        # Generate the figure and set its parameters #
-        figure = plt.figure(figsize=(10, 7.5))
-        gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
-        axis00 = plt.subplot(gs[0, 0])
-        axiscbar = plt.subplot(gs[:, 1])
-        x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res)
-        z = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res)
-        plot_tools.set_axis(axis00, xlim=[-100, 100], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
-                            ylabel=r'$\mathrm{z/kpc}$')
-        figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-                    fontsize=16, transform=axis00.transAxes)
-
-        # Load the data #
-        # boxsize = np.load(path + 'boxsize_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on = np.load(path + 'edge_on_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-        edge_on_rho = np.load(path + 'edge_on_rho_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
-
-        # Plot the density-weighted gas temperature projections #
-        pcm = axis00.pcolormesh(x * 1e3, z * 1e3, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(),
-                                rasterized=True, shading='gouraud', cmap='Spectral_r')
-        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
-
-        # Save and close the figure #
-        pdf.savefig(figure, bbox_inches='tight')
-        plt.close()
+    # names = glob.glob(path + 'name_*')
+    # names.sort()
+    #
+    # # Loop over all available haloes #
+    # for i in range(len(names)):
+    #     print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
+    #     # Generate the figure and set its parameters #
+    #     figure = plt.figure(figsize=(10, 7.5))
+    #     gs = gridspec.GridSpec(1, 2, wspace=0.05, width_ratios=[1, 0.05])
+    #     axis00 = plt.subplot(gs[0, 0])
+    #     axiscbar = plt.subplot(gs[:, 1])
+    #     x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res)
+    #     z = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res)
+    #     plot_tools.set_axis(axis00, xlim=[-100, 100], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
+    #                         ylabel=r'$\mathrm{z/kpc}$')
+    #     figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
+    #                 fontsize=16, transform=axis00.transAxes)
+    #
+    #     # Load the data #
+    #     boxsize = np.load(path + 'boxsize_4_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+    #     edge_on = np.load(path + 'edge_on_4_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+    #     edge_on_rho = np.load(path + 'edge_on_rho_4_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
+    #
+    #     # Plot the density-weighted gas temperature projections #
+    #     pcm = axis00.pcolormesh(x * 1e3, z * 1e3, (edge_on / edge_on_rho).T, norm=matplotlib.colors.LogNorm(),
+    #                             rasterized=True, shading='gouraud', cmap='Spectral_r')
+    #     plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{T/K}$')
+    #
+    #     # Save and close the figure #
+    #     pdf.savefig(figure, bbox_inches='tight')
+    #     plt.close()
     return None
 
 
