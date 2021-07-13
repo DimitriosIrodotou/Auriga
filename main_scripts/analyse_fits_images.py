@@ -134,9 +134,8 @@ def combine_images(name, ellipticity):
     axes = [axis00, axis01, axis02, axis03]
     images = [image_fits, model, image_fits/model, residual]
     for axis, image in zip(axes, images):
-        plot_tools.set_axis(axis, xlim=[0, 256], ylim=[0, 256], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$',
+        plot_tools.set_axes(axis, xlim=[0, 256], ylim=[0, 256], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$',
                             which='major', aspect=None)
-        axis.grid(True, color='gray', linestyle='-')
         axis.imshow(image, origin='upper', cmap='gray_r', interpolation='bicubic')
 
     for axis in [axis00, axis01, axis02, axis03]:
@@ -164,8 +163,9 @@ def combine_images(name, ellipticity):
     y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.int_err]
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', color='k', markersize=10)
-        plot_tools.set_axis(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{sma/pix}$',
+        plot_tools.set_axes(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{sma/pix}$',
                             ylabel=y_label, which='major', aspect=None)
+        axis.grid(True, color='lightgray', linestyle='-')
     axis12.set_yscale('log')
     axis12.set_ylim(1e3, 2e7)
 
@@ -322,21 +322,21 @@ names.sort()
 # Loop over all Auriga rbm images, convert them to the appropriate format and fit isophotal ellipses #
 for name in names:
     # Prepare the image and fit isophotal ellipses #
-    ellipticity = 0.55  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
+    ellipticity = 0.  # Set to 0.5 the first time you fit a galaxy and then to the minimum.
     os.chdir(plots_path + name)  # Change to each halo's plots directory
     # convert_to_fit(name)
     # fit_isophotal_ellipses(name, ellipticity)
 
     # Use Imfit to analyse the image #  # --bootstrap 15
-    os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
-    # os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
-    os.system('../../imfit -c %s_config.dat --nm --cashstat '
-              '../../../plots/projections/Imfit/%s/%s_ctf.fits '
-              '--save-model=%s_model.fits '
-              '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
-                  name, name, name, name, name, name, date))
-    os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
-        name, date))  # Print the flux ratios.
+    # os.chdir(Imfit_path + name)  # Change to each halo's Imfit directory.
+    # # os.system('../../makeimage -o %s_psf.fits %s_config_Gaussian_psf.dat' % (name, name))  # Create the PSF image
+    # os.system('../../imfit -c %s_config.dat --nm --cashstat '
+    #           '../../../plots/projections/Imfit/%s/%s_ctf.fits '
+    #           '--save-model=%s_model.fits '
+    #           '--save-residual=%s_residual.fits --save-params=%s_bestfit_%s.dat' % (
+    #               name, name, name, name, name, name, date))
+    # os.system('../../makeimage %s_bestfit_%s.dat --nosave --print-fluxes --estimation-size 256' % (
+    #     name, date))  # Print the flux ratios.
 
     # Plot the image, model and residual #
     # plot_fits_image(name + '_model')

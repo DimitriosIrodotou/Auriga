@@ -345,7 +345,7 @@ class AurigaPdf:
         # Global galactic relations #
         # combinations.circularity_distribution_combination(pdf, redshift)
         # combinations.tully_fisher_combination(pdf, redshift)
-        # combinations.stellar_vs_halo_mass_combination(pdf, redshift)
+        combinations.stellar_vs_halo_mass_combination(pdf, redshift)
         # combinations.gas_fraction_vs_magnitude_combination(pdf, redshift)
         # combinations.bar_strength_profile_combination(pdf, redshift)
         # combinations.stellar_surface_density_profiles_combination(pdf, redshift)
@@ -361,7 +361,7 @@ class AurigaPdf:
         # combinations.radio_mode_distribution_combination(pdf)
         # combinations.AGN_feedback_kernel_combination(pdf)
         # combinations.mass_loading_combination(pdf, method='time_interval')
-        combinations.delta_sfr_regimes_combination(pdf)
+        # combinations.delta_sfr_regimes_combination(pdf)
 
         # Tests #
         # tests.test_gas_flow(date)

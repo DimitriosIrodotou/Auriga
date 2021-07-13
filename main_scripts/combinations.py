@@ -5,7 +5,9 @@ import galaxy
 import matplotlib
 import plot_tools
 
+
 import numpy as np
+import cmasher as cmr
 import astropy.units as u
 import matplotlib.pyplot as plt
 
@@ -124,7 +126,7 @@ def stellar_light_components_combination(pdf, redshift):
     axes_spheroid_face_on = [axis02, axis22, axis42]
     axes_spheroid_edge_on = [axis12, axis32, axis52]
     for i, axis_face_on, axis_edge_on, axis_disc_face_on, axis_disc_edge_on, axis_spheroid_face_on, \
-    axis_spheroid_edge_on in zip(
+        axis_spheroid_edge_on in zip(
         range(len(names)), axes_face_on, axes_edge_on, axes_disc_face_on, axes_disc_edge_on, axes_spheroid_face_on,
         axes_spheroid_edge_on):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
@@ -171,15 +173,15 @@ def stellar_density_combination(pdf, redshift):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(10, 15))
+    figure = plt.figure(figsize=(15, 20))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
     axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple3=True)
-    cmap = matplotlib.cm.get_cmap('twilight')
+    cmap = matplotlib.cm.get_cmap('cmr.eclipse')
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
         axis.set_facecolor(cmap(0))
-        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], aspect=None)
+        plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-30, 30], aspect=None, size=25)
     for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
         axis.set_ylim([-15, 15])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
@@ -191,13 +193,13 @@ def stellar_density_combination(pdf, redshift):
         axis.set_yticklabels([])
     for axis in [axis50, axis51, axis52]:
         axis.set_xticklabels(['', '-20', '', '0', '', '20', ''])
-        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=20)
+        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=25)
     for axis in [axis00, axis20, axis40]:
         axis.set_yticklabels(['', '-20', '', '0', '', '20', ''])
-        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=20)
+        axis.set_ylabel(r'$\mathrm{y/kpc}$', size=25)
     for axis in [axis10, axis30, axis50]:
         axis.set_yticklabels(['', '-10', '', '0', '', '10', ''])
-        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=20)
+        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=25)
 
     # Loop over all available haloes #
     axes_face_on = [axis00, axis01, axis02, axis20, axis21, axis22, axis40, axis41, axis42]
@@ -213,9 +215,9 @@ def stellar_density_combination(pdf, redshift):
                                       rasterized=True, cmap=cmap)
         axis_edge_on.pcolormesh(x, y2, edge_on, norm=matplotlib.colors.LogNorm(vmin=1e6, vmax=1e10), rasterized=True,
                                 cmap=cmap)
-        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$')
+        plot_tools.create_colorbar(axiscbar, pcm, label=r'$\mathrm{\Sigma_{\bigstar}/(M_\odot\;kpc^{-2})}$', size=25)
 
-        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=25, color='w',
                     transform=axis_face_on.transAxes)
 
     # Save and close the figure #
@@ -243,7 +245,7 @@ def gas_density_combination(pdf, redshift):
     area = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple12=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
-        plot_tools.set_axis(axis, xlim=[-15, 15], ylim=[-15, 15], aspect=None, size=30)
+        plot_tools.set_axes(axis, xlim=[-15, 15], ylim=[-15, 15], aspect=None, size=30)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis.set_xticklabels([])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
@@ -296,7 +298,7 @@ def gas_temperature_combination(pdf, redshift):
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
-        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=20)
+        plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-30, 30], size=20)
     for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
         axis.set_ylim([-15, 15])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
@@ -361,7 +363,7 @@ def gas_metallicity_combination(pdf, redshift):
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
-        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=20)
+        plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-30, 30], size=20)
     for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
         axis.set_ylim([-15, 15])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
@@ -423,7 +425,7 @@ def magnetic_field_combination(pdf, redshift):
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
-        plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], size=20)
+        plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-30, 30], size=20)
     for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
         axis.set_ylim([-15, 15])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42]:
@@ -481,10 +483,10 @@ def circularity_distribution_combination(pdf, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(20, 7.5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
-    plot_tools.set_axis(axis00, xlim=[-1.7, 1.7], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$',
+    plot_tools.set_axes(axis00, xlim=[-1.7, 1.7], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$',
                         ylabel=r'$\mathrm{f(\epsilon)}$', aspect=None)
-    plot_tools.set_axis(axis01, xlim=[-1.7, 1.7], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$', aspect=None)
-    plot_tools.set_axis(axis02, xlim=[-1.7, 1.7], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$', aspect=None)
+    plot_tools.set_axes(axis01, xlim=[-1.7, 1.7], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$', aspect=None)
+    plot_tools.set_axes(axis02, xlim=[-1.7, 1.7], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$', aspect=None)
     axis01.set_yticklabels([])
     axis02.set_yticklabels([])
 
@@ -528,7 +530,7 @@ def tully_fisher_combination(pdf, redshift):
 
     # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10))
-    plot_tools.set_axis(axis, xlim=[1e10, 1e12], ylim=[2.0, 2.7], xscale='log',
+    plot_tools.set_axes(axis, xlim=[1e10, 1e12], ylim=[2.0, 2.7], xscale='log',
                         xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$',
                         ylabel=r'$\mathrm{log_{10}(v_{circ}/(km\;s^{-1}))}$', aspect=None)
 
@@ -604,9 +606,9 @@ def stellar_vs_halo_mass_combination(pdf, redshift):
 
     # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 10))
-    plot_tools.set_axis(axis, xlim=[1.5e11, 3e12], ylim=[2e10, 5e11], xscale='log', yscale='log',
+    plot_tools.set_axes(axis, xlim=[1.5e11, 2e12], ylim=[2e10, 5e11], xscale='log', yscale='log',
                         xlabel=r'$\mathrm{M_{halo}/M_{\odot}}$', ylabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$',
-                        aspect=None, which='major')
+                        aspect=None, which='major', size=35)
 
     # Plot the cosmic baryon fraction relation #
     masses = np.arange(15., 300.)
@@ -620,11 +622,11 @@ def stellar_vs_halo_mass_combination(pdf, redshift):
     Guo, = plt.plot(1e10 * masses, 1e10 * galaxy.guo_abundance_matching(masses), color='k', lw=3, ls=':')
 
     # Create the legend #
-    legend = plt.legend([omega, Guo], [r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$', r'$\mathrm{Guo+\;10}$'], fontsize=20,
-                        loc='lower right', frameon=False)
+    legend = plt.legend([omega, Guo], [r'$\mathrm{M_{200}\;\Omega_b/\Omega_m}$', r'$\mathrm{Guo+\;10}$'], fontsize=25,
+                        loc='center left', frameon=False)
     axis.add_artist(legend)
 
-    legend = plt.legend([circles, squares, triangles], haloes_text, fontsize=20, loc='upper left', markerscale=4,
+    legend = plt.legend([circles, squares, triangles], haloes_text, fontsize=25, loc='upper left', markerscale=4,
                         frameon=False, scatteryoffsets=[0.5], handlelength=len(haloes_text))
     axis.add_artist(legend)
 
@@ -660,7 +662,7 @@ def gas_fraction_vs_magnitude_combination(pdf, redshift):
 
     # Generate the figure and set its parameters #
     figure, axis = plt.subplots(1, figsize=(10, 7.5))
-    plot_tools.set_axis(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$',
+    plot_tools.set_axes(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$',
                         ylabel=r'$\mathrm{f_{gas}}$', aspect=None)
 
     # Loop over all available haloes #
@@ -699,7 +701,7 @@ def bar_strength_profile_combination(pdf, redshift):
     figure = plt.figure(figsize=(15, 5))
     axis00, axis01, axis02 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple4=True)
     for axis in [axis00, axis01, axis02]:
-        plot_tools.set_axis(axis, xlim=[0, 11], ylim=[0, 1.1], xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 11], ylim=[0, 1.1], xlabel=r'$\mathrm{R/kpc}$',
                             ylabel=r'$\mathrm{\sqrt{a_{2}^{2}+b_{2}^{2}}/a_{0}}$', aspect=None)
     for axis in [axis01, axis02]:
         axis.set_ylabel('')
@@ -747,11 +749,11 @@ def stellar_surface_density_profiles_combination(pdf, redshift):
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22 = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple5=True)
     for axis in [axis00, axis10, axis20]:
-        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
                             ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None, which='major',
                             size=20)
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
-        plot_tools.set_axis(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None,
+        plot_tools.set_axes(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None,
                             which='major', size=20)
         axis.set_yticklabels([])
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
@@ -805,10 +807,10 @@ def circular_velocity_curves_combination(pdf, redshift):
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22 = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple5=True)
     for axis in [axis00, axis10, axis20]:
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$',
                             ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$', aspect=None)
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$', aspect=None)
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$', aspect=None)
         axis.set_yticklabels([])
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis.set_xticklabels([])
@@ -859,26 +861,27 @@ def ssdp_cvc_combination(pdf, redshift):
         res=res, boxsize=boxsize * 1e3, multiple9=True)
 
     for axis in [axis00, axis20, axis40]:
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 6],
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[0, 6],
                             ylabel=r'$\mathrm{log_{10}(\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2}))}$', aspect=None,
                             which='major', size=25)
-        axis.set_yticklabels(['', '1', '', '3', '', '5', ''])
     for axis in [axis01, axis02, axis21, axis22, axis41, axis42]:
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 6], aspect=None, which='major', size=25)
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[0, 6], aspect=None, which='major', size=25)
         axis.set_yticklabels([])
 
     for axis in [axis10, axis30, axis50]:
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 580], xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[0, 580], xlabel=r'$\mathrm{R/kpc}$',
                             ylabel=r'$\mathrm{V_{c}/(km\;s^{-1})}$', aspect=None, size=25)
-        axis.set_yticklabels(['', '100', '', '300', '', '500'])
     for axis in [axis11, axis12, axis31, axis32, axis51, axis52]:
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 580], xlabel=r'$\mathrm{R/kpc}$', aspect=None, size=25)
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[0, 580], xlabel=r'$\mathrm{R/kpc}$', aspect=None, size=25)
         axis.set_yticklabels([])
-
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42]:
         axis.set_xlabel('')
         axis.set_xticklabels([])
+    for axis in [axis00, axis01, axis02, axis20, axis21, axis22, axis40, axis41, axis42]:
+        axis.set_yticks([1, 3, 5])
+    for axis in [axis10, axis11, axis12, axis30, axis31, axis32, axis50, axis51, axis52]:
+        axis.set_yticks([100, 300, 500])
 
     # Loop over all available haloes #
     axes = [axis00, axis01, axis02, axis20, axis21, axis22, axis40, axis41, axis42]
@@ -922,9 +925,9 @@ def ssdp_cvc_combination(pdf, redshift):
 
         figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=25,
                     transform=axis.transAxes)  # figure.text(0.3, 0.7,  #     r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{
-                    # R_{d}} =  # %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (  #     1. / popt4, popt1,
-                    # popt3 *   #  #  # p.sersic_b_param(1.0 /  # popt4) ** (1.0 / popt4)), fontsize=16,
-                    #     transform=axis.transAxes)
+        # R_{d}} =  # %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (  #     1. / popt4, popt1,
+        # popt3 *   #  #  # p.sersic_b_param(1.0 /  # popt4) ** (1.0 / popt4)), fontsize=16,
+        #     transform=axis.transAxes)
 
         # Compute component masses from the fit #  # disc_mass = 2.0 * np.pi * popt0 * popt1 * popt1  # bulge_mass =
         # np.pi * popt2 * popt3 * popt3 * gamma(2.0 / popt4 + 1)  # print(disc_mass, bulge_mass)
@@ -957,11 +960,11 @@ def gas_temperature_vs_distance_combination(date, redshift):
     plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple6=True)
     for axis in [axis00, axis10, axis20]:
-        plot_tools.set_axis(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log',
+        plot_tools.set_axes(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log',
                             xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major',
                             size=25)
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
-        plot_tools.set_axis(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log',
+        plot_tools.set_axes(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log',
                             xlabel=r'$\mathrm{R/kpc}$', aspect=None, which='major', size=25)
 
     # Loop over all available haloes #
@@ -986,6 +989,7 @@ def gas_temperature_vs_distance_combination(date, redshift):
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
         axis.set_yticklabels([])
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
+        axis.set_xlabel('')
         axis.set_xticklabels([])
 
     # Add a colorbar, save and close the figure #
@@ -1117,9 +1121,9 @@ def gas_temperature_regimes_combination(pdf):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(15, 15))
     axis00, axis10 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple14=True)
-    plot_tools.set_axis(axis00, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Volume\; fraction}$', aspect=None,
+    plot_tools.set_axes(axis00, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Volume\; fraction}$', aspect=None,
                         size=30)
-    plot_tools.set_axis(axis10, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Mass\; fraction}$', aspect=None,
+    plot_tools.set_axes(axis10, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Mass\; fraction}$', aspect=None,
                         size=30)
     axis00.set_xticklabels([])
     axis00.set_xticks(np.arange(-0.1, 0.9, 0.1))
@@ -1348,7 +1352,7 @@ def AGN_feedback_kernel_combination(pdf):
         axis3 = axis.twinx()
         axis3.yaxis.label.set_color('tab:red')
         axis3.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis3, ylim=[-0.1, 2.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{r_{BH}/kpc}$',
+        plot_tools.set_axes(axis3, ylim=[-0.1, 2.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{r_{BH}/kpc}$',
                             aspect=None)
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 2.1],
                                       ylabel=r'$\mathrm{V_{nSFR}(r<r_{BH})/V_{all}(r<r_{BH})}$', aspect=None)
@@ -1759,7 +1763,7 @@ def gas_temperature_edge_on_combination(pdf, redshift):
     area = plot_tools.create_axes_combinations(
         res=res, boxsize=0.2 * 1e3, multiple12=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
-        plot_tools.set_axis(axis, xlim=[-240, 240], ylim=[-240, 240], aspect=None, size=30)
+        plot_tools.set_axes(axis, xlim=[-240, 240], ylim=[-240, 240], aspect=None, size=30)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis.set_xticklabels([])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
@@ -1839,11 +1843,12 @@ def delta_sfr_regimes_combination(pdf):
         axis2.set_xticklabels([])
         axis2.tick_params(top=False)
 
-    for axis in [axis00, axis01, axis02, axis20, axis21, axis22, axis10, axis11, axis12, axis30, axis31, axis32]:
+    for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
+                 axis41, axis42]:
         axis.set_xlabel('')
         axis.set_xticklabels([])
         axis.tick_params(top=False)
-    for axis in [axis01, axis02, axis21, axis22, axis41, axis42, axis11, axis12, axis31, axis32, axis51, axis52]:
+    for axis in [axis01, axis02, axis11, axis12, axis21, axis22, axis31, axis32, axis41, axis42, axis51, axis52]:
         axis.set_ylabel('')
         axis.set_yticklabels([])
 
@@ -1872,12 +1877,12 @@ def delta_sfr_regimes_combination(pdf):
 
                 # Plot the evolution of SFR and the normalised delta SFR #
                 counts, bins, bars = top_axis.hist(lookback_times, weights=weights, histtype='step', bins=n_bins,
-                                                   range=[0, 13], color=colors2[j], lw=1.5, label=labels[j])
+                                                   range=[0, 13], color=colors2[j], lw=3, label=labels[j])
                 if j == 0:
                     original_bins, original_counts = bins, counts
                 else:
                     bottom_axis.plot(original_bins[:-1], np.divide(counts - original_counts, original_counts),
-                                     color=colors2[j], lw=1.5, label=labels[j])
+                                     color=colors2[j], lw=3, label=labels[j])
 
             # Add the text #
             if top_axis in [axis00, axis20, axis40]:

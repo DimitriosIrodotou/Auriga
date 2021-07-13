@@ -816,13 +816,13 @@ def sfr_stars_gas_regimes(pdf, data, region, read):
             # ylabel=r'$\mathrm{SFR/(M_\odot\;yr^{-1})}$', aspect=None)
             # axis00.set_xticklabels([])
             axis003 = axis00.twinx()
-            plot_tools.set_axis(axis003, ylim=[1e55, 1e61], yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$',
+            plot_tools.set_axes(axis003, ylim=[1e55, 1e61], yscale='log', ylabel=r'$\mathrm{(Feedback\;energy)/ergs}$',
                                 aspect=None, which='major')
-            # plot_tools.set_axis(axis10, xlim=(13, 0), ylim=[1e6, 1e11],
+            # plot_tools.set_axes(axis10, xlim=(13, 0), ylim=[1e6, 1e11],
             # yscale='log', ylabel=r'$\mathrm{Mass/M_{\odot}}$', aspect=None,
             # which='major')
             # axis10.set_xticklabels([])
-            # plot_tools.set_axis(axis20, xlim=(13, 0), ylim=[-0.1, 1.1],
+            # plot_tools.set_axes(axis20, xlim=(13, 0), ylim=[-0.1, 1.1],
             # ylabel=r'$\mathrm{Gas\;fraction}$', xlabel=r'$\mathrm{t_{
             # look}/Gyr}$',
             #                     aspect=None)
@@ -994,7 +994,7 @@ def gas_flow_mass_loading(pdf, data, read, method):
         axis003 = axis00.twinx()
         axis003.yaxis.label.set_color('tab:red')
         axis003.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis003, ylim=[0, 250], xlabel=r'$\mathrm{t_{look}/Gyr}$',
+        plot_tools.set_axes(axis003, ylim=[0, 250], xlabel=r'$\mathrm{t_{look}/Gyr}$',
                             ylabel=r'$\mathrm{0.5R_{vir}/kpc}$', aspect=None)
         axis003.tick_params(axis='y', direction='out', left='off', colors='tab:red')
         plot_tools.set_axes_evolution(axis00, axis002, ylim=[-250, 0], ylabel=r'$\mathrm{Net\;flow/('r'M_\odot/yr)}$',
@@ -1381,7 +1381,7 @@ def AGN_feedback_kernel(pdf, data, ds, read):
         axis3 = axis.twinx()
         axis3.yaxis.label.set_color('tab:red')
         axis3.spines['right'].set_color('tab:red')
-        plot_tools.set_axis(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$',
+        plot_tools.set_axes(axis3, ylim=[-0.1, 1.1], xlabel=r'$\mathrm{t_{look}/Gyr}$',
                             ylabel=r'$\mathrm{BH_{sml}/kpc}$', aspect=None)
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 1.1], ylabel=r'$\mathrm{V_{nSFR}(r<BH_{'
                                                                             r'sml})/V_{all}(r<BH_{sml})}$', aspect=None)

@@ -177,7 +177,7 @@ def stellar_light(pdf, data, redshift, read):
         figure = plt.figure(figsize=(10, 10))
         axis00, axis10, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize)
         for axis in [axis00, axis10]:
-            plot_tools.set_axis(axis)
+            plot_tools.set_axes(axis)
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
                     fontsize=16, transform=axis00.transAxes)
 
@@ -276,7 +276,7 @@ def stellar_light_components(pdf, data, redshift, read):
                                                                                             multiple4=True)  #
         # Generate the axes.
         for axis in [axis00, axis01, axis10, axis11]:
-            plot_tools.set_axis(axis)
+            plot_tools.set_axes(axis)
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
                     fontsize=16, transform=axis00.transAxes)
 
@@ -387,10 +387,10 @@ def stellar_density(pdf, data, redshift, read):
                                                                                                               * 1e3,
                                                                                                       contour=True)
         for axis in [axis00, axis01]:
-            plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
+            plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
             axis.set_xticklabels([])
         for axis in [axis10, axis11]:
-            plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
+            plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
                                 ylabel=r'$\mathrm{z/kpc}$')
         cmap = matplotlib.cm.get_cmap('twilight')
         axis01.set_facecolor(cmap(0))
@@ -509,10 +509,10 @@ def stellar_density_components(pdf, data, redshift, read):
                                                                                                       contour=True)
 
         for axis in [axis00, axis01]:
-            plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
+            plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
             axis.set_xticklabels([])
         for axis in [axis10, axis11]:
-            plot_tools.set_axis(axis, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
+            plot_tools.set_axes(axis, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
                                 ylabel=r'$\mathrm{z/kpc}$')
 
         cmap = matplotlib.cm.get_cmap('binary_r')
@@ -786,8 +786,8 @@ def gas_density(pdf, data, redshift, read):
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
                                                                                       colorbar=True)
         axis00.set_xticklabels([])
-        plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
-        plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
+        plot_tools.set_axes(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
+        plot_tools.set_axes(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
                             ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
                     fontsize=16, transform=axis00.transAxes)
@@ -881,8 +881,8 @@ def gas_temperature(pdf, data, redshift, read):
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
                                                                                       colorbar=True)
         axis00.set_xticklabels([])
-        plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
-        plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
+        plot_tools.set_axes(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
+        plot_tools.set_axes(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
                             ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
                     fontsize=16, transform=axis00.transAxes)
@@ -966,8 +966,8 @@ def gas_metallicity(pdf, data, redshift, read):
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
                                                                                       colorbar=True)
         axis00.set_xticklabels([])
-        plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
-        plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
+        plot_tools.set_axes(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
+        plot_tools.set_axes(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
                             ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
                     fontsize=16, transform=axis00.transAxes)
@@ -1260,7 +1260,7 @@ def gas_temperature_edge_on(pdf, data, redshift, read):
     #     axiscbar = plt.subplot(gs[:, 1])
     #     x = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res)
     #     z = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res)
-    #     plot_tools.set_axis(axis00, xlim=[-100, 100], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
+    #     plot_tools.set_axes(axis00, xlim=[-100, 100], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
     #                         ylabel=r'$\mathrm{z/kpc}$')
     #     figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
     #                 fontsize=16, transform=axis00.transAxes)
@@ -1343,8 +1343,8 @@ def magnetic_field(pdf, data, redshift, read):
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
                                                                                       colorbar=True)
         axis00.set_xticklabels([])
-        plot_tools.set_axis(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
-        plot_tools.set_axis(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
+        plot_tools.set_axes(axis00, xlim=[-30, 30], ylim=[-30, 30], ylabel=r'$\mathrm{y/kpc}$')
+        plot_tools.set_axes(axis10, xlim=[-30, 30], ylim=[-15, 15], xlabel=r'$\mathrm{x/kpc}$',
                             ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
                     fontsize=16, transform=axis00.transAxes)
@@ -1438,8 +1438,8 @@ def dark_matter_density(pdf, data, redshift, read):
         axis00, axis10, axiscbar, x, y, y2, area = plot_tools.create_axes_projections(res=res, boxsize=boxsize * 1e3,
                                                                                       colorbar=True)
         axis00.set_xticklabels([])
-        plot_tools.set_axis(axis00, xlim=[-200, 200], ylim=[-200, 200], ylabel=r'$\mathrm{y/kpc}$')
-        plot_tools.set_axis(axis10, xlim=[-200, 200], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
+        plot_tools.set_axes(axis00, xlim=[-200, 200], ylim=[-200, 200], ylabel=r'$\mathrm{y/kpc}$')
+        plot_tools.set_axes(axis10, xlim=[-200, 200], ylim=[-100, 100], xlabel=r'$\mathrm{x/kpc}$',
                             ylabel=r'$\mathrm{z/kpc}$')
         figure.text(0.0, 1.01, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
                     fontsize=16, transform=axis00.transAxes)

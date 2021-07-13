@@ -132,7 +132,7 @@ def circularity_distribution(pdf, data, redshift, read):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[-2, 2], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$',
+        plot_tools.set_axes(axis, xlim=[-2, 2], ylim=[0, 5], xlabel=r'$\mathrm{\epsilon}$',
             ylabel=r'$\mathrm{f(\epsilon)}$', aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
@@ -276,7 +276,7 @@ def tully_fisher(pdf, data, redshift, read):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[1e8, 1e12], ylim=[1.4, 2.6], xscale='log',
+        plot_tools.set_axes(axis, xlim=[1e8, 1e12], ylim=[1.4, 2.6], xscale='log',
             xlabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', ylabel=r'$\mathrm{log_{10}(v_{circ}/(km\;s^{-1}))}$',
             aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
@@ -404,7 +404,7 @@ def stellar_vs_halo_mass(pdf, data, redshift, read):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[1e11, 1e13], ylim=[1e9, 1e12], xscale='log', yscale='log',
+        plot_tools.set_axes(axis, xlim=[1e11, 1e13], ylim=[1e9, 1e12], xscale='log', yscale='log',
             xlabel=r'$\mathrm{M_{halo}/M_{\odot}}$', ylabel=r'$\mathrm{M_{\bigstar}/M_{\odot}}$', aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
@@ -513,7 +513,7 @@ def gas_fraction_vs_magnitude(pdf, data, redshift, read):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$',
+        plot_tools.set_axes(axis, xlim=[-23.2, -22], ylim=[0.1, 0.4], xlabel=r'$\mathrm{M_{R}/mag}$',
             ylabel=r'$\mathrm{f_{gas}}$', aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
@@ -613,7 +613,7 @@ def bar_strength_profile(pdf, data, redshift, read):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[0, 10], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 10], ylim=[-0.1, 1.1], xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{\sqrt{a_{2}^{2}+b_{2}^{2}}/a_{0}}$', aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
@@ -735,7 +735,7 @@ def stellar_surface_density_profiles(pdf, data, redshift, read):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[0, 30], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 30], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
@@ -868,7 +868,7 @@ def circular_velocity_curves(pdf, data, redshift, read):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
-        plot_tools.set_axis(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[0, 700], xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{V_{circular}/(km\;s^{-1})}$', aspect=None)
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
@@ -960,7 +960,7 @@ def gas_temperature_vs_distance(date, data, redshift, read):
         gs = gridspec.GridSpec(1, 2, wspace=0.22, width_ratios=[1, 0.05])
         axis00, axis01 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1])
 
-        plot_tools.set_axis(axis00, xlim=[1e-2, 2e2], ylim=[1e1, 1e8], xscale='log', yscale='log',
+        plot_tools.set_axes(axis00, xlim=[1e-2, 2e2], ylim=[1e1, 1e8], xscale='log', yscale='log',
             xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major')
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
@@ -1281,7 +1281,7 @@ def velocity_dispersion_profiles(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure, axis = plt.subplots(1, figsize=(10, 7.5))
 
-        plot_tools.set_axis(axis, xlim=[0, 30], ylim=[0, 160], xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 30], ylim=[0, 160], xlabel=r'$\mathrm{R/kpc}$',
             ylabel=r'$\mathrm{\sigma/(km\;s^{-1})}$', aspect=None, which='major')
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
             fontsize=16, transform=axis.transAxes)
