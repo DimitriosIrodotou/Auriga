@@ -328,7 +328,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         return axis00, axis01, axis02
 
     elif multiple5 is True:
-        gs = gridspec.GridSpec(3, 3, hspace=0, wspace=0)
+        gs = gridspec.GridSpec(3, 3, hspace=0.05, wspace=0.05)
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])

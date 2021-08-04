@@ -949,7 +949,7 @@ def gas_temperature_vs_distance(date, data, redshift, read):
             np.save(path + 'spherical_distance_' + str(s.haloname), s.r()[mask])
 
     # Load and plot the data #
-    names = glob.glob(path + 'name_*')
+    names = glob.glob(path + 'name_17NoR.*')
     names.sort()
 
     # Loop over all available haloes #
@@ -963,7 +963,7 @@ def gas_temperature_vs_distance(date, data, redshift, read):
         plot_tools.set_axes(axis00, xlim=[1e-2, 2e2], ylim=[1e1, 1e8], xscale='log', yscale='log',
             xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{Temperature/K}$', aspect=None, which='major')
         figure.text(0.01, 0.95, r'$\mathrm{Au-%s\;z=%s}$' % (str(re.split('_|.npy', names[i])[1]), str(redshift)),
-            fontsize=16, transform=axis.transAxes)
+            fontsize=16, transform=axis00.transAxes)
 
         # Load the data #
         sfr = np.load(path + 'sfr_' + str(re.split('_|.npy', names[i])[1]) + '.npy')

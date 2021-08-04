@@ -5,7 +5,6 @@ import galaxy
 import matplotlib
 import plot_tools
 
-
 import numpy as np
 import cmasher as cmr
 import astropy.units as u
@@ -18,6 +17,7 @@ from sfigure import *
 from loadmodules import *
 from matplotlib.lines import Line2D
 from scripts.gigagalaxy.util import plot_helper
+from matplotlib.legend_handler import HandlerPatch
 from matplotlib.legend_handler import HandlerTuple
 
 style.use("classic")
@@ -359,7 +359,7 @@ def gas_metallicity_combination(pdf, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(10, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-    axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
@@ -745,22 +745,22 @@ def stellar_surface_density_profiles_combination(pdf, redshift):
     names.sort()
 
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 20))
+    figure = plt.figure(figsize=(15, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22 = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple5=True)
     for axis in [axis00, axis10, axis20]:
-        plot_tools.set_axes(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[1e0, 9e4], yscale='log', xlabel=r'$\mathrm{R/kpc}$',
                             ylabel=r'$\mathrm{\Sigma_{\bigstar}/(M_{\odot}\;pc^{-2})}$', aspect=None, which='major',
                             size=20)
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
-        plot_tools.set_axes(axis, xlim=[0, 29], ylim=[1e0, 1e6], yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None,
+        plot_tools.set_axes(axis, xlim=[0, 24], ylim=[1e0, 9e4], yscale='log', xlabel=r'$\mathrm{R/kpc}$', aspect=None,
                             which='major', size=20)
         axis.set_yticklabels([])
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis.set_xticklabels([])
 
     # Loop over all available haloes #
-    for i, axis in zip(range(len(names)), [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]):
+    for i, axis in zip(range(len(names)), [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]):
         print("Plotting data for halo:", str(re.split('_|.npy', names[i])[1]))
         # Load the data #
         r = np.load(path + 'r_' + str(re.split('_|.npy', names[i])[1]) + '.npy')
@@ -774,14 +774,16 @@ def stellar_surface_density_profiles_combination(pdf, redshift):
 
         # Plot the stellar surface density profiles #
         p = plot_helper.plot_helper()  # Load the helper.
-        axis.axvline(rfit, color='gray', linestyle='--')
-        axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors3[0], linewilinewidth=0.0)
-        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors3[3])
-        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors3[1])
-        axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors3[0])
+        axis.axvline(rfit, color='gray', linestyle='--', lw=3)
+        axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors3[0], linewidth=0.0)
+        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors3[3], lw=3)
+        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors3[1], lw=3)
+        axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors3[0], lw=3)
 
-        figure.text(0.01, 0.95, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
                     transform=axis.transAxes)
+        figure.text(0.3, 0.5, r'$\mathrm{R_{eff.}} = %.2f$ kpc' '\n' % (
+        popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=20, transform=axis.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -927,7 +929,7 @@ def ssdp_cvc_combination(pdf, redshift):
                     transform=axis.transAxes)  # figure.text(0.3, 0.7,  #     r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{
         # R_{d}} =  # %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (  #     1. / popt4, popt1,
         # popt3 *   #  #  # p.sersic_b_param(1.0 /  # popt4) ** (1.0 / popt4)), fontsize=16,
-        #     transform=axis.transAxes)
+                    #     transform=axis.transAxes)
 
         # Compute component masses from the fit #  # disc_mass = 2.0 * np.pi * popt0 * popt1 * popt1  # bulge_mass =
         # np.pi * popt2 * popt3 * popt3 * gamma(2.0 / popt4 + 1)  # print(disc_mass, bulge_mass)
@@ -1013,7 +1015,7 @@ def decomposition_IT20_combination(date, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(20, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar = \
-    plot_tools.create_axes_combinations(
+        plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, mollweide=True)
     axes = [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]
     for axis in axes:
