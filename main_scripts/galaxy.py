@@ -949,7 +949,7 @@ def gas_temperature_vs_distance(date, data, redshift, read):
             np.save(path + 'spherical_distance_' + str(s.haloname), s.r()[mask])
 
     # Load and plot the data #
-    names = glob.glob(path + 'name_17NoR.*')
+    names = glob.glob(path + 'name_')
     names.sort()
 
     # Loop over all available haloes #

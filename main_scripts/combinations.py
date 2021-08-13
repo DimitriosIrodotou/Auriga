@@ -782,8 +782,8 @@ def stellar_surface_density_profiles_combination(pdf, redshift):
 
         figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
                     transform=axis.transAxes)
-        figure.text(0.3, 0.5, r'$\mathrm{R_{eff.}} = %.2f$ kpc' '\n' % (
-        popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=20, transform=axis.transAxes)
+        figure.text(0.3, 0.5, r'$\mathrm{R_{d}} = %.2f$ kpc' '\n' r'$\mathrm{R_{eff.}} = %.2f$ kpc' '\n' % (
+        popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=20, transform=axis.transAxes)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -1890,7 +1890,7 @@ def delta_sfr_regimes_combination(pdf):
             if top_axis in [axis00, axis20, axis40]:
                 figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names_flavours[0])[1]), fontsize=25,
                             transform=top_axis.transAxes)
-        figure.text(0.5, 0.9, r'$\mathrm{%.0f<r/kpc\leq%.0f}$' % (
+        figure.text(0.5, 0.9, r'$\mathrm{%.0f<R/kpc\leq%.0f}$' % (
             (np.float(radial_cut_min) * 1e3), (np.float(radial_cut_max) * 1e3)), fontsize=25,
                     transform=top_axes[0].transAxes)
 
