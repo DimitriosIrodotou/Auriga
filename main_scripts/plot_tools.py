@@ -109,17 +109,19 @@ def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=
     """
     cbar = plt.colorbar(plot, cax=axis, ticks=ticks, orientation=orientation)
     cbar.set_label(label, size=size)
-    axis.tick_params(direction='out', which='both', right='on', labelsize=size)
+    axis.tick_params(direction='out', which='major', right='on', labelsize=size, width=2, length=size / 3)
+    axis.tick_params(direction='out', which='minor', right='on', labelsize=size, width=2, length=size / 5)
 
     if orientation == 'horizontal':
         axis.xaxis.tick_top()
         axis.xaxis.set_label_position("top")
-        axis.tick_params(direction='out', which='both', top='on', labelsize=size)
+        axis.tick_params(direction='out', which='major', top='on', labelsize=size, width=2, length=size / 3)
+        axis.tick_params(direction='out', which='minor', top='on', labelsize=size, width=2, length=size / 5)
+
     return None
 
 
-def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, aspect='equal',
-             which='both', size=20):
+def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, which='both', size=20):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -129,7 +131,6 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     :param yscale: y axis scale.
     :param xlabel: x axis label.
     :param ylabel: y axis label.
-    :param aspect: aspect of the axis scaling.
     :param which: major, minor or both for grid and ticks.
     :param size: text size.
     :return: None
@@ -160,11 +161,13 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
         axis.set_yticklabels([])
 
     # Set grid and tick parameters #
-    if aspect is not None:
-        axis.set_aspect('equal')
+    axis.set_aspect(1. / axis.get_data_ratio(), adjustable='box')
     axis.set_axisbelow(True)
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-', alpha=0.7)
-    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
+    axis.tick_params(direction='out', which='major', top=False, bottom='on', left='on', right=False, labelsize=size,
+                     width=2, length=size / 3)
+    axis.tick_params(direction='out', which='minor', top=False, bottom='on', left='on', right=False, labelsize=size,
+                     width=2, length=size / 5)
     return None
 
 
@@ -195,8 +198,10 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
                 lb += ["%.0f" % v]
 
     # Set axis limits #
+    axis2.xaxis.tick_top()
     axis2.set_xticks(times)
     axis2.set_xticklabels(lb)
+    axis2.xaxis.set_label_position('top')
     if ylim:
         axis.set_ylim(ylim)
     axis.set_xlim(13, 0)
@@ -208,18 +213,25 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
 
     # Set axis labels #
     if ylabel:
+        axis2.set_yticklabels([])
         axis.set_ylabel(ylabel, size=size)
 
     axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=size)
     axis2.set_xlabel(r'$\mathrm{z}$', size=size)
 
     # Set grid and tick parameters #
-    if aspect is not None:
-        axis.set_aspect('equal')
+    axis.set_aspect(1. / axis.get_data_ratio(), adjustable='box')
+    axis2.set_aspect(1. / axis2.get_data_ratio(), adjustable='box')
     axis.set_axisbelow(True)
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-', alpha=0.7)
-    axis.tick_params(direction='out', which='both', top='on', bottom='on', left='on', right='on', labelsize=size)
-    axis2.tick_params(direction='out', which='both', top='on', left='on', right='on', labelsize=size)
+    axis.tick_params(direction='out', which='major', top=False, bottom='on', left='on', right=False, labelsize=size,
+                     width=2, length=size / 3)
+    axis.tick_params(direction='out', which='minor', top=False, bottom='on', left='on', right=False, labelsize=size,
+                     width=2, length=size / 5)
+    axis2.tick_params(direction='out', which='major', top='on', bottom=False, left=False, right=False, labelsize=size,
+                      width=2, length=size / 3)
+    axis2.tick_params(direction='out', which='minor', top='on', bottom=False, left=False, right=False, labelsize=size,
+                      width=2, length=size / 5)
     return None
 
 
