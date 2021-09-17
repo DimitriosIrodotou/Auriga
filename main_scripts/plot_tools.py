@@ -121,7 +121,8 @@ def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=
     return None
 
 
-def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, which='both', size=20):
+def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, log=False, which='both',
+             size=20):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -131,6 +132,7 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     :param yscale: y axis scale.
     :param xlabel: x axis label.
     :param ylabel: y axis label.
+    :param log: boolean.
     :param which: major, minor or both for grid and ticks.
     :param size: text size.
     :return: None
@@ -160,9 +162,17 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
         axis.set_yticks([])
         axis.set_yticklabels([])
 
+    # Set axis ratio #
+    if log is True:
+        xmin, xmax = axis.get_xbound()
+        ymin, ymax = axis.get_ybound()
+        data_ratio = (np.log10(ymax) - np.log10(ymin)) / (np.log10(xmax) - np.log10(xmin))
+    else:
+        data_ratio = axis.get_data_ratio()
+    axis.set_aspect(1. / data_ratio, adjustable='box')
+
     # Set grid and tick parameters #
-    axis.set_aspect(1. / axis.get_data_ratio(), adjustable='box')
-    axis.set_axisbelow(True)
+    axis.set_axisbelow(True)  # Place grid lines below other artists.
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-', alpha=0.7)
     axis.tick_params(direction='out', which='major', top=False, bottom='on', left='on', right=False, labelsize=size,
                      width=2, length=size / 3)
@@ -171,7 +181,7 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     return None
 
 
-def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect='equal', which='both', size=20):
+def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, which='both', size=20):
     """
     Set axes parameters for evolution plots.
     :param axis: name of the axis.
@@ -179,7 +189,6 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     :param ylim: y axis limit.
     :param yscale: y axis scale.
     :param ylabel: y axis label.
-    :param aspect: aspect of the axis scaling.
     :param which: major, minor or both for grid and ticks.
     :param size: text size.
     :return: None
@@ -219,10 +228,12 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=
     axis.set_xlabel(r'$\mathrm{t_{look}/Gyr}$', size=size)
     axis2.set_xlabel(r'$\mathrm{z}$', size=size)
 
-    # Set grid and tick parameters #
+    # Set axis ratio #
     axis.set_aspect(1. / axis.get_data_ratio(), adjustable='box')
     axis2.set_aspect(1. / axis2.get_data_ratio(), adjustable='box')
-    axis.set_axisbelow(True)
+
+    # Set grid and tick parameters #
+    axis.set_axisbelow(True)  # Place grid lines below other artists.
     axis.grid(True, which=which, axis='both', color='gray', linestyle='-', alpha=0.7)
     axis.tick_params(direction='out', which='major', top=False, bottom='on', left='on', right=False, labelsize=size,
                      width=2, length=size / 3)
