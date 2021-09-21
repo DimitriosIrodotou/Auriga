@@ -37,7 +37,7 @@ def get_hist(arr, norm):
 def return_redshifts(snaps):
     a_list, foo = np.genfromtxt('ExpansionList_128', unpack=True)
 
-    redshifts_list = (1. / a_list) - 1.
+    redshifts_list = (1 / a_list) - 1
     snap_list = np.arange(len(a_list))
 
     redshifts = np.arange(len(snaps), dtype=float)
@@ -204,7 +204,7 @@ def return_Lorb_final(t, host_first_progenitors, first_progenitors, hubbleparam)
 
 
 def isnotcontaminated(isub, slowres, sf):
-    radius = (sf.data['smas'][isub] * 1e10 / ((4. / 3.) * pi * 200. * rho_crit_now)) ** (1. / 3.)
+    radius = (sf.data['smas'][isub] * 1e10 / ((4. / 3.) * pi * 200. * rho_crit_now)) ** (1 / 3)
     radius *= 3.0
     # compute particle posistion relative to the subhalo posisiton
     pos = slowres.data['pos'] - sf.data['spos'][isub]

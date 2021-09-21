@@ -356,7 +356,7 @@ class AurigaPdf:
 
         # Evolution #
         # combinations.bar_strength_combination(pdf)
-        # combinations.gas_temperature_regimes_combination(pdf)
+        combinations.gas_temperature_regimes_combination(pdf)
         # combinations.quasar_mode_distribution_combination(pdf)
         # combinations.radio_mode_distribution_combination(pdf)
         # combinations.AGN_feedback_kernel_combination(pdf)

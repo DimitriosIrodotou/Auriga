@@ -121,8 +121,8 @@ def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=
     return None
 
 
-def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, log=False, which='both',
-             size=20):
+def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, log=False, aspect=True,
+             which='both', size=20):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -132,7 +132,7 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     :param yscale: y axis scale.
     :param xlabel: x axis label.
     :param ylabel: y axis label.
-    :param log: boolean.
+    :param log: boolean: data in log-space or not.
     :param which: major, minor or both for grid and ticks.
     :param size: text size.
     :return: None
@@ -163,13 +163,14 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
         axis.set_yticklabels([])
 
     # Set axis ratio #
-    if log is True:
-        xmin, xmax = axis.get_xbound()
-        ymin, ymax = axis.get_ybound()
-        data_ratio = (np.log10(ymax) - np.log10(ymin)) / (np.log10(xmax) - np.log10(xmin))
-    else:
-        data_ratio = axis.get_data_ratio()
-    axis.set_aspect(1. / data_ratio, adjustable='box')
+    if aspect is True:
+        if log is True:
+            xmin, xmax = axis.get_xbound()
+            ymin, ymax = axis.get_ybound()
+            data_ratio = (np.log10(ymax) - np.log10(ymin)) / (np.log10(xmax) - np.log10(xmin))
+        else:
+            data_ratio = axis.get_data_ratio()
+        axis.set_aspect(1. / data_ratio, adjustable='box')
 
     # Set grid and tick parameters #
     axis.set_axisbelow(True)  # Place grid lines below other artists.
@@ -181,7 +182,7 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     return None
 
 
-def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, which='both', size=20):
+def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, aspect=True, which='both', size=20):
     """
     Set axes parameters for evolution plots.
     :param axis: name of the axis.
@@ -189,6 +190,7 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, which='
     :param ylim: y axis limit.
     :param yscale: y axis scale.
     :param ylabel: y axis label.
+    :param aspect: boolean: create square plot or not.
     :param which: major, minor or both for grid and ticks.
     :param size: text size.
     :return: None
@@ -229,8 +231,9 @@ def set_axes_evolution(axis, axis2, ylim=None, yscale=None, ylabel=None, which='
     axis2.set_xlabel(r'$\mathrm{z}$', size=size)
 
     # Set axis ratio #
-    axis.set_aspect(1. / axis.get_data_ratio(), adjustable='box')
-    axis2.set_aspect(1. / axis2.get_data_ratio(), adjustable='box')
+    if aspect is True:
+        axis.set_aspect(1 / axis.get_data_ratio(), adjustable='box')
+        axis2.set_aspect(1 / axis2.get_data_ratio(), adjustable='box')
 
     # Set grid and tick parameters #
     axis.set_axisbelow(True)  # Place grid lines below other artists.
@@ -436,7 +439,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32
 
     elif multiple12 is True:
-        gs = gridspec.GridSpec(3, 4, hspace=0, wspace=0, width_ratios=[1, 1, 1, 0.1])
+        gs = gridspec.GridSpec(3, 4, hspace=0.05, wspace=0, width_ratios=[1, 1, 1, 0.1])
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         axis20, axis21, axis22 = plt.subplot(gs[2, 0]), plt.subplot(gs[2, 1]), plt.subplot(gs[2, 2])
@@ -444,7 +447,7 @@ def create_axes_combinations(res=res, boxsize=boxsize, contour=False, colorbar=F
         return axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar, x, y, y2, area
 
     elif multiple13 is True:
-        gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.05)
+        gs = gridspec.GridSpec(2, 3, hspace=0.05, wspace=0.1)
         axis00, axis01, axis02 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2])
         axis10, axis11, axis12 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2])
         return axis00, axis01, axis02, axis10, axis11, axis12
