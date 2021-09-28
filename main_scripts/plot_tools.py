@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.style as style
 
 from matplotlib import gridspec
+
 import satellite_utilities
 
 res = 512
@@ -121,8 +122,8 @@ def create_colorbar(axis, plot, label, orientation='vertical', ticks=None, size=
     return None
 
 
-def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, log=False, aspect=True,
-             which='both', size=20):
+def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, ylabel=None, log=False, semilogx=False,
+             semilogy=False, aspect=True, which='both', size=20):
     """
     Set axis parameters.
     :param axis: name of the axis.
@@ -133,6 +134,8 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
     :param xlabel: x axis label.
     :param ylabel: y axis label.
     :param log: boolean: data in log-space or not.
+    :param semilogx: boolean: data in semi-log-space or not.
+    :param semilogy: boolean: data in semi-log-space or not.
     :param which: major, minor or both for grid and ticks.
     :param size: text size.
     :return: None
@@ -168,6 +171,14 @@ def set_axes(axis, xlim=None, ylim=None, xscale=None, yscale=None, xlabel=None, 
             xmin, xmax = axis.get_xbound()
             ymin, ymax = axis.get_ybound()
             data_ratio = (np.log10(ymax) - np.log10(ymin)) / (np.log10(xmax) - np.log10(xmin))
+        elif semilogx is True:
+            xmin, xmax = axis.get_xbound()
+            ymin, ymax = axis.get_ybound()
+            data_ratio = (ymax - ymin) / (np.log10(xmax) - np.log10(xmin))
+        elif semilogy is True:
+            xmin, xmax = axis.get_xbound()
+            ymin, ymax = axis.get_ybound()
+            data_ratio = (np.log10(ymax) - np.log10(ymin)) / (xmax - xmin)
         else:
             data_ratio = axis.get_data_ratio()
         axis.set_aspect(1. / data_ratio, adjustable='box')

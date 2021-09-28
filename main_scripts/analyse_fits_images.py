@@ -124,28 +124,30 @@ def combine_images(name, ellipticity):
 
     # Plot the original data with some of the isophotes, the elliptical model image, and the residual image #
     # Generate the figure and set its parameters #
-    figure = plt.figure(figsize=(20, 7.5))
-    gs = gridspec.GridSpec(2, 4, hspace=0.3, wspace=0.4)
+    figure = plt.figure(figsize=(20, 8.5))
+    gs = gridspec.GridSpec(2, 4, hspace=0.35, wspace=0.5)
     axis00, axis01, axis02, axis03 = plt.subplot(gs[0, 0]), plt.subplot(gs[0, 1]), plt.subplot(gs[0, 2]), plt.subplot(
         gs[0, 3])
     axis10, axis11, axis12, axis13 = plt.subplot(gs[1, 0]), plt.subplot(gs[1, 1]), plt.subplot(gs[1, 2]), plt.subplot(
         gs[1, 3])
 
     axes = [axis00, axis01, axis02, axis03]
-    images = [image_fits, model, image_fits/model, residual]
+    images = [image_fits, model, image_fits / model, residual]
     for axis, image in zip(axes, images):
         plot_tools.set_axes(axis, xlim=[0, 256], ylim=[0, 256], xlabel=r'$\mathrm{x/pix}$', ylabel=r'$\mathrm{y/pix}$',
-                            which='major', aspect=None)
-        axis.imshow(image, origin='upper', cmap='gray_r', interpolation='bicubic')
+                            which='major', size=25)
+        axis.imshow(image, origin='lower', cmap='gray_r', interpolation='none')
 
     for axis in [axis00, axis01, axis02, axis03]:
-        axis.set_xticklabels(['0', '', '100', '', '200', ''])
-        axis.set_yticklabels(['0', '', '100', '', '200', ''])
+        axis.set_xticks(np.arange(0, 257, 64))
+        axis.set_yticks(np.arange(0, 257, 64))
+        axis.set_xticklabels(['-128', '-64', '0', '64', '128', ''])
+        axis.set_yticklabels(['-128', '-64', '0', '64', '128', ''])
 
-    figure.text(0.01, 0.92, r'$\mathrm{%s}$' % str(name), color='k', fontsize=16, transform=axis00.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Model}$', color='k', fontsize=16, transform=axis01.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Input/Model}$', color='k', fontsize=16, transform=axis02.transAxes)
-    figure.text(0.01, 0.92, r'$\mathrm{Residual}$', color='k', fontsize=16, transform=axis03.transAxes)
+    figure.text(0.01, 0.9, r'$\mathrm{%s}$' % str(name), color='k', fontsize=25, transform=axis00.transAxes)
+    figure.text(0.01, 0.9, r'$\mathrm{Model}$', color='k', fontsize=25, transform=axis01.transAxes)
+    figure.text(0.01, 0.9, r'$\mathrm{Input/Model}$', color='k', fontsize=25, transform=axis02.transAxes)
+    figure.text(0.01, 0.9, r'$\mathrm{Residual}$', color='k', fontsize=25, transform=axis03.transAxes)
 
     # Provide the elliptical isophote fitter with an initial ellipse (geometry) and fit multiple isophotes to the
     # image array #
@@ -163,8 +165,12 @@ def combine_images(name, ellipticity):
     y_errors = [isolist.ellip_err, isolist.pa_err / np.pi * 180., np.zeros(len(isolist.x0_err)), isolist.int_err]
     for axis, y_label, y_value, y_error, y_lim in zip(axes, y_labels, y_values, y_errors, y_lims):
         axis.errorbar(isolist.sma, y_value, yerr=y_error, fmt='o', color='k', markersize=10)
+        # if isolist.tflux_e in y_value:
         plot_tools.set_axes(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{sma/pix}$',
-                            ylabel=y_label, which='major', aspect=None)
+                                ylabel=y_label, aspect=False, which='major', size=25)
+        # else:
+        #     plot_tools.set_axes(axis, xlim=[1e0, centre[0]], ylim=y_lim, xscale='log', xlabel=r'$\mathrm{sma/pix}$',
+        #                         ylabel=y_label, semilogx=True, which='major')
         axis.grid(True, color='lightgray', linestyle='-')
     axis12.set_yscale('log')
     axis12.set_ylim(1e3, 2e7)
@@ -173,9 +179,9 @@ def combine_images(name, ellipticity):
     y_errors = [isolist_model.ellip_err, isolist_model.pa_err / np.pi * 180., np.zeros(len(isolist_model.x0_err)),
                 isolist_model.int_err]
     for axis, y_value, y_error in zip(axes, y_values, y_errors):
-        axis.errorbar(isolist_model.sma, y_value, yerr=y_error, fmt='o', color='tab:red', markersize=10,
+        axis.errorbar(isolist_model.sma, y_value, yerr=y_error, fmt='o', color='#d7301f', markersize=10,
                       label=r'$\mathrm{Model}$')
-    axis10.legend(loc='upper right', fontsize=16, frameon=False, numpoints=1)
+    axis10.legend(loc='upper right', fontsize=25, frameon=False, numpoints=1)
 
     # # Fit a Sersic plus exponential profile #
     # popt, pcov = curve_fit(fit_total_profile, isolist.sma, isolist.intens,
@@ -301,7 +307,7 @@ def plot_fit_data(h=0.0, R_eff=0.0):
     centre = get_image_centre(name)
     # Plot the scale length
     for radius in [h, R_eff]:
-        circle = Circle((centre[0], centre[1]), radius, color='tab:red', fill=False)
+        circle = Circle((centre[0], centre[1]), radius, color='#d7301f', fill=False)
         axis.add_patch(circle)
 
     # Create and save a gray scaled version of the image #

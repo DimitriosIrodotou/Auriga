@@ -17,7 +17,6 @@ from sfigure import *
 from loadmodules import *
 from matplotlib.lines import Line2D
 from scripts.gigagalaxy.util import plot_helper
-from matplotlib.legend_handler import HandlerPatch
 from matplotlib.legend_handler import HandlerTuple
 
 style.use("classic")
@@ -27,11 +26,12 @@ res = 512
 level = 4
 boxsize = 0.06
 default_level = 4
-colors = ['black', 'tab:red', 'tab:green']
-colors3 = ['black', 'tab:red', 'tab:green', 'tab:blue']
+colors = ['black', '#e66101', '#5e3c99']
+colors3 = ['black', '#e66101', '#fdb863', '#5e3c99']
+colors_heat = ['black', '#d7301f', '#fc8d59', '#fdcc8a']
 marker_array = iter(['o', 'o', 'o', '^', '^', '^', 's', 's', 's'])
 element = {'H':0, 'He':1, 'C':2, 'N':3, 'O':4, 'Ne':5, 'Mg':6, 'Si':7, 'Fe':8}
-colors2 = ['black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green', 'black', 'tab:red', 'tab:green']
+colors2 = ['black', '#e66101', '#5e3c99', 'black', '#e66101', '#5e3c99', 'black', '#e66101', '#5e3c99']
 haloes_text = [r'$\mathrm{Au-06,\;Au-06NoR,\;Au-06NoRNoQ}$', r'$\mathrm{Au-17,\;Au-17NoR,\;Au-17NoRNoQ}$',
                r'$\mathrm{Au-18,\;Au-18NoR,\;Au-18NoRNoQ}$']
 flavours_text = [(r'$\mathrm{Au-06:quasar,\;quasar_{eff}}$', r'$\mathrm{Au-06NoR:quasar,\;quasar_{eff}}$'),
@@ -43,8 +43,9 @@ circles = collections.CircleCollection([10], facecolors=colors, edgecolors='none
 squares = collections.RegularPolyCollection(numsides=4, rotation=np.pi / 4, sizes=(20,), facecolors=colors,
                                             edgecolors='none')
 triangles = collections.RegularPolyCollection(numsides=3, sizes=(20,), facecolors=colors, edgecolors='none')
-custom_lines = [(Line2D([0], [0], color=colors[0], lw=3, ls=':'), Line2D([0], [0], color=colors[0], lw=3, ls='-')),
-                (Line2D([0], [0], color=colors[1], lw=3, ls=':'), Line2D([0], [0], color=colors[1], lw=3, ls='-'))]
+custom_lines = [
+    (Line2D([0], [0], color=colors_heat[0], lw=3, ls=':'), Line2D([0], [0], color=colors_heat[0], lw=3, ls='-')),
+    (Line2D([0], [0], color=colors_heat[1], lw=3, ls=':'), Line2D([0], [0], color=colors_heat[1], lw=3, ls='-'))]
 
 
 def stellar_light_combination(pdf, redshift):
@@ -175,7 +176,7 @@ def stellar_density_combination(pdf, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(15, 20))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-    axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     cmap = matplotlib.cm.get_cmap('cmr.eclipse')
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
@@ -302,7 +303,7 @@ def gas_temperature_combination(pdf, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(10, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+    axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
@@ -367,7 +368,7 @@ def gas_metallicity_combination(pdf, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(10, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-    axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
@@ -429,7 +430,7 @@ def magnetic_field_combination(pdf, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(10, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-    axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
+axis42, axis50, axis51, axis52, axiscbar, x, y, y2, area = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple3=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40,
                  axis41, axis42, axis50, axis51, axis52]:
@@ -782,16 +783,18 @@ def stellar_surface_density_profiles_combination(pdf, redshift):
         # Plot the stellar surface density profiles #
         p = plot_helper.plot_helper()  # Load the helper.
         axis.axvline(rfit, color='gray', linestyle='--', lw=3)
-        axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors3[0], linewidth=0.0)
-        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors3[3], lw=3)
-        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors3[1], lw=3)
-        axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors3[0], lw=3)
+        axis.scatter(r, 1e10 * sdfit * 1e-6, marker='o', s=15, color=colors[0], linewidth=0.0)
+        axis.plot(r, 1e10 * p.exp_prof(r, popt0, popt1) * 1e-6, color=colors[2], lw=3, label=r'$\mathrm{Exp.}$')
+        axis.plot(r, 1e10 * p.sersic_prof1(r, popt2, popt3, popt4) * 1e-6, color=colors[1], lw=3,
+                  label=r'$\mathrm{Sersic}$')
+        axis.plot(r, 1e10 * p.total_profile(r, popt0, popt1, popt2, popt3, popt4) * 1e-6, color=colors[0], lw=3,
+                  label=r'$\mathrm{Total}$')
 
         figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
                     transform=axis.transAxes)
-        figure.text(0.3, 0.5, r'$\mathrm{R_{d}} = %.2f$ kpc' '\n' r'$\mathrm{R_{eff.}} = %.2f$ kpc' '\n' % (
+        figure.text(0.32, 0.35, r'$\mathrm{R_{d}} = %.2f$ kpc' '\n' r'$\mathrm{R_{eff.}} = %.2f$ kpc' '\n' % (
             popt1, popt3 * p.sersic_b_param(1.0 / popt4) ** (1.0 / popt4)), fontsize=20, transform=axis.transAxes)
-
+    axis00.legend(loc='upper center', fontsize=20, frameon=False)  # Create the legend.
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
     plt.close()
@@ -935,8 +938,8 @@ def ssdp_cvc_combination(pdf, redshift):
         figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=25,
                     transform=axis.transAxes)  # figure.text(0.3, 0.7,  #     r'$\mathrm{n} = %.2f$' '\n' r'$\mathrm{
                     # R_{d}} =  # %.2f$' '\n' r'$\mathrm{R_{eff}} = %.2f$' '\n' % (  #     1. / popt4, popt1,
-                    # popt3 *   #  #  # p.sersic_b_param(1.0 /  # popt4) ** (1.0 / popt4)), fontsize=16,
-                    #     transform=axis.transAxes)
+        # popt3 *   #  #  # p.sersic_b_param(1.0 /  # popt4) ** (1.0 / popt4)), fontsize=16,
+        #     transform=axis.transAxes)
 
         # Compute component masses from the fit #  # disc_mass = 2.0 * np.pi * popt0 * popt1 * popt1  # bulge_mass =
         # np.pi * popt2 * popt3 * popt3 * gamma(2.0 / popt4 + 1)  # print(disc_mass, bulge_mass)
@@ -966,14 +969,15 @@ def gas_temperature_vs_distance_combination(date, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(16, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar = \
-        plot_tools.create_axes_combinations(
+    plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple6=True)
     for axis in [axis00, axis10, axis20]:
         plot_tools.set_axes(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log',
-                            xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{Temperature/K}$', which='major', log=True)
+                            xlabel=r'$\mathrm{R/kpc}$', ylabel=r'$\mathrm{Temperature/K}$', which='major', log=True,
+                            size=25)
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
         plot_tools.set_axes(axis, xlim=[2e-2, 2e2], ylim=[1e3, 2e8], xscale='log', yscale='log', log=True,
-                            xlabel=r'$\mathrm{R/kpc}$', which='major')
+                            xlabel=r'$\mathrm{R/kpc}$', which='major', size=25)
 
     # Loop over all available haloes #
     for i, axis in zip(range(len(names)), [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]):
@@ -991,7 +995,7 @@ def gas_temperature_vs_distance_combination(date, redshift):
         hb = axis.scatter(spherical_distance[sfr_mask] * 1e3, temperature[sfr_mask], s=5, edgecolor='none',
                           c=sfr[sfr_mask] * 1e6, cmap='plasma_r', norm=matplotlib.colors.LogNorm(vmin=4, vmax=650),
                           zorder=5)
-        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
+        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=25,
                     transform=axis.transAxes)
 
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
@@ -1001,7 +1005,7 @@ def gas_temperature_vs_distance_combination(date, redshift):
         axis.set_xticklabels([])
 
     # Add a colorbar, save and close the figure #
-    plot_tools.create_colorbar(axiscbar, hb, label="$\mathrm{SFR/(M_\odot\;Myr^{-1})}$", size=20)
+    plot_tools.create_colorbar(axiscbar, hb, label="$\mathrm{SFR/(M_\odot\;Myr^{-1})}$", size=25)
     plt.savefig('/u/di43/Auriga/plots/' + 'gtdc-' + date + '.png', bbox_inches='tight')
     plt.close()
     return None
@@ -1021,7 +1025,7 @@ def decomposition_IT20_combination(date, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(20, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar = \
- plot_tools.create_axes_combinations(
+    plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, mollweide=True)
     axes = [axis00, axis10, axis20, axis01, axis11, axis21, axis02, axis12, axis22]
     for axis in axes:
@@ -1134,9 +1138,9 @@ def gas_temperature_regimes_combination(pdf):
     figure = plt.figure(figsize=(15, 15))
     axis00, axis10 = plot_tools.create_axes_combinations(res=res, boxsize=boxsize * 1e3, multiple14=True)
     plot_tools.set_axes(axis00, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Volume\; fraction}$', aspect=False,
-                        size=30)
+                        size=35)
     plot_tools.set_axes(axis10, xlim=[-0.1, 0.9], ylim=[0, 1.19], ylabel=r'$\mathrm{Mass\; fraction}$', aspect=False,
-                        size=30)
+                        size=35)
     axis00.set_xticklabels([])
     axis00.set_xticks(np.arange(-0.1, 0.9, 0.1))
     axis10.set_xticks(np.arange(-0.1, 0.9, 0.1))
@@ -1178,22 +1182,22 @@ def gas_temperature_regimes_combination(pdf):
 
             # Plot the mass- and volume-weighted gas fractions in different temperature regimes #
             time_mask, = np.where(lookback_times < 1)  # In Gyr.
-            b1, = axis00.bar(k / 10, np.average(sfg_volume_ratios[time_mask]), width=0.09, color=colors3[3], alpha=0.85,
+            b1, = axis00.bar(k / 10, np.average(sfg_volume_ratios[time_mask]), width=0.09, color=colors_heat[3],
                              edgecolor='none')
             b2, = axis00.bar(k / 10, np.average(wg_volume_ratios[time_mask]),
-                             bottom=np.average(sfg_volume_ratios[time_mask]), width=0.09, color=colors3[2], alpha=0.85,
+                             bottom=np.average(sfg_volume_ratios[time_mask]), width=0.09, color=colors_heat[2],
                              edgecolor='none')
             b3, = axis00.bar(k / 10, np.average(hg_volume_ratios[time_mask]), bottom=np.sum(
                 np.vstack([np.average(sfg_volume_ratios[time_mask]), np.average(wg_volume_ratios[time_mask])]).T),
-                             width=0.09, color=colors3[1], alpha=0.85, edgecolor='none')
-            b4, = axis10.bar(k / 10, np.average(sfg_mass_ratios[time_mask]), width=0.09, color=colors3[3], alpha=0.85,
+                             width=0.09, color=colors_heat[1], edgecolor='none')
+            b4, = axis10.bar(k / 10, np.average(sfg_mass_ratios[time_mask]), width=0.09, color=colors_heat[3],
                              edgecolor='none')
             b5, = axis10.bar(k / 10, np.average(wg_mass_ratios[time_mask]),
-                             bottom=np.average(sfg_mass_ratios[time_mask]), width=0.09, color=colors3[2], alpha=0.85,
+                             bottom=np.average(sfg_mass_ratios[time_mask]), width=0.09, color=colors_heat[2],
                              edgecolor='none')
             b6, = axis10.bar(k / 10, np.average(hg_mass_ratios[time_mask]), bottom=np.sum(
                 np.vstack([np.average(sfg_mass_ratios[time_mask]), np.average(wg_mass_ratios[time_mask])]).T),
-                             width=0.09, color=colors3[1], alpha=0.85, edgecolor='none')
+                             width=0.09, color=colors_heat[1], edgecolor='none')
             k += 1
 
     # Plot vertical lines to separate the haloes #
@@ -1203,7 +1207,7 @@ def gas_temperature_regimes_combination(pdf):
 
     # Create the legends #
     axis00.legend([b1, b2, b3], [r'$\mathrm{Cold\;gas}$', r'$\mathrm{Warm\;gas}$', r'$\mathrm{Hot\;gas}$'],
-                  loc='upper center', fontsize=30, frameon=False, ncol=3)
+                  loc='upper center', fontsize=35, frameon=False, ncol=3)
 
     # Save and close the figure #
     pdf.savefig(figure, bbox_inches='tight')
@@ -1270,10 +1274,10 @@ def quasar_mode_distribution_combination(pdf):
                                                   thermals[np.where(thermals > 0)], n_bins=n_bins)
             efficiency = np.flip(nsf_gas_volumes / gas_volumes)  # binned_sum flips the x_values
             mask, = np.where(efficiency > 0)
-            axis.plot(x_values[mask], np.divide(efficiency[mask] * sum[mask], time_bin_width), color=colors[j], lw=3,
-                      linestyle='-')
+            axis.plot(x_values[mask], np.divide(efficiency[mask] * sum[mask], time_bin_width), color=colors_heat[j],
+                      lw=3, linestyle='-')
 
-            axis.plot(x_values[mask], sum[mask] / time_bin_width, color=colors[j], lw=3, linestyle=':')
+            axis.plot(x_values[mask], sum[mask] / time_bin_width, color=colors_heat[j], lw=3, linestyle=':')
 
         # Create the legend #
         axis.legend(custom_lines, flavours_text[i], handler_map={tuple:HandlerTuple(ndivide=None)}, numpoints=1,
@@ -1368,15 +1372,15 @@ def AGN_feedback_kernel_combination(pdf):
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis2 = figure.add_axes(axis.get_position())
         axis2.set_facecolor("None")
-        axis2.yaxis.label.set_color('tab:red')
-        axis2.spines['right'].set_color('tab:red')
+        axis2.yaxis.label.set_color(colors_heat[1])
+        axis2.spines['right'].set_color(colors_heat[1])
         plot_tools.set_axes(axis2, ylim=[-0.1, 2.1], xlabel=r'$\mathrm{t_{look}/Gyr}$', ylabel=r'$\mathrm{r_{BH}/kpc}$')
         axis2.yaxis.set_label_position('right')
         plot_tools.set_axes_evolution(axis, axis2, ylim=[-0.1, 2.1],
                                       ylabel=r'$\mathrm{V_{nSFR}(r<r_{BH})/V_{all}(r<r_{BH})}$')
         axis.tick_params(direction='out', which='major', top=False, bottom='on', left='on', right=False, labelsize=20,
                          width=2, length=20 / 3)
-        axis2.tick_params(axis='y', direction='out', left=False, right='on', colors='tab:red')
+        axis2.tick_params(axis='y', direction='out', left=False, right='on', colors=colors_heat[1])
         axis2.grid()
         axis2.set_yticklabels(['', '0.0', '0.5', '1.0', '1.5', '2.0', ''])
         axis2.yaxis.tick_right()
@@ -1417,16 +1421,16 @@ def AGN_feedback_kernel_combination(pdf):
         x_values, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, nsf_gas_volumes / gas_volumes,
                                                                         bin_type='equal_width', n_bins=n_bins,
                                                                         log=False)
-        median_volumes, = axis.plot(x_values, median, color=colors[0], lw=3)
-        axis.fill_between(x_values, shigh, slow, color=colors[0], alpha='0.3')
-        fill_volumes, = plt.fill(np.NaN, np.NaN, color=colors[0], alpha=0.3)
+        median_volumes, = axis.plot(x_values, median, color=colors_heat[0], lw=3)
+        axis.fill_between(x_values, shigh, slow, color=colors_heat[0], alpha='0.3')
+        fill_volumes, = plt.fill(np.NaN, np.NaN, color=colors_heat[0], alpha=0.3)
 
         x_values, median, shigh, slow = plot_tools.binned_median_1sigma(lookback_times, blackhole_hsmls * 1e3,
                                                                         bin_type='equal_width', n_bins=n_bins,
                                                                         log=False)
-        median_bh, = axis.plot(x_values, median, color=colors[1], lw=3)
-        axis.fill_between(x_values, shigh, slow, color=colors[1], alpha='0.3')
-        fill_bh, = plt.fill(np.NaN, np.NaN, color=colors[1], alpha=0.3)
+        median_bh, = axis.plot(x_values, median, color=colors_heat[1], lw=3)
+        axis.fill_between(x_values, shigh, slow, color=colors_heat[1], alpha='0.3')
+        fill_bh, = plt.fill(np.NaN, np.NaN, color=colors_heat[1], alpha=0.3)
 
         figure.text(0.01, 0.92, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=20,
                     transform=axis.transAxes)
@@ -1515,12 +1519,10 @@ def central_combination(pdf, data, redshift, read):
                              numthreads=8)["grid"] / res) * bfac * 1e6
 
             # Get the gas sfr projections #
-            sfr_face_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
-            sfr_edge_on = \
-            s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125, numthreads=8)[
-                "grid"]
+            sfr_face_on = s.get_Aslice("sfr", res=res, axes=[1, 2], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                                       numthreads=8)["grid"]
+            sfr_edge_on = s.get_Aslice("sfr", res=res, axes=[1, 0], box=[boxsize, boxsize], proj=True, proj_fact=0.125,
+                                       numthreads=8)["grid"]
 
             # Get the gas total pressure projections #
             elements_mass = [1.01, 4.00, 12.01, 14.01, 16.00, 20.18, 24.30, 28.08, 55.85, 88.91, 87.62, 91.22, 137.33]
@@ -1582,7 +1584,7 @@ def central_combination(pdf, data, redshift, read):
         # Generate the figure and set its parameters #
         figure = plt.figure(figsize=(16, 9))
         axis00, axis01, axis02, axis03, axis04, axis05, axis10, axis11, axis12, axis13, axis14, axis15, axis20, \
-        axis21, axis22, axis23, axis24, axis25, x, y, area = plot_tools.create_axes_combinations(
+ axis21, axis22, axis23, axis24, axis25, x, y, area = plot_tools.create_axes_combinations(
             res=res, boxsize=boxsize * 1e3, multiple=True)
         tick_labels = np.array(['', '-1.5', '', '', '0', '', '', '1.5', ''])
         for axis in [axis00, axis01, axis02, axis03, axis04, axis05]:
@@ -1785,18 +1787,18 @@ def gas_temperature_edge_on_combination(pdf, redshift):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(17, 15))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axiscbar, x, y, y2, \
-area = plot_tools.create_axes_combinations(
+    area = plot_tools.create_axes_combinations(
         res=res, boxsize=0.2 * 1e3, multiple12=True)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]:
-        plot_tools.set_axes(axis, xlim=[-99, 99], ylim=[-99, 99], size=30)
+        plot_tools.set_axes(axis, xlim=[-99, 99], ylim=[-99, 99], size=35)
     for axis in [axis00, axis01, axis02, axis10, axis11, axis12]:
         axis.set_xticklabels([])
     for axis in [axis01, axis02, axis11, axis12, axis21, axis22]:
         axis.set_yticklabels([])
     for axis in [axis20, axis21, axis22]:
-        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=30)
+        axis.set_xlabel(r'$\mathrm{x/kpc}$', size=35)
     for axis in [axis00, axis10, axis20]:
-        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=30)
+        axis.set_ylabel(r'$\mathrm{z/kpc}$', size=35)
 
     # Loop over all available haloes #
     axes = [axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22]
@@ -1816,11 +1818,11 @@ area = plot_tools.create_axes_combinations(
         z = np.linspace(-0.5 * boxsize, +0.5 * boxsize, res)
         pcm = axis.pcolormesh(x * 1e3, z * 1e3, (edge_on / edge_on_rho).T,
                               norm=matplotlib.colors.LogNorm(vmin=1e4, vmax=1e7), rasterized=True, shading='gouraud',
-                              cmap='Spectral_r')
+                              cmap='inferno')
 
-        plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{T/K}$', size=30)
+        plot_tools.create_colorbar(axiscbar, pcm, label='$\mathrm{T/K}$', size=35)
 
-        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=30,
+        figure.text(0.01, 0.9, r'$\mathrm{Au-%s}$' % str(re.split('_|.npy', names[i])[1]), fontsize=35,
                     transform=axis.transAxes)
 
     # Save and close the figure #
@@ -1845,7 +1847,7 @@ def delta_sfr_regimes_combination(pdf):
     # Generate the figure and set its parameters #
     figure = plt.figure(figsize=(20, 20))
     axis00, axis01, axis02, axis10, axis11, axis12, axis20, axis21, axis22, axis30, axis31, axis32, axis40, axis41, \
-axis42, axis50, axis51, axis52 = plot_tools.create_axes_combinations(
+    axis42, axis50, axis51, axis52 = plot_tools.create_axes_combinations(
         res=res, boxsize=boxsize * 1e3, multiple9=True)
 
     for axis in [axis00, axis01, axis02, axis20, axis21, axis22, axis40, axis41, axis42]:
@@ -1889,7 +1891,7 @@ axis42, axis50, axis51, axis52 = plot_tools.create_axes_combinations(
 
         # Split the names into 3 groups and plot the three flavours of a halo together (i.e. original, NoR and NoRNoQ) #
         names_groups = np.array_split(names, 3)
-        labels = [r'$\mathrm{Original}$', r'$\mathrm{NoR}$', r'$\mathrm{NoRNoQ}$']
+        labels = [r'$\mathrm{Fiducial}$', r'$\mathrm{NoR}$', r'$\mathrm{NoRNoQ}$']
         for i, top_axis, bottom_axis in zip(range(len(names_groups)), top_axes, bottom_axes):
             names_flavours = names_groups[i]
             # Loop over all available flavours #
