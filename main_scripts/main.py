@@ -376,7 +376,7 @@ b = AurigaPdf()
 b.add_directory('/u/di43/Auriga/output/', default_level)
 b.make_pdf()  # Generate the pdf.
 
-# Print total time # kezwek-segze9-vutjoP
+# Print total time #
 print('–––––––––––––––––––––––––––––––––––––––––––––')
 os.system('ls -t /u/di43/Auriga/plots/ | head -1')
 print('–––––––––––––––––––––––––––––––––––––––––––––')
